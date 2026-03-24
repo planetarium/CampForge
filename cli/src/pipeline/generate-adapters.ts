@@ -24,8 +24,8 @@ done
 # Copy gql-ops: skillpm (node_modules) -> local fallback (packages/)
 if [ -d "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" ]; then
   cp -r "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" "$TARGET_DIR/.claude/skills/gql-ops"
-elif [ -d "$CAMP_DIR/../packages/gql-ops/skills/gql-ops" ]; then
-  cp -r "$CAMP_DIR/../packages/gql-ops/skills/gql-ops" "$TARGET_DIR/.claude/skills/gql-ops"
+elif [ -d "$CAMP_DIR/../../packages/gql-ops/skills/gql-ops" ]; then
+  cp -r "$CAMP_DIR/../../packages/gql-ops/skills/gql-ops" "$TARGET_DIR/.claude/skills/gql-ops"
 fi
 
 # 3. Identity -> CLAUDE.md
@@ -78,8 +78,8 @@ done
 # gql-ops: skillpm -> local fallback
 if [ -d "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" ]; then
   cp -r "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" "$WORKSPACE/skills/gql-ops"
-elif [ -d "$CAMP_DIR/../packages/gql-ops/skills/gql-ops" ]; then
-  cp -r "$CAMP_DIR/../packages/gql-ops/skills/gql-ops" "$WORKSPACE/skills/gql-ops"
+elif [ -d "$CAMP_DIR/../../packages/gql-ops/skills/gql-ops" ]; then
+  cp -r "$CAMP_DIR/../../packages/gql-ops/skills/gql-ops" "$WORKSPACE/skills/gql-ops"
 fi
 
 # 4. Gateway restart
@@ -111,8 +111,8 @@ done
 # gql-ops: skillpm -> local fallback
 if [ -d "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" ]; then
   cp -r "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" "$TARGET_DIR/.agents/skills/gql-ops"
-elif [ -d "$CAMP_DIR/../packages/gql-ops/skills/gql-ops" ]; then
-  cp -r "$CAMP_DIR/../packages/gql-ops/skills/gql-ops" "$TARGET_DIR/.agents/skills/gql-ops"
+elif [ -d "$CAMP_DIR/../../packages/gql-ops/skills/gql-ops" ]; then
+  cp -r "$CAMP_DIR/../../packages/gql-ops/skills/gql-ops" "$TARGET_DIR/.agents/skills/gql-ops"
 fi
 
 echo ":: CampForge installed (generic)"

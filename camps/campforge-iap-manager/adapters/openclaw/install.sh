@@ -1,12 +1,12 @@
 #!/bin/bash
 # CampForge adapter for OpenClaw
 
-BOOTCAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+CAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 WORKSPACE="${OPENCLAW_WORKSPACE:-$HOME/.openclaw/workspace}"
 
 # 1. Install skill dependencies via skillpm
 if command -v skillpm &> /dev/null; then
-  (cd "$BOOTCAMP_DIR" && skillpm install)
+  (cd "$CAMP_DIR" && skillpm install)
 fi
 
 # 2. Identity files (backup first)
@@ -14,23 +14,23 @@ for f in SOUL.md IDENTITY.md AGENTS.md; do
   if [ -f "$WORKSPACE/$f" ]; then
     cp "$WORKSPACE/$f" "$WORKSPACE/$f.bak"
   fi
-  if [ -f "$BOOTCAMP_DIR/identity/$f" ]; then
-    cp "$BOOTCAMP_DIR/identity/$f" "$WORKSPACE/$f"
+  if [ -f "$CAMP_DIR/identity/$f" ]; then
+    cp "$CAMP_DIR/identity/$f" "$WORKSPACE/$f"
   fi
 done
 
 # 3. Skills
 mkdir -p "$WORKSPACE/skills"
-for skill_dir in "$BOOTCAMP_DIR/skills"/*/; do
+for skill_dir in "$CAMP_DIR/skills"/*/; do
   skill_name=$(basename "$skill_dir")
   cp -r "$skill_dir" "$WORKSPACE/skills/$skill_name"
 done
 
 # gql-ops: skillpm -> local fallback
-if [ -d "$BOOTCAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" ]; then
-  cp -r "$BOOTCAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" "$WORKSPACE/skills/gql-ops"
-elif [ -d "$BOOTCAMP_DIR/../packages/gql-ops/skills/gql-ops" ]; then
-  cp -r "$BOOTCAMP_DIR/../packages/gql-ops/skills/gql-ops" "$WORKSPACE/skills/gql-ops"
+if [ -d "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" ]; then
+  cp -r "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" "$WORKSPACE/skills/gql-ops"
+elif [ -d "$CAMP_DIR/../../packages/gql-ops/skills/gql-ops" ]; then
+  cp -r "$CAMP_DIR/../../packages/gql-ops/skills/gql-ops" "$WORKSPACE/skills/gql-ops"
 fi
 
 # 4. Gateway restart

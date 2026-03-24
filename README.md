@@ -26,9 +26,9 @@ CampForge(domain_spec) → Camp → Install on Agent
 
 | Camp | Domain | Skills |
 |----------|--------|--------|
-| [campforge-v8-admin](./campforge-v8-admin/) | V8 Platform Admin | v8-admin (users, credits, verses, comments) |
-| [campforge-9c-backoffice](./campforge-9c-backoffice/) | Nine Chronicles Table Patch | 9c-backoffice (validate → sign → stage → poll → upload → purge) |
-| [campforge-iap-manager](./campforge-iap-manager/) | IAP Product Management | iap-product-query, iap-product-import, iap-receipt-query, iap-asset-import, iap-image-upload |
+| [campforge-v8-admin](./camps/campforge-v8-admin/) | V8 Platform Admin | v8-admin (users, credits, verses, comments) |
+| [campforge-9c-backoffice](./camps/campforge-9c-backoffice/) | Nine Chronicles Table Patch | 9c-backoffice (validate → sign → stage → poll → upload → purge) |
+| [campforge-iap-manager](./camps/campforge-iap-manager/) | IAP Product Management | iap-product-query, iap-product-import, iap-receipt-query, iap-asset-import, iap-image-upload |
 
 ---
 
@@ -38,7 +38,7 @@ CampForge(domain_spec) → Camp → Install on Agent
 
 ```bash
 git clone https://github.com/planetarium/CampForge
-cd CampForge/campforge-v8-admin
+cd CampForge/camps/campforge-v8-admin
 ./campforge-cli.sh
 ```
 
@@ -132,14 +132,14 @@ This generates a full camp scaffold (identity, skills, adapters, tests). The SKI
 **Validate** a camp:
 
 ```bash
-./node_modules/.bin/tsx bin/campforge.ts validate ../campforge-v8-admin
+./node_modules/.bin/tsx bin/campforge.ts validate ../camps/campforge-v8-admin
 ```
 
 **Add a skill** to an existing camp:
 
 ```bash
 ./node_modules/.bin/tsx bin/campforge.ts add-skill \
-  --camp ../campforge-v8-admin \
+  --camp ../camps/campforge-v8-admin \
   --skill cost-analyzer \
   --description "Analyze cloud infrastructure costs"
 ```
