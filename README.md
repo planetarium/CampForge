@@ -2,6 +2,22 @@
 
 Agent Camp Meta-Generator — a tool for creating domain-specific agent onboarding packages.
 
+## What is a Camp?
+
+A **Camp** is an onboarding package that makes an AI agent instantly useful in a specific domain. Think of it like employee onboarding — but for agents.
+
+```
+Camp = Identity (who am I?) + Skills (what can I do?) + Knowledge (what do I know?)
+```
+
+| Layer | Contents | Example |
+|-------|----------|---------|
+| **Identity** | Personality, values, operating rules | "You are a V8 Platform Admin Agent. Accuracy first." |
+| **Skills** | Executable workflows ([AgentSkills](https://agentskills.io) format) | `v8-admin/SKILL.md` — user search, credit grant, comment management |
+| **Knowledge** | Domain glossary, decision trees | "Credit amounts are in USD. Collection index 0 = Multiplayer." |
+
+A camp is agent-agnostic — platform **adapters** handle installation across Claude Code, OpenClaw, Codex, Gemini CLI, and others.
+
 ```
 CampForge(domain_spec) → Camp → Install on Agent
 ```
