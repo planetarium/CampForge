@@ -1,8 +1,8 @@
-bootcamp:
+camp:
   name: iap-manager
   version: 1.0.0
-  spec_version: bootcamp/1.0
-  description: In-App Purchase Management agent bootcamp
+  spec_version: camp/1.0
+  description: In-App Purchase Management agent camp
   domain:
     primary: iap
     tags:

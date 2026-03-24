@@ -1,7 +1,7 @@
 {
-  "name": "@campforge/bootcamp-9c-backoffice",
+  "name": "@campforge/camp-9c-backoffice",
   "version": "1.0.0",
-  "description": "CampForge bootcamp for Nine Chronicles backoffice operations",
+  "description": "CampForge camp for Nine Chronicles backoffice operations",
   "keywords": ["agent-skill", "campforge", "nine-chronicles", "backoffice"],
   "license": "Apache-2.0",
   "dependencies": {

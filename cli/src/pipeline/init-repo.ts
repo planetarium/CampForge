@@ -10,7 +10,7 @@ export function initRepo(ctx: PipelineContext): void {
   // README.md
   const readme = `# CampForge: ${d.name}
 
-Agent bootcamp for ${d.name}.
+Agent camp for ${d.name}.
 
 ## Install
 

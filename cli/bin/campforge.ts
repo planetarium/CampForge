@@ -8,7 +8,7 @@ const program = new Command();
 
 program
   .name("campforge")
-  .description("Agent Bootcamp Meta-Generator")
+  .description("Agent Camp Meta-Generator")
   .version("0.1.0");
 
 program.addCommand(createCommand);

@@ -7,8 +7,8 @@ import { exists } from "../utils/fs.js";
 import { log } from "../utils/logger.js";
 
 export const validateCommand = new Command("validate")
-  .description("Validate a bootcamp directory")
-  .argument("<dir>", "Bootcamp directory to validate")
+  .description("Validate a camp directory")
+  .argument("<dir>", "Camp directory to validate")
   .action((dir: string) => {
     const abs = resolve(dir);
     let passed = 0;
@@ -57,7 +57,7 @@ export const validateCommand = new Command("validate")
 
     // 4. Skills match manifest
     if (manifest) {
-      const required: string[] = manifest.bootcamp.skills.required;
+      const required: string[] = manifest.camp.skills.required;
       for (const skill of required) {
         check(`skills/${skill}/SKILL.md exists`, () =>
           exists(join(abs, "skills", skill, "SKILL.md"))
@@ -85,7 +85,7 @@ export const validateCommand = new Command("validate")
     });
 
     // 7. package.json if skill deps exist
-    if (manifest?.bootcamp.dependencies?.skills?.length) {
+    if (manifest?.camp.dependencies?.skills?.length) {
       check("package.json exists (skill dependencies declared)", () =>
         exists(join(abs, "package.json"))
       );

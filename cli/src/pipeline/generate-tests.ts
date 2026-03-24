@@ -11,7 +11,7 @@ export function generateTests(ctx: PipelineContext): void {
   const smokeLines = [
     "---",
     `name: ${d.id}-smoke-test`,
-    `description: ${d.name} bootcamp smoke test`,
+    `description: ${d.name} camp smoke test`,
     "---",
     "",
     `# ${d.name} Smoke Test`,

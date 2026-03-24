@@ -24,7 +24,7 @@ export interface PipelineContext {
 const TOTAL_STEPS = 8;
 
 export const createCommand = new Command("create")
-  .description("Create a new bootcamp from a domain spec")
+  .description("Create a new camp from a domain spec")
   .requiredOption("--from <path>", "Domain spec YAML file")
   .option("--persona <level>", "Persona level", "senior")
   .option("--language <lang>", "Language", "ko")
@@ -46,7 +46,7 @@ export const createCommand = new Command("create")
       adapters: opts.adapters.split(",").filter(Boolean),
     };
 
-    console.log(`\n=== CampForge: Creating bootcamp "${domainId}" ===\n`);
+    console.log(`\n=== CampForge: Creating camp "${domainId}" ===\n`);
 
     log.step(1, TOTAL_STEPS, "Loading domain spec...");
 
@@ -72,7 +72,7 @@ export const createCommand = new Command("create")
     writeManifest(ctx);
     initRepo(ctx);
 
-    log.success(`Bootcamp created at: ${outputDir}`);
+    log.success(`Camp created at: ${outputDir}`);
     console.log(`\n  Next: have your LLM fill in the skill SKILL.md files`);
     console.log(`  Install: cd ${domainId} && ./campforge-cli.sh`);
     console.log(`  Validate: campforge validate ${outputDir}\n`);

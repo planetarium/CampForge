@@ -2,10 +2,10 @@
 # CampForge 9c-backoffice — one-shot install script
 set -e
 
-BOOTCAMP_DIR="$(cd "$(dirname "$0")" && pwd)"
+CAMP_DIR="$(cd "$(dirname "$0")" && pwd)"
 TARGET_DIR="${1:-.}"
 
-echo "=== CampForge 9c-backoffice Bootcamp Installer ==="
+echo "=== CampForge 9c-backoffice Camp Installer ==="
 echo ""
 
 # 1. Detect agent platform
@@ -24,7 +24,7 @@ echo "[1/3] Detected platform: $PLATFORM"
 
 # 2. Run adapter
 echo "[2/3] Installing..."
-bash "$BOOTCAMP_DIR/adapters/$PLATFORM/install.sh" "$TARGET_DIR"
+bash "$CAMP_DIR/adapters/$PLATFORM/install.sh" "$TARGET_DIR"
 
 # 3. Smoke test hint
 echo ""

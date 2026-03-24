@@ -1,6 +1,6 @@
 ---
 name: iap-manager-smoke-test
-description: In-App Purchase Management bootcamp smoke test
+description: In-App Purchase Management camp smoke test
 ---
 
 # In-App Purchase Management Smoke Test

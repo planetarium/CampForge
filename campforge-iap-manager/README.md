@@ -1,6 +1,6 @@
 # CampForge: In-App Purchase Management
 
-Agent bootcamp for In-App Purchase Management.
+Agent camp for In-App Purchase Management.
 
 ## Install
 

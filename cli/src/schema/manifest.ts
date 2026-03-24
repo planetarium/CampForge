@@ -8,7 +8,7 @@ const CompatibilityEntrySchema = z.object({
 });
 
 export const ManifestSchema = z.object({
-  bootcamp: z.object({
+  camp: z.object({
     name: z.string(),
     version: z.string(),
     spec_version: z.string(),

@@ -1,7 +1,7 @@
-bootcamp:
+camp:
   name: "9c-backoffice"
   version: "1.0.0"
-  spec_version: "bootcamp/1.0"
+  spec_version: "camp/1.0"
   description: "Nine Chronicles 백오피스 에이전트 부트캠프 — 테이블 패치, 블록체인 트랜잭션, R2 업로드, CDN 퍼지"
 
   domain:

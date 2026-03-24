@@ -1,7 +1,7 @@
 {
-  "name": "@campforge/bootcamp-iap-manager",
+  "name": "@campforge/camp-iap-manager",
   "version": "1.0.0",
-  "description": "CampForge bootcamp for In-App Purchase Management",
+  "description": "CampForge camp for In-App Purchase Management",
   "keywords": [
     "agent-skill",
     "campforge",

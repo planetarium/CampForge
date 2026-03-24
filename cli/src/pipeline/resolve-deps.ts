@@ -25,9 +25,9 @@ export function resolveDeps(ctx: PipelineContext): void {
   npmDeps["@campforge/gql-ops"] = "^0.2.0";
 
   const pkg = {
-    name: `@campforge/bootcamp-${domainSpec.domain.id}`,
+    name: `@campforge/camp-${domainSpec.domain.id}`,
     version: "1.0.0",
-    description: `CampForge bootcamp for ${domainSpec.domain.name}`,
+    description: `CampForge camp for ${domainSpec.domain.name}`,
     keywords: ["agent-skill", "campforge", ...domainSpec.domain.id.split("-")],
     license: "Apache-2.0",
     dependencies: npmDeps,

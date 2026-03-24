@@ -1,10 +1,10 @@
 ---
 name: campforge-interview
 description: >
-  Interactive bootcamp creation via guided interview.
+  Interactive camp creation via guided interview.
   Ask the user questions to build a domain-spec.yaml,
-  then run campforge create to scaffold the bootcamp.
-  Trigger: "새 부트캠프 만들어줘", "create a new bootcamp",
+  then run campforge create to scaffold the camp.
+  Trigger: "새 부트캠프 만들어줘", "create a new camp",
   "campforge interview", "부트캠프 인터뷰"
 license: Apache-2.0
 metadata:
@@ -15,7 +15,7 @@ compatibility: Requires campforge CLI (npx tsx cli/bin/campforge.ts or campforge
 
 # CampForge Interview Skill
 
-Guide the user through creating a new agent bootcamp via conversation.
+Guide the user through creating a new agent camp via conversation.
 Collect answers, generate a `domain-spec.yaml`, then run `campforge create`.
 
 ## Interview Flow

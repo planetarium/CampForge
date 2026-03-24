@@ -2,10 +2,10 @@
 # CampForge iap-manager — one-shot install script
 set -e
 
-BOOTCAMP_DIR="$(cd "$(dirname "$0")" && pwd)"
+CAMP_DIR="$(cd "$(dirname "$0")" && pwd)"
 TARGET_DIR="${1:-.}"
 
-echo "=== CampForge iap-manager Bootcamp Installer ==="
+echo "=== CampForge iap-manager Camp Installer ==="
 echo ""
 
 detect_platform() {
@@ -22,7 +22,7 @@ PLATFORM=$(detect_platform)
 echo "[1/3] Detected platform: $PLATFORM"
 
 echo "[2/3] Installing..."
-bash "$BOOTCAMP_DIR/adapters/$PLATFORM/install.sh" "$TARGET_DIR"
+bash "$CAMP_DIR/adapters/$PLATFORM/install.sh" "$TARGET_DIR"
 
 echo ""
 echo "[3/3] Installation complete!"

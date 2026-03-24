@@ -1,4 +1,4 @@
-# CampForge — Agent Bootcamp Meta-Generator
+# CampForge — Agent Camp Meta-Generator
 
 > 도메인별 에이전트 부트캠프 팩을 찍어내는 메타 제네레이터 설계
 > AgentSkills 호환 — OpenClaw, Claude Code, Codex, Gemini CLI 등 범용
@@ -7,12 +7,12 @@
 
 ## 1. 개념 정의
 
-### 부트캠프(Bootcamp)란
+### 부트캠프(Camp)란
 
 에이전트가 특정 도메인에서 "즉시 쓸모있게" 되기 위한 초기 설정 패키지.
 
 ```
-Bootcamp = Identity(누구인가) + Curriculum(무엇을 알아야 하는가) + Toolkit(무엇을 할 수 있는가)
+Camp = Identity(누구인가) + Curriculum(무엇을 알아야 하는가) + Toolkit(무엇을 할 수 있는가)
 ```
 
 사람이 신입사원 온보딩 받는 것과 같은 메타포:
@@ -25,7 +25,7 @@ Bootcamp = Identity(누구인가) + Curriculum(무엇을 알아야 하는가) + 
 부트캠프 자체를 "인스턴스"로 보고, 도메인 파라미터를 넣으면 부트캠프 저장소를 생성하는 시스템.
 
 ```
-CampForge(domain_spec) → Bootcamp Repo → Agent에 적용
+CampForge(domain_spec) → Camp Repo → Agent에 적용
 ```
 
 ---
@@ -56,15 +56,15 @@ CampForge(domain_spec) → Bootcamp Repo → Agent에 적용
          └──────────────┼──────────────┘
                         ▼
               ┌──────────────────┐
-              │  Bootcamp Repo   │
+              │  Camp Repo   │
               │  (Git artifact)  │
               └──────────────────┘
 ```
 
-### 생성되는 Bootcamp Repo 구조
+### 생성되는 Camp Repo 구조
 
 ```
-bootcamp-devops-sre/
+camp-devops-sre/
 ├── manifest.yaml              # 부트캠프 메타데이터
 ├── identity/                  # 퍼스널라이즈 레이어 (agent-agnostic)
 │   ├── SOUL.md                # 성격, 톤, 가치관
@@ -122,10 +122,10 @@ bootcamp-devops-sre/
 ## 3. manifest.yaml 스펙
 
 ```yaml
-bootcamp:
+camp:
   name: "devops-sre"
   version: "1.0.0"
-  spec_version: "bootcamp/1.0"
+  spec_version: "camp/1.0"
   description: "DevOps/SRE 도메인 에이전트 부트캠프"
   
   # 도메인 태그 (검색/분류용)
@@ -162,7 +162,7 @@ bootcamp:
         url: "https://github.mcp.example.com"
         required: false
     skills:                  # npm 호환 skill 패키지 (skillpm으로 해결)
-      - "@bootcamp-base/web-research": "^1.0.0"
+      - "@camp-base/web-research": "^1.0.0"
   
   # 플랫폼 호환성
   compatibility:
@@ -326,12 +326,12 @@ Heartbeat → 지원 시 cron/heartbeat 등록, 미지원 시 스킵
 #!/bin/bash
 # adapters/claude-code/install.sh
 
-BOOTCAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+CAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 TARGET_DIR="${1:-.}"  # 프로젝트 디렉토리
 
 # 1. Skills 복사
 mkdir -p "$TARGET_DIR/.claude/skills"
-for skill_dir in "$BOOTCAMP_DIR/skills"/*/; do
+for skill_dir in "$CAMP_DIR/skills"/*/; do
   skill_name=$(basename "$skill_dir")
   cp -r "$skill_dir" "$TARGET_DIR/.claude/skills/$skill_name"
 done
@@ -340,19 +340,19 @@ done
 {
   echo "# Agent Identity"
   echo ""
-  cat "$BOOTCAMP_DIR/identity/SOUL.md"
+  cat "$CAMP_DIR/identity/SOUL.md"
   echo ""
   echo "# Operating Rules"
   echo ""
-  cat "$BOOTCAMP_DIR/identity/AGENTS.md"
+  cat "$CAMP_DIR/identity/AGENTS.md"
 } > "$TARGET_DIR/.claude/CLAUDE.md"
 
 # 3. Knowledge → context로 복사
-if [ -d "$BOOTCAMP_DIR/knowledge" ]; then
-  cp -r "$BOOTCAMP_DIR/knowledge" "$TARGET_DIR/.claude/knowledge"
+if [ -d "$CAMP_DIR/knowledge" ]; then
+  cp -r "$CAMP_DIR/knowledge" "$TARGET_DIR/.claude/knowledge"
 fi
 
-echo "✓ Bootcamp installed for Claude Code"
+echo "✓ Camp installed for Claude Code"
 echo "  Skills: $(ls "$TARGET_DIR/.claude/skills" | wc -l) installed"
 echo "  Identity: .claude/CLAUDE.md created"
 ```
@@ -363,7 +363,7 @@ echo "  Identity: .claude/CLAUDE.md created"
 #!/bin/bash
 # adapters/openclaw/install.sh
 
-BOOTCAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+CAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 WORKSPACE="${OPENCLAW_WORKSPACE:-$HOME/.openclaw/workspace}"
 
 # 1. Identity 파일 복사 (백업 먼저)
@@ -371,29 +371,29 @@ for f in SOUL.md IDENTITY.md AGENTS.md HEARTBEAT.md; do
   if [ -f "$WORKSPACE/$f" ]; then
     cp "$WORKSPACE/$f" "$WORKSPACE/$f.bak"
   fi
-  if [ -f "$BOOTCAMP_DIR/identity/$f" ]; then
-    cp "$BOOTCAMP_DIR/identity/$f" "$WORKSPACE/$f"
+  if [ -f "$CAMP_DIR/identity/$f" ]; then
+    cp "$CAMP_DIR/identity/$f" "$WORKSPACE/$f"
   fi
 done
 
 # 2. USER.md는 템플릿만 (기존 것 보존)
-if [ ! -f "$WORKSPACE/USER.md" ] && [ -f "$BOOTCAMP_DIR/identity/USER.template.md" ]; then
-  cp "$BOOTCAMP_DIR/identity/USER.template.md" "$WORKSPACE/USER.md"
+if [ ! -f "$WORKSPACE/USER.md" ] && [ -f "$CAMP_DIR/identity/USER.template.md" ]; then
+  cp "$CAMP_DIR/identity/USER.template.md" "$WORKSPACE/USER.md"
 fi
 
 # 3. Skills 설치
 mkdir -p "$WORKSPACE/skills"
-for skill_dir in "$BOOTCAMP_DIR/skills"/*/; do
+for skill_dir in "$CAMP_DIR/skills"/*/; do
   skill_name=$(basename "$skill_dir")
   cp -r "$skill_dir" "$WORKSPACE/skills/$skill_name"
 done
 
 # 4. Config 머지 (jq로 deep merge)
-if [ -f "$BOOTCAMP_DIR/adapters/openclaw/config-patch.json" ]; then
+if [ -f "$CAMP_DIR/adapters/openclaw/config-patch.json" ]; then
   if command -v jq &> /dev/null; then
     jq -s '.[0] * .[1]' \
       "$HOME/.openclaw/openclaw.json" \
-      "$BOOTCAMP_DIR/adapters/openclaw/config-patch.json" \
+      "$CAMP_DIR/adapters/openclaw/config-patch.json" \
       > "$HOME/.openclaw/openclaw.json.tmp"
     mv "$HOME/.openclaw/openclaw.json.tmp" "$HOME/.openclaw/openclaw.json"
   fi
@@ -404,7 +404,7 @@ if command -v openclaw &> /dev/null; then
   openclaw gateway restart 2>/dev/null || true
 fi
 
-echo "✓ Bootcamp installed for OpenClaw"
+echo "✓ Camp installed for OpenClaw"
 ```
 
 ---
@@ -419,7 +419,7 @@ campforge create \
   --domain devops-sre \
   --persona senior \
   --language ko \
-  --output ./bootcamp-devops-sre
+  --output ./camp-devops-sre
 
 # 기존 도메인 정의에서 생성
 campforge create \
@@ -432,14 +432,14 @@ campforge interview
 
 # 기존 부트캠프에 skill 추가
 campforge add-skill \
-  --bootcamp ./bootcamp-devops-sre \
+  --camp ./camp-devops-sre \
   --skill clawhub:log-analysis
 
 # 부트캠프 검증
-campforge validate ./bootcamp-devops-sre
+campforge validate ./camp-devops-sre
 
 # 부트캠프 퍼블리시
-campforge publish ./bootcamp-devops-sre --registry clawhub
+campforge publish ./camp-devops-sre --registry clawhub
 ```
 
 ### 생성 파이프라인
@@ -530,12 +530,12 @@ def generate_skill(skill_spec, domain_context):
 
 ---
 
-## 7. 부트캠프 저장소 (Bootcamp Registry)
+## 7. 부트캠프 저장소 (Camp Registry)
 
 ### 구조
 
 ```
-bootcamp-registry/
+camp-registry/
 ├── domains/                    # 도메인 정의 모음
 │   ├── devops-sre.yaml
 │   ├── product-management.yaml
@@ -551,19 +551,19 @@ bootcamp-registry/
 │   └── solo-founder.yaml
 │
 ├── shared-skills/              # 도메인 간 공유 skills (npm 패키지로도 배포)
-│   ├── web-research/           # → @bootcamp-base/web-research
+│   ├── web-research/           # → @camp-base/web-research
 │   │   ├── skills/web-research/SKILL.md
 │   │   └── package.json
-│   ├── email-draft/            # → @bootcamp-base/email-draft
+│   ├── email-draft/            # → @camp-base/email-draft
 │   │   ├── skills/email-draft/SKILL.md
 │   │   └── package.json
 │   ├── meeting-notes/SKILL.md
 │   └── status-report/SKILL.md
 │
 ├── generated/                  # 생성된 부트캠프들
-│   ├── bootcamp-devops-sre-senior/
-│   ├── bootcamp-pm-lead/
-│   ├── bootcamp-content-solo/
+│   ├── camp-devops-sre-senior/
+│   ├── camp-pm-lead/
+│   ├── camp-content-solo/
 │   └── ...
 │
 └── meta-generator/             # 제네레이터 코드
@@ -576,21 +576,21 @@ bootcamp-registry/
 
 ```
 # 1. Git clone (가장 단순)
-git clone https://github.com/org/bootcamp-devops-sre
-cd bootcamp-devops-sre && ./campforge-cli.sh
+git clone https://github.com/org/camp-devops-sre
+cd camp-devops-sre && ./campforge-cli.sh
 
 # 2. npx (Zero install)
-npx @vicoop/bootcamp install devops-sre --agent auto
+npx @vicoop/camp install devops-sre --agent auto
 
 # 3. ClawHub (OpenClaw 생태계)
-clawdhub install bootcamp-devops-sre
+clawdhub install camp-devops-sre
 
 # 4. skillpm (npm 기반 skill 의존성 해결)
-skillpm install @bootcamp-devops-sre/infra-health-check
+skillpm install @camp-devops-sre/infra-health-check
 skillpm sync
 
 # 5. URL 직접 (에이전트에게 말하기)
-"이 URL의 부트캠프를 설치해줘: https://bootcamp.vicoop.dev/devops-sre"
+"이 URL의 부트캠프를 설치해줘: https://camp.vicoop.dev/devops-sre"
 → 에이전트가 fetch → manifest 읽기 → 자동 설치
 ```
 
@@ -618,23 +618,23 @@ agent_card:
     schemes:
       - scheme: "oauth2"
         # ... ViCoop A2A auth config
-  bootcamp:
-    source: "bootcamp-devops-sre"
+  camp:
+    source: "camp-devops-sre"
     version: "1.0.0"
     installed_at: "2026-03-23T12:00:00Z"
 ```
 
-### PM Agent → Bootcamp 연동
+### PM Agent → Camp 연동
 
 ViCoop PM Agent가 새 sub-agent 필요 시:
 
 ```
 PM Agent: "인프라 모니터링 에이전트가 필요해"
      ↓
-PM Agent → Bootcamp Registry 검색 → "devops-sre" 매칭
+PM Agent → Camp Registry 검색 → "devops-sre" 매칭
      ↓
 PM Agent → Code Agent에게 지시:
-  "bootcamp-devops-sre를 설치하고 ViCoop에 등록해줘"
+  "camp-devops-sre를 설치하고 ViCoop에 등록해줘"
      ↓
 Code Agent: campforge-cli.sh 실행 → Agent Card 발급
      ↓
@@ -665,7 +665,7 @@ PM Agent: 새 에이전트에게 첫 태스크 할당
 
 ### Phase 3: 레지스트리 + 자동화 (2주)
 
-- [ ] Bootcamp Registry (Git-based)
+- [ ] Camp Registry (Git-based)
 - [ ] `campforge interview` 인터랙티브 모드
 - [ ] ViCoop A2A Agent Card 자동 발급
 - [ ] ClawHub/Smithery 퍼블리시 연동
@@ -675,7 +675,7 @@ PM Agent: 새 에이전트에게 첫 태스크 할당
 
 - [ ] 커뮤니티 도메인 기여 파이프라인
 - [ ] 부트캠프 간 skill 의존성 관리 (skillpm 기반)
-  - npm 레지스트리로 skill 배포 (`@bootcamp-*` 네임스페이스)
+  - npm 레지스트리로 skill 배포 (`@camp-*` 네임스페이스)
   - `skillpm install/publish/sync` 통합
   - lockfile 기반 재현 가능한 설치
 - [ ] 부트캠프 버전 업그레이드 (LLM 소프트 업그레이드)

@@ -1,7 +1,7 @@
-bootcamp:
+camp:
   name: "v8-admin"
   version: "1.0.0"
-  spec_version: "bootcamp/1.0"
+  spec_version: "camp/1.0"
   description: "V8 플랫폼 관리 에이전트 부트캠프 — 유저, 크레딧, 버스, 댓글, 게임 결제, 분석"
 
   domain:

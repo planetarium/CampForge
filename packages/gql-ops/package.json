@@ -1,7 +1,7 @@
 {
   "name": "@campforge/gql-ops",
   "version": "0.2.0",
-  "description": "Shared GraphQL operations skill for CampForge bootcamps",
+  "description": "Shared GraphQL operations skill for CampForge camps",
   "keywords": ["agent-skill", "graphql", "gql", "campforge"],
   "license": "Apache-2.0",
   "author": "swen",

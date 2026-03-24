@@ -1,7 +1,7 @@
 {
   "name": "@campforge/cli",
   "version": "0.1.0",
-  "description": "CampForge — Agent Bootcamp Meta-Generator CLI",
+  "description": "CampForge — Agent Camp Meta-Generator CLI",
   "type": "module",
   "bin": {
     "campforge": "./dist/bin/campforge.js"

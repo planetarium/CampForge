@@ -6,28 +6,28 @@ import { log } from "../utils/logger.js";
 import { exists, writeFile } from "../utils/fs.js";
 
 export const addSkillCommand = new Command("add-skill")
-  .description("Add a skill scaffold to an existing bootcamp")
-  .requiredOption("--bootcamp <dir>", "Bootcamp directory")
+  .description("Add a skill scaffold to an existing camp")
+  .requiredOption("--camp <dir>", "Camp directory")
   .requiredOption("--skill <id>", "Skill ID")
   .option("--source <type>", "Source type: scaffold | reference", "scaffold")
   .option("--ref <ref>", "npm package reference (for reference source)")
   .option("--description <desc>", "Skill description")
   .action((opts) => {
-    const bootcampDir = resolve(opts.bootcamp);
-    const manifestPath = join(bootcampDir, "manifest.yaml");
+    const campDir = resolve(opts.camp);
+    const manifestPath = join(campDir, "manifest.yaml");
 
     if (!exists(manifestPath)) {
-      log.error(`manifest.yaml not found in ${bootcampDir}`);
+      log.error(`manifest.yaml not found in ${campDir}`);
       process.exit(1);
     }
 
     const manifest = yaml.load(readFileSync(manifestPath, "utf-8")) as any;
     const skillId: string = opts.skill;
 
-    log.info(`Adding skill "${skillId}" to ${bootcampDir}`);
+    log.info(`Adding skill "${skillId}" to ${campDir}`);
 
     if (opts.source === "scaffold") {
-      const skillDir = join(bootcampDir, "skills", skillId);
+      const skillDir = join(campDir, "skills", skillId);
       const description = opts.description || `${skillId} skill`;
 
       writeFile(
@@ -67,7 +67,7 @@ TODO: Define structured output format.
         log.error("--ref required for reference source");
         process.exit(1);
       }
-      const pkgPath = join(bootcampDir, "package.json");
+      const pkgPath = join(campDir, "package.json");
       if (exists(pkgPath)) {
         const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
         pkg.dependencies = pkg.dependencies || {};
@@ -78,8 +78,8 @@ TODO: Define structured output format.
     }
 
     // Update manifest
-    if (!manifest.bootcamp.skills.optional.includes(skillId)) {
-      manifest.bootcamp.skills.optional.push(skillId);
+    if (!manifest.camp.skills.optional.includes(skillId)) {
+      manifest.camp.skills.optional.push(skillId);
       writeFileSync(manifestPath, yaml.dump(manifest, { lineWidth: 120 }), "utf-8");
       log.info(`Added "${skillId}" to manifest.yaml (optional)`);
     }

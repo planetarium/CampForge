@@ -1,14 +1,14 @@
 # CampForge
 
-Agent Bootcamp Meta-Generator — a tool for creating domain-specific agent onboarding packages.
+Agent Camp Meta-Generator — a tool for creating domain-specific agent onboarding packages.
 
 ```
-CampForge(domain_spec) → Bootcamp → Install on Agent
+CampForge(domain_spec) → Camp → Install on Agent
 ```
 
-## Available Bootcamps
+## Available Camps
 
-| Bootcamp | Domain | Skills |
+| Camp | Domain | Skills |
 |----------|--------|--------|
 | [campforge-v8-admin](./campforge-v8-admin/) | V8 Platform Admin | v8-admin (users, credits, verses, comments) |
 | [campforge-9c-backoffice](./campforge-9c-backoffice/) | Nine Chronicles Table Patch | 9c-backoffice (validate → sign → stage → poll → upload → purge) |
@@ -18,7 +18,7 @@ CampForge(domain_spec) → Bootcamp → Install on Agent
 
 ## For Camp Users
 
-### Install a Bootcamp
+### Install a Camp
 
 ```bash
 git clone https://github.com/planetarium/CampForge
@@ -38,7 +38,7 @@ cd CampForge/campforge-v8-admin
 
 ### Post-Install: Set Environment Variables
 
-Each bootcamp requires specific environment variables. The agent will ask for them on first use, but you can set them upfront:
+Each camp requires specific environment variables. The agent will ask for them on first use, but you can set them upfront:
 
 **v8-admin:**
 ```bash
@@ -80,7 +80,7 @@ After install, the agent's identity and skills are loaded on gateway restart. Sk
 "smoke test를 실행해줘"
 ```
 
-Each bootcamp includes a smoke test (`tests/smoke-test.md`) that validates all skills are working.
+Each camp includes a smoke test (`tests/smoke-test.md`) that validates all skills are working.
 
 ---
 
@@ -91,7 +91,7 @@ Each bootcamp includes a smoke test (`tests/smoke-test.md`) that validates all s
 Load the [interview skill](./skills/interview/SKILL.md) into your LLM and say:
 
 ```
-"Create a new bootcamp"
+"Create a new camp"
 ```
 
 The LLM will ask questions about your domain, write a `domain-spec.yaml`, run `campforge create`, and fill in the SKILL.md files.
@@ -102,7 +102,7 @@ The LLM will ask questions about your domain, write a `domain-spec.yaml`, run `c
 cd cli && npm install
 ```
 
-**Create a bootcamp** from a domain spec YAML:
+**Create a camp** from a domain spec YAML:
 
 ```bash
 ./node_modules/.bin/tsx bin/campforge.ts create \
@@ -111,26 +111,26 @@ cd cli && npm install
   --language ko
 ```
 
-This generates a full bootcamp scaffold (identity, skills, adapters, tests). The SKILL.md files contain placeholder content — have your LLM fill them in.
+This generates a full camp scaffold (identity, skills, adapters, tests). The SKILL.md files contain placeholder content — have your LLM fill them in.
 
-**Validate** a bootcamp:
+**Validate** a camp:
 
 ```bash
 ./node_modules/.bin/tsx bin/campforge.ts validate ../campforge-v8-admin
 ```
 
-**Add a skill** to an existing bootcamp:
+**Add a skill** to an existing camp:
 
 ```bash
 ./node_modules/.bin/tsx bin/campforge.ts add-skill \
-  --bootcamp ../campforge-v8-admin \
+  --camp ../campforge-v8-admin \
   --skill cost-analyzer \
   --description "Analyze cloud infrastructure costs"
 ```
 
 ### Option 3: Manual
 
-Copy an existing bootcamp directory and modify:
+Copy an existing camp directory and modify:
 
 1. Edit `manifest.yaml` with your domain info
 2. Write identity files (`identity/SOUL.md`, `IDENTITY.md`, `AGENTS.md`)
@@ -171,7 +171,7 @@ See [domains/](./domains/) for examples.
 
 ---
 
-## Bootcamp Structure
+## Camp Structure
 
 ```
 campforge-{domain}/

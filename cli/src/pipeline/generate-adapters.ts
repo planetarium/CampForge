@@ -6,40 +6,40 @@ import type { PipelineContext } from "../commands/create.js";
 const claudeCodeInstall = `#!/bin/bash
 # CampForge adapter for Claude Code
 
-BOOTCAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+CAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 TARGET_DIR="\${1:-.}"
 
 # 1. Install skill dependencies via skillpm
 if command -v skillpm &> /dev/null; then
-  (cd "$BOOTCAMP_DIR" && skillpm install)
+  (cd "$CAMP_DIR" && skillpm install)
 fi
 
 # 2. Copy skills
 mkdir -p "$TARGET_DIR/.claude/skills"
-for skill_dir in "$BOOTCAMP_DIR/skills"/*/; do
+for skill_dir in "$CAMP_DIR/skills"/*/; do
   skill_name=$(basename "$skill_dir")
   cp -r "$skill_dir" "$TARGET_DIR/.claude/skills/$skill_name"
 done
 
 # Copy gql-ops: skillpm (node_modules) -> local fallback (packages/)
-if [ -d "$BOOTCAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" ]; then
-  cp -r "$BOOTCAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" "$TARGET_DIR/.claude/skills/gql-ops"
-elif [ -d "$BOOTCAMP_DIR/../packages/gql-ops/skills/gql-ops" ]; then
-  cp -r "$BOOTCAMP_DIR/../packages/gql-ops/skills/gql-ops" "$TARGET_DIR/.claude/skills/gql-ops"
+if [ -d "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" ]; then
+  cp -r "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" "$TARGET_DIR/.claude/skills/gql-ops"
+elif [ -d "$CAMP_DIR/../packages/gql-ops/skills/gql-ops" ]; then
+  cp -r "$CAMP_DIR/../packages/gql-ops/skills/gql-ops" "$TARGET_DIR/.claude/skills/gql-ops"
 fi
 
 # 3. Identity -> CLAUDE.md
 {
-  cat "$BOOTCAMP_DIR/identity/SOUL.md"
+  cat "$CAMP_DIR/identity/SOUL.md"
   echo ""
   echo "---"
   echo ""
-  cat "$BOOTCAMP_DIR/identity/AGENTS.md"
+  cat "$CAMP_DIR/identity/AGENTS.md"
 } > "$TARGET_DIR/.claude/CLAUDE.md"
 
 # 4. Knowledge
-if [ -d "$BOOTCAMP_DIR/knowledge" ]; then
-  cp -r "$BOOTCAMP_DIR/knowledge" "$TARGET_DIR/.claude/knowledge"
+if [ -d "$CAMP_DIR/knowledge" ]; then
+  cp -r "$CAMP_DIR/knowledge" "$TARGET_DIR/.claude/knowledge"
 fi
 
 echo ":: CampForge installed for Claude Code"
@@ -50,12 +50,12 @@ echo "   Identity: .claude/CLAUDE.md created"
 const openclawInstall = `#!/bin/bash
 # CampForge adapter for OpenClaw
 
-BOOTCAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+CAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 WORKSPACE="\${OPENCLAW_WORKSPACE:-$HOME/.openclaw/workspace}"
 
 # 1. Install skill dependencies via skillpm
 if command -v skillpm &> /dev/null; then
-  (cd "$BOOTCAMP_DIR" && skillpm install)
+  (cd "$CAMP_DIR" && skillpm install)
 fi
 
 # 2. Identity files (backup first)
@@ -63,23 +63,23 @@ for f in SOUL.md IDENTITY.md AGENTS.md; do
   if [ -f "$WORKSPACE/$f" ]; then
     cp "$WORKSPACE/$f" "$WORKSPACE/$f.bak"
   fi
-  if [ -f "$BOOTCAMP_DIR/identity/$f" ]; then
-    cp "$BOOTCAMP_DIR/identity/$f" "$WORKSPACE/$f"
+  if [ -f "$CAMP_DIR/identity/$f" ]; then
+    cp "$CAMP_DIR/identity/$f" "$WORKSPACE/$f"
   fi
 done
 
 # 3. Skills
 mkdir -p "$WORKSPACE/skills"
-for skill_dir in "$BOOTCAMP_DIR/skills"/*/; do
+for skill_dir in "$CAMP_DIR/skills"/*/; do
   skill_name=$(basename "$skill_dir")
   cp -r "$skill_dir" "$WORKSPACE/skills/$skill_name"
 done
 
 # gql-ops: skillpm -> local fallback
-if [ -d "$BOOTCAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" ]; then
-  cp -r "$BOOTCAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" "$WORKSPACE/skills/gql-ops"
-elif [ -d "$BOOTCAMP_DIR/../packages/gql-ops/skills/gql-ops" ]; then
-  cp -r "$BOOTCAMP_DIR/../packages/gql-ops/skills/gql-ops" "$WORKSPACE/skills/gql-ops"
+if [ -d "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" ]; then
+  cp -r "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" "$WORKSPACE/skills/gql-ops"
+elif [ -d "$CAMP_DIR/../packages/gql-ops/skills/gql-ops" ]; then
+  cp -r "$CAMP_DIR/../packages/gql-ops/skills/gql-ops" "$WORKSPACE/skills/gql-ops"
 fi
 
 # 4. Gateway restart
@@ -93,26 +93,26 @@ echo ":: CampForge installed for OpenClaw"
 const genericInstall = `#!/bin/bash
 # CampForge adapter — generic fallback
 
-BOOTCAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+CAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 TARGET_DIR="\${1:-.}"
 
 # 1. Install skill dependencies via skillpm
 if command -v skillpm &> /dev/null; then
-  (cd "$BOOTCAMP_DIR" && skillpm install)
+  (cd "$CAMP_DIR" && skillpm install)
 fi
 
 # 2. Copy skills only
 mkdir -p "$TARGET_DIR/.agents/skills"
-for skill_dir in "$BOOTCAMP_DIR/skills"/*/; do
+for skill_dir in "$CAMP_DIR/skills"/*/; do
   skill_name=$(basename "$skill_dir")
   cp -r "$skill_dir" "$TARGET_DIR/.agents/skills/$skill_name"
 done
 
 # gql-ops: skillpm -> local fallback
-if [ -d "$BOOTCAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" ]; then
-  cp -r "$BOOTCAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" "$TARGET_DIR/.agents/skills/gql-ops"
-elif [ -d "$BOOTCAMP_DIR/../packages/gql-ops/skills/gql-ops" ]; then
-  cp -r "$BOOTCAMP_DIR/../packages/gql-ops/skills/gql-ops" "$TARGET_DIR/.agents/skills/gql-ops"
+if [ -d "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" ]; then
+  cp -r "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" "$TARGET_DIR/.agents/skills/gql-ops"
+elif [ -d "$CAMP_DIR/../packages/gql-ops/skills/gql-ops" ]; then
+  cp -r "$CAMP_DIR/../packages/gql-ops/skills/gql-ops" "$TARGET_DIR/.agents/skills/gql-ops"
 fi
 
 echo ":: CampForge installed (generic)"
@@ -121,20 +121,20 @@ echo ":: CampForge installed (generic)"
 const codexInstall = `#!/bin/bash
 # CampForge adapter for Codex
 
-BOOTCAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+CAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 TARGET_DIR="\${1:-.}"
 
 mkdir -p "$TARGET_DIR/.codex/skills"
-for skill_dir in "$BOOTCAMP_DIR/skills"/*/; do
+for skill_dir in "$CAMP_DIR/skills"/*/; do
   skill_name=$(basename "$skill_dir")
   cp -r "$skill_dir" "$TARGET_DIR/.codex/skills/$skill_name"
 done
 
 # Identity -> AGENTS.md
 {
-  cat "$BOOTCAMP_DIR/identity/SOUL.md"
+  cat "$CAMP_DIR/identity/SOUL.md"
   echo ""
-  cat "$BOOTCAMP_DIR/identity/AGENTS.md"
+  cat "$CAMP_DIR/identity/AGENTS.md"
 } > "$TARGET_DIR/.codex/AGENTS.md"
 
 echo ":: CampForge installed for Codex"
@@ -143,11 +143,11 @@ echo ":: CampForge installed for Codex"
 const geminiInstall = `#!/bin/bash
 # CampForge adapter for Gemini CLI
 
-BOOTCAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+CAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 TARGET_DIR="\${1:-.}"
 
 mkdir -p "$TARGET_DIR/.gemini/skills"
-for skill_dir in "$BOOTCAMP_DIR/skills"/*/; do
+for skill_dir in "$CAMP_DIR/skills"/*/; do
   skill_name=$(basename "$skill_dir")
   cp -r "$skill_dir" "$TARGET_DIR/.gemini/skills/$skill_name"
 done
@@ -178,10 +178,10 @@ export function generateAdapters(ctx: PipelineContext): void {
 # CampForge ${domainId} — one-shot install script
 set -e
 
-BOOTCAMP_DIR="$(cd "$(dirname "$0")" && pwd)"
+CAMP_DIR="$(cd "$(dirname "$0")" && pwd)"
 TARGET_DIR="\${1:-.}"
 
-echo "=== CampForge ${domainId} Bootcamp Installer ==="
+echo "=== CampForge ${domainId} Camp Installer ==="
 echo ""
 
 detect_platform() {
@@ -198,7 +198,7 @@ PLATFORM=$(detect_platform)
 echo "[1/3] Detected platform: $PLATFORM"
 
 echo "[2/3] Installing..."
-bash "$BOOTCAMP_DIR/adapters/$PLATFORM/install.sh" "$TARGET_DIR"
+bash "$CAMP_DIR/adapters/$PLATFORM/install.sh" "$TARGET_DIR"
 
 echo ""
 echo "[3/3] Installation complete!"

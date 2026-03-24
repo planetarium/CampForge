@@ -16,11 +16,11 @@ export function writeManifest(ctx: PipelineContext): void {
   ];
 
   const manifest = {
-    bootcamp: {
+    camp: {
       name: d.id,
       version: "1.0.0",
-      spec_version: "bootcamp/1.0",
-      description: `${d.name} agent bootcamp`,
+      spec_version: "camp/1.0",
+      description: `${d.name} agent camp`,
 
       domain: {
         primary: d.id.split("-")[0],
