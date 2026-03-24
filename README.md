@@ -185,6 +185,51 @@ domain:
 
 See [domains/](./domains/) for examples.
 
+### manifest.yaml Spec
+
+Every camp has a `manifest.yaml` that describes its metadata, skills, dependencies, and compatibility:
+
+```yaml
+camp:
+  name: "my-domain"
+  version: "1.0.0"
+  spec_version: "camp/1.0"
+  description: "My domain agent camp"
+
+  domain:
+    primary: "ops"
+    tags: ["my-domain", "graphql"]
+
+  persona:
+    level: "senior"          # junior | mid | senior | lead
+    tone: "direct"           # friendly | direct | formal | casual
+    proactivity: "medium"    # low | medium | high
+    language: "ko"
+
+  skills:
+    required:
+      - my-skill
+    optional:
+      - extra-skill
+
+  dependencies:
+    tools:
+      - gq                  # System CLIs that must be available
+    mcp_servers: []
+    skills:                  # npm-compatible packages (resolved via skillpm)
+      - "@campforge/gql-ops": "^0.2.0"
+
+  compatibility:
+    tested:
+      - platform: "claude-code"
+        status: "pass"
+      - platform: "openclaw"
+        status: "pass"
+    frontmatter_mode: "minimal"
+```
+
+`campforge validate` checks the manifest against this schema.
+
 ---
 
 ## Camp Structure
