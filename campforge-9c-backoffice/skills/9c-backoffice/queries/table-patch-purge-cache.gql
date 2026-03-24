@@ -1,0 +1,12 @@
+mutation PurgeCache($planetId: String!, $url: String!, $tableName: String!) {
+  postApiTablePatchPurgeCache(
+    purgeCacheRequestInput: {
+      planetId: $planetId
+      url: $url
+      tableName: $tableName
+    }
+  ) {
+    success
+    message
+  }
+}

@@ -1,0 +1,6 @@
+query ($limit: Float, $page: Float, $status: Status10) {
+  gamePaymentListResponseDto(limit: $limit, page: $page, status: $status) {
+    gamePayments { id name description status createdAt updatedAt }
+    total page limit
+  }
+}

@@ -1,0 +1,6 @@
+query ($gamePaymentId: String!, $limit: Float, $page: Float, $status: Status10) {
+  gamePaymentItemListResponseDto(gamePaymentId: $gamePaymentId, limit: $limit, page: $page, status: $status) {
+    gamePaymentItems { id name description creditPrice status stock isUnlimitedStock imageUrl gamePaymentId createdAt updatedAt }
+    total page limit
+  }
+}

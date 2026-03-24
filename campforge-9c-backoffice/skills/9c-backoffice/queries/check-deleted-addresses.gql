@@ -1,0 +1,17 @@
+mutation CheckDeletedAddresses(
+  $planetId: String!
+  $accountAddress: String!
+  $targetAddresses: [String]!
+) {
+  postApiAddressStateActionCheckDeletedAddresses(
+    checkDeletedAddressesRequestInput: {
+      planetId: $planetId
+      accountAddress: $accountAddress
+      targetAddresses: $targetAddresses
+    }
+  ) {
+    success
+    message
+    results
+  }
+}

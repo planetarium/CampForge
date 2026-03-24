@@ -1,0 +1,15 @@
+mutation StageTablePatch($planetId: String!, $url: String!, $payload: String!, $tableName: String!, $tableCsv: String!) {
+  postApiTablePatchStage(
+    stageTxRequestInput: {
+      planetId: $planetId
+      url: $url
+      payload: $payload
+      tableName: $tableName
+      tableCsv: $tableCsv
+    }
+  ) {
+    success
+    message
+    data
+  }
+}

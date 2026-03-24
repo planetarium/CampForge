@@ -1,0 +1,19 @@
+mutation ValidateCsv($tableName: String!, $csvContent: String!) {
+  postApiTablePatchValidate(
+    validateCsvRequestInput: {
+      tableName: $tableName
+      csvContent: $csvContent
+    }
+  ) {
+    success
+    message
+    data {
+      isValid
+      errors
+      warnings
+      totalRows
+      validRows
+      tableName
+    }
+  }
+}

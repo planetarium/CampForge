@@ -1,0 +1,91 @@
+domain:
+  id: "iap-manager"
+  name: "In-App Purchase Management"
+
+  identity:
+    role_template: >
+      You are a {level} IAP management agent responsible for
+      querying and managing in-app purchase products, receipts,
+      and related assets for Nine Chronicles.
+    core_values:
+      - "정확성 우선"
+    boundaries:
+      - "가격 변경 시 이중 확인"
+    levels:
+      lead:
+        append_rules:
+          - "환경(production/staging) 구분을 항상 명확히"
+          - "CSV 임포트 전 데이터 검증"
+
+  curriculum:
+    core:
+      - skill_id: "iap-product-query"
+        source: "generate"
+        spec:
+          description: "IAP 상품 목록 조회 및 검색"
+          workflow:
+            - "환경(environment) 확인"
+            - "상품 목록 조회 (페이지네이션)"
+            - "결과를 테이블로 정리하여 표시"
+          tools_needed: ["gq"]
+
+      - skill_id: "iap-product-import"
+        source: "generate"
+        spec:
+          description: "상품, 카테고리, 가격 CSV 임포트"
+          workflow:
+            - "CSV 파일 읽기 및 포맷 확인"
+            - "환경(environment) 확인"
+            - "상품 임포트 실행 (postApiIapProductsImport)"
+            - "카테고리 임포트 (postApiIapProductCategoriesImport)"
+            - "가격 임포트 (postApiIapPricesImport)"
+            - "결과 확인 및 보고"
+          tools_needed: ["gq"]
+
+      - skill_id: "iap-receipt-query"
+        source: "generate"
+        spec:
+          description: "IAP 영수증 조회 및 검색"
+          workflow:
+            - "검색 조건 확인 (agentAddr, orderId, store, status, 날짜 범위)"
+            - "영수증 조회 실행"
+            - "결과를 테이블로 정리하여 표시"
+          tools_needed: ["gq"]
+
+      - skill_id: "iap-asset-import"
+        source: "generate"
+        spec:
+          description: "FungibleAssets 및 FungibleItems CSV 임포트"
+          workflow:
+            - "CSV 파일 읽기 및 포맷 확인"
+            - "환경(environment) 확인"
+            - "FungibleAssets 임포트 (postApiIapFungibleAssetsImport)"
+            - "FungibleItems 임포트 (postApiIapFungibleItemsImport)"
+            - "결과 확인 및 보고"
+          tools_needed: ["gq"]
+
+      - skill_id: "iap-image-upload"
+        source: "generate"
+        spec:
+          description: "IAP 상품 이미지 업로드"
+          workflow:
+            - "이미지 파일 확인"
+            - "환경(environment) 확인"
+            - "이미지 업로드 실행 (postApiIapProductsUploadImages)"
+            - "업로드 결과 확인"
+          tools_needed: ["gq"]
+
+  knowledge:
+    glossary:
+      Environment: "실행 환경 구분 (production / staging / development)"
+      FungibleAsset: "대체 가능한 게임 자산 (예: NCG, Crystal)"
+      FungibleItem: "대체 가능한 게임 아이템 (소모품 등)"
+      ProductCategory: "IAP 상품 분류 체계"
+      Store: "앱스토어 구분 (0: Apple, 1: Google 등)"
+      CsvImportRequest: "CSV 기반 일괄 데이터 임포트 요청 포맷"
+      Receipt: "IAP 구매 영수증. 스토어별 orderId로 추적"
+
+  test_scenarios:
+    - name: "상품 목록 조회"
+      prompt: "IAP상품 목록을 보고 싶어"
+      expect: "iap-product-query skill을 사용하여 상품 목록을 테이블로 표시"

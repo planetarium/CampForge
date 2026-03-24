@@ -1,0 +1,6 @@
+query ($threshold: Float, $limit: Float, $page: Float) {
+  lowBalanceUsersResponseDto(threshold: $threshold, limit: $limit, page: $page) {
+    users { userUid email handle name creditInUSD isSeller }
+    total page limit totalPages
+  }
+}

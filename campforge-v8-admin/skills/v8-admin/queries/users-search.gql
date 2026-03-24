@@ -1,0 +1,6 @@
+query ($keyword: String!, $limit: Float, $page: Float) {
+  adminUserSearchResponseDto(keyword: $keyword, limit: $limit, page: $page) {
+    users { userUid email handle name creditInUSD isSeller }
+    total page limit totalPages
+  }
+}

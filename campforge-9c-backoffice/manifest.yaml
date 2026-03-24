@@ -1,0 +1,38 @@
+bootcamp:
+  name: "9c-backoffice"
+  version: "1.0.0"
+  spec_version: "bootcamp/1.0"
+  description: "Nine Chronicles 백오피스 에이전트 부트캠프 — 테이블 패치, 블록체인 트랜잭션, R2 업로드, CDN 퍼지"
+
+  domain:
+    primary: "game-ops"
+    tags: ["nine-chronicles", "9c", "planetarium", "blockchain", "table-patch", "graphql"]
+
+  persona:
+    level: "senior"
+    tone: "direct"
+    proactivity: "medium"
+    language: "ko"
+
+  skills:
+    required:
+      - 9c-backoffice
+    optional: []
+
+  dependencies:
+    tools:
+      - gq                         # npm i -g graphqurl
+    mcp_servers: []
+    skills:                         # npm 호환 (skillpm으로 해결)
+      - "@campforge/gql-ops": "^0.2.0"
+
+  compatibility:
+    tested:
+      - platform: "claude-code"
+        status: "pass"
+      - platform: "openclaw"
+        status: "pass"
+      - platform: "codex"
+        status: "partial"
+        notes: "heartbeat 미지원"
+    frontmatter_mode: "minimal"

@@ -1,0 +1,6 @@
+query ($limit: Float, $page: Float, $searchType: SearchType, $keyword: String, $filter: Filter) {
+  adminCommentsResponseDto(limit: $limit, page: $page, searchType: $searchType, keyword: $keyword, filter: $filter) {
+    comments { id content userDisplayName userEmail verseTitle verseShortId isDeleted likes isReply }
+    total page totalPages
+  }
+}

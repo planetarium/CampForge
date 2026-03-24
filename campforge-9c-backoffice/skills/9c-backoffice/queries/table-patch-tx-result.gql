@@ -1,0 +1,17 @@
+mutation GetTxResult($planetId: String!, $url: String!, $txId: String!) {
+  postApiTablePatchTxResult(
+    transactionResultRequestInput: {
+      planetId: $planetId
+      url: $url
+      txId: $txId
+    }
+  ) {
+    success
+    message
+    data {
+      txStatus
+      blockIndex
+      exceptionNames
+    }
+  }
+}

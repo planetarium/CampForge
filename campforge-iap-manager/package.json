@@ -1,0 +1,15 @@
+{
+  "name": "@campforge/bootcamp-iap-manager",
+  "version": "1.0.0",
+  "description": "CampForge bootcamp for In-App Purchase Management",
+  "keywords": [
+    "agent-skill",
+    "campforge",
+    "iap",
+    "manager"
+  ],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@campforge/gql-ops": "^0.2.0"
+  }
+}

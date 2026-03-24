@@ -1,0 +1,13 @@
+mutation UploadToR2($planetId: String!, $url: String!, $tableName: String!, $tableCsv: String!) {
+  postApiTablePatchUploadR2(
+    uploadToR2RequestInput: {
+      planetId: $planetId
+      url: $url
+      tableName: $tableName
+      tableCsv: $tableCsv
+    }
+  ) {
+    success
+    message
+  }
+}

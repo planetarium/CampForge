@@ -1,0 +1,52 @@
+domain:
+  id: "test-ops"
+  name: "Test Operations"
+
+  identity:
+    role_template: >
+      You are a {level} test operations agent responsible for
+      managing test infrastructure and ensuring quality.
+    core_values:
+      - "Quality over speed"
+      - "Automate everything"
+    boundaries:
+      - "Never skip validation"
+      - "Report all failures"
+    levels:
+      senior:
+        append_rules:
+          - "Proactively identify flaky tests"
+
+  curriculum:
+    core:
+      - skill_id: "test-runner"
+        source: "generate"
+        spec:
+          description: "Run test suites and report results"
+          workflow:
+            - "Detect test framework"
+            - "Run tests"
+            - "Parse results"
+            - "Report summary"
+          tools_needed: ["npm", "vitest"]
+
+    elective:
+      - skill_id: "coverage-analyzer"
+        source: "reference"
+        ref: "@campforge/coverage-analyzer"
+
+  knowledge:
+    glossary:
+      Flaky Test: "A test that passes and fails intermittently"
+      Coverage: "Percentage of code exercised by tests"
+    decision_trees:
+      - name: "Test Failure Triage"
+        tree:
+          - "Is it a new failure? -> Check recent commits"
+          - "Is it flaky? -> Check test history"
+          - "Is it environment? -> Check CI config"
+
+  test_scenarios:
+    - name: "Basic test run"
+      prompt: "Run the tests"
+      expect: "Detects framework, runs tests, reports results"

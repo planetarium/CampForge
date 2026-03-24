@@ -1,0 +1,38 @@
+bootcamp:
+  name: "v8-admin"
+  version: "1.0.0"
+  spec_version: "bootcamp/1.0"
+  description: "V8 플랫폼 관리 에이전트 부트캠프 — 유저, 크레딧, 버스, 댓글, 게임 결제, 분석"
+
+  domain:
+    primary: "game-ops"
+    tags: ["v8", "planetarium", "admin", "graphql", "gaming-platform"]
+
+  persona:
+    level: "senior"
+    tone: "direct"
+    proactivity: "medium"
+    language: "ko"
+
+  skills:
+    required:
+      - v8-admin
+    optional: []
+
+  dependencies:
+    tools:
+      - gq                         # npm i -g graphqurl
+    mcp_servers: []
+    skills:                         # npm 호환 (skillpm으로 해결)
+      - "@campforge/gql-ops": "^0.2.0"
+
+  compatibility:
+    tested:
+      - platform: "claude-code"
+        status: "pass"
+      - platform: "openclaw"
+        status: "pass"
+      - platform: "codex"
+        status: "partial"
+        notes: "heartbeat 미지원"
+    frontmatter_mode: "minimal"

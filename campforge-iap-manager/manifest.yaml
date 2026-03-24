@@ -1,0 +1,36 @@
+bootcamp:
+  name: iap-manager
+  version: 1.0.0
+  spec_version: bootcamp/1.0
+  description: In-App Purchase Management agent bootcamp
+  domain:
+    primary: iap
+    tags:
+      - iap
+      - manager
+  persona:
+    level: lead
+    tone: direct
+    proactivity: medium
+    language: ko
+  skills:
+    required:
+      - iap-product-query
+      - iap-product-import
+      - iap-receipt-query
+      - iap-asset-import
+      - iap-image-upload
+    optional: []
+  dependencies:
+    tools:
+      - gq
+    mcp_servers: []
+    skills:
+      - '@campforge/gql-ops': ^0.2.0
+  compatibility:
+    tested:
+      - platform: claude-code
+        status: pass
+      - platform: openclaw
+        status: pass
+    frontmatter_mode: minimal

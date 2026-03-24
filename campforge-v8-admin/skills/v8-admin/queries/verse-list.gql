@@ -1,0 +1,6 @@
+query ($limit: Float, $page: Float, $category: String, $featured: Featured, $sortBy: SortBy, $tag: Tag2) {
+  adminVerseListResponseDto(limit: $limit, page: $page, category: $category, featured: $featured, sortBy: $sortBy, tag: $tag) {
+    items { verseId verseShortId title visibility featured showcase createdAt userDisplayName }
+    total page limit
+  }
+}

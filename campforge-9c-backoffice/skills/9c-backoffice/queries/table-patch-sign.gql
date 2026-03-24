@@ -1,0 +1,17 @@
+mutation SignTablePatch($planetId: String!, $url: String!, $tableName: String!, $tableCsv: String!) {
+  postApiTablePatchSign(
+    signRequestInput: {
+      planetId: $planetId
+      url: $url
+      tableName: $tableName
+      tableCsv: $tableCsv
+    }
+  ) {
+    success
+    message
+    data {
+      txId
+      payload
+    }
+  }
+}

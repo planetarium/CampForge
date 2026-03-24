@@ -1,0 +1,10 @@
+{
+  "name": "@campforge/bootcamp-v8-admin",
+  "version": "1.0.0",
+  "description": "CampForge bootcamp for V8 platform administration",
+  "keywords": ["agent-skill", "campforge", "v8", "admin"],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@campforge/gql-ops": "^0.2.0"
+  }
+}

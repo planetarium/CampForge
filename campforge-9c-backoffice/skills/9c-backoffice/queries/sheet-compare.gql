@@ -1,0 +1,13 @@
+mutation CompareSheets($planetId: String!, $url: String!, $tableNames: [String]!) {
+  postApiSheetCompareCompare(
+    sheetBatchCompareRequestInput: {
+      planetId: $planetId
+      url: $url
+      tableNames: $tableNames
+    }
+  ) {
+    success
+    message
+    data
+  }
+}
