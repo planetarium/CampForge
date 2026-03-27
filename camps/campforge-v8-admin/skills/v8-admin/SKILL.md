@@ -29,21 +29,21 @@ echo $V8_SKILL_DIR   # Absolute path to this skill directory
 ## How to call
 
 ```bash
-# 읽기 (--queryFile + -j)
+# Read (--queryFile + -j)
 gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --queryFile "$V8_SKILL_DIR/queries/<name>.gql" -j '<json>' -l
 
-# 쓰기 (inline -q)
+# Write (inline -q)
 gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" -q 'mutation { ... }' -l
 ```
 
-**필수:**
-- 변수는 반드시 **`-j`** 로 전달 (`-v` 아님)
-- 항상 **`-l`** 사용 (compact output)
-- `$V8_SKILL_DIR/queries/` 아래 파일을 ls 하지 않는다 — 아래 테이블이 전부
+**Required:**
+- Pass variables with **`-j`** (NOT `-v`)
+- Always use **`-l`** (compact output)
+- Do NOT ls `$V8_SKILL_DIR/queries/` — the table below is the complete list
 
 ## IMPORTANT: Token Optimization
 
-**독립적인 쿼리는 절대 개별 Bash 호출하지 않는다. 반드시 하나의 Bash 호출에 `;`로 합쳐서 실행한다:**
+**Never run independent queries as separate Bash calls. Always combine them into a single Bash call with `;`:**
 
 ```bash
 export V8_GQL="..." V8_TOKEN="..." V8_SKILL_DIR="..."
@@ -54,21 +54,21 @@ echo "=== Verse ===" ; gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --queryFi
 
 ## Queries
 
-`$V8_SKILL_DIR/queries/` 파일 목록:
+`$V8_SKILL_DIR/queries/` file list:
 
-| 파일 | 용도 | `-j` 변수 |
-|------|------|-----------|
-| `users-search.gql` | 유저 검색 | `{"keyword":"…","limit":20}` |
-| `users-low-balance.gql` | 저잔액 유저 | `{"threshold":5,"limit":20}` |
-| `comments-list.gql` | 댓글 목록/검색 | `{"limit":50}` 또는 `{"searchType":"…","keyword":"…","filter":"…"}` |
-| `verse-list.gql` | 버스 목록 | `{"limit":20,"featured":"ONLY"}` |
-| `game-payments-list.gql` | 게임 결제 목록 | `{"limit":20}` |
-| `game-payment-items-list.gql` | 결제 아이템 | `{"gamePaymentId":"<id>","limit":20}` |
+| File | Purpose | `-j` variables |
+|------|---------|----------------|
+| `users-search.gql` | Search users | `{"keyword":"…","limit":20}` |
+| `users-low-balance.gql` | Low balance users | `{"threshold":5,"limit":20}` |
+| `comments-list.gql` | List/search comments | `{"limit":50}` or `{"searchType":"…","keyword":"…","filter":"…"}` |
+| `verse-list.gql` | List verses | `{"limit":20,"featured":"ONLY"}` |
+| `game-payments-list.gql` | List game payments | `{"limit":20}` |
+| `game-payment-items-list.gql` | Payment items | `{"gamePaymentId":"<id>","limit":20}` |
 
 `searchType`: `USEREMAIL` / `USERDISPLAYNAME` / `VERSETITLE` / `VERSESHORTID` / `COMMENTCONTENT`
 `filter`: `ALL` / `ACTIVE` / `DELETED`
 
-새 쿼리가 필요하면 `gql-ops` 스킬의 "Creating new queries" 참고.
+For new queries, see `gql-ops` skill's "Creating new queries".
 
 ## Mutations (inline -q)
 
