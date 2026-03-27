@@ -8,80 +8,69 @@ description: >
 license: Apache-2.0
 metadata:
   author: swen
-  version: "0.7"
+  version: "0.8"
 compatibility: Requires gq (graphqurl) CLI and a running GraphQL gateway
 ---
 
 # V8 Admin API Skill (GraphQL)
 
-**Before proceeding, load the `gql-ops` skill dependency.** It provides schema introspection, validation, and self-healing guidance used by this skill. The `gql-ops` skill must be installed alongside this skill.
+**Before proceeding, load the `gql-ops` skill dependency.**
 
 ## Environment variables
 
 Check if set, ask user if not:
 
 ```bash
-echo $V8_GQL   # GraphQL gateway URL
-echo $V8_TOKEN  # Admin JWT
-echo $V8_SKILL_DIR  # Absolute path to this skill directory
-```
-
-Defaults:
-
-```bash
-export V8_GQL="https://planetarium-oag.fly.dev/v8-admin-test/graphql"
-export V8_TOKEN="<ask user for admin JWT>"
-export V8_SKILL_DIR="<absolute path to this v8-admin skill directory>"
+echo $V8_GQL        # GraphQL gateway URL (default: https://planetarium-oag.fly.dev/v8-admin-test/graphql)
+echo $V8_TOKEN       # Admin JWT
+echo $V8_SKILL_DIR   # Absolute path to this skill directory
 ```
 
 ## How to call
 
-Use `gq` with `$V8_GQL` and `$V8_TOKEN`. For reads, use `--queryFile` with `$V8_SKILL_DIR/queries/`. For writes, use inline `-q`. Always use `-l` for compact output.
-
 ```bash
-gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --queryFile "$V8_SKILL_DIR/queries/<name>.gql" -j '<variables>' -l
+# 읽기 (--queryFile + -j)
+gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --queryFile "$V8_SKILL_DIR/queries/<name>.gql" -j '<json>' -l
+
+# 쓰기 (inline -q)
+gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" -q 'mutation { ... }' -l
 ```
 
-## Queries (use --queryFile)
+**필수:**
+- 변수는 반드시 **`-j`** 로 전달 (`-v` 아님)
+- 항상 **`-l`** 사용 (compact output)
+- `$V8_SKILL_DIR/queries/` 아래 파일을 ls 하지 않는다 — 아래 테이블이 전부
 
-Pre-defined query files in `queries/`. If a query file doesn't exist for your needs, follow the `gql-ops` skill's "Creating new queries" guidance.
+## IMPORTANT: Token Optimization
 
-### Users search
+**독립적인 쿼리는 절대 개별 Bash 호출하지 않는다. 반드시 하나의 Bash 호출에 `;`로 합쳐서 실행한다:**
+
 ```bash
-gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --queryFile "$V8_SKILL_DIR/queries/users-search.gql" -j '{"keyword":"michael","limit":20}' -l
+export V8_GQL="..." V8_TOKEN="..." V8_SKILL_DIR="..."
+echo "=== Users ===" ; gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --queryFile "$V8_SKILL_DIR/queries/users-search.gql" -j '{"keyword":"test","limit":5}' -l 2>&1
+echo "=== Comments ===" ; gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --queryFile "$V8_SKILL_DIR/queries/comments-list.gql" -j '{"limit":5}' -l 2>&1
+echo "=== Verse ===" ; gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --queryFile "$V8_SKILL_DIR/queries/verse-list.gql" -j '{"limit":5}' -l 2>&1
 ```
 
-### Users low balance
-```bash
-gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --queryFile "$V8_SKILL_DIR/queries/users-low-balance.gql" -j '{"threshold":5,"limit":20}' -l
-```
+## Queries
 
-### Comments list / search
-```bash
-gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --queryFile "$V8_SKILL_DIR/queries/comments-list.gql" -j '{"limit":50}' -l
-gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --queryFile "$V8_SKILL_DIR/queries/comments-list.gql" -j '{"searchType":"USEREMAIL","keyword":"foo@bar.com","filter":"ALL"}' -l
-```
-`searchType` enum values: `USEREMAIL`, `USERDISPLAYNAME`, `VERSETITLE`, `VERSESHORTID`, `COMMENTCONTENT`
-`filter` enum values: `ALL`, `ACTIVE`, `DELETED`
+`$V8_SKILL_DIR/queries/` 파일 목록:
 
-### Verse list
-```bash
-gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --queryFile "$V8_SKILL_DIR/queries/verse-list.gql" -j '{"limit":20,"featured":"ONLY"}' -l
-```
+| 파일 | 용도 | `-j` 변수 |
+|------|------|-----------|
+| `users-search.gql` | 유저 검색 | `{"keyword":"…","limit":20}` |
+| `users-low-balance.gql` | 저잔액 유저 | `{"threshold":5,"limit":20}` |
+| `comments-list.gql` | 댓글 목록/검색 | `{"limit":50}` 또는 `{"searchType":"…","keyword":"…","filter":"…"}` |
+| `verse-list.gql` | 버스 목록 | `{"limit":20,"featured":"ONLY"}` |
+| `game-payments-list.gql` | 게임 결제 목록 | `{"limit":20}` |
+| `game-payment-items-list.gql` | 결제 아이템 | `{"gamePaymentId":"<id>","limit":20}` |
 
-### Game payments list
-```bash
-gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --queryFile "$V8_SKILL_DIR/queries/game-payments-list.gql" -j '{"limit":20}' -l
-```
+`searchType`: `USEREMAIL` / `USERDISPLAYNAME` / `VERSETITLE` / `VERSESHORTID` / `COMMENTCONTENT`
+`filter`: `ALL` / `ACTIVE` / `DELETED`
 
-### Game payment items list
-```bash
-gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --queryFile "$V8_SKILL_DIR/queries/game-payment-items-list.gql" -j '{"gamePaymentId":"<id>","limit":20}' -l
-```
+새 쿼리가 필요하면 `gql-ops` 스킬의 "Creating new queries" 참고.
 
-## Mutations (use inline -q)
-
-Short enough to inline:
+## Mutations (inline -q)
 
 ```bash
 # Grant credits (amount in USD)
@@ -99,22 +88,16 @@ gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" -q 'mutation { adminControllerTr
 ## Common Workflows
 
 ### Search user + grant credits
-1. `gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --queryFile "$V8_SKILL_DIR/queries/users-search.gql" -j '{"keyword":"<email>"}' -l` → get `userUid`
-2. `gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" -q 'mutation { adminControllerCreateAdminCoupon(adminCouponDtoInput: {userUid: "<uid>", amount: 20}) { success transactionId } }' -l`
+1. `--queryFile users-search.gql` -j `{"keyword":"<email>"}` → get `userUid`
+2. inline mutation `adminControllerCreateAdminCoupon` with `userUid`, `amount`
 3. Re-run search to verify
 
 ### Find and remove spam comments
-1. `gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --queryFile "$V8_SKILL_DIR/queries/comments-list.gql" -j '{"limit":50}' -l` → scan for suspicious patterns
-2. `gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --queryFile "$V8_SKILL_DIR/queries/comments-list.gql" -j '{"searchType":"USEREMAIL","keyword":"<email>","filter":"ALL"}' -l`
-3. `gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" -q 'mutation { adminControllerBatchCommentAction(batchCommentActionDtoInput: {commentIds: [<ids>], action: "delete"}) { processed failed errors } }' -l`
-
-## API Reference
-
-See `references/admin-api.md` for full REST endpoint details (fallback when GraphQL doesn't cover an edge case).
+1. `--queryFile comments-list.gql` -j `{"limit":50}` → scan for patterns
+2. `--queryFile comments-list.gql` -j `{"searchType":"USEREMAIL","keyword":"<email>","filter":"ALL"}`
+3. inline mutation `adminControllerBatchCommentAction` with `commentIds`, `action: "delete"`
 
 ## Notes
 
-- Credit amounts are in USD (e.g. `20` = $20, internally `20,000,000,000` base units)
-- `--queryFile` paths use `$V8_SKILL_DIR` to resolve absolute paths to query files
-- Always use `-l` flag for compact output to minimize tokens
-- `$V8_TOKEN` and `$V8_GQL` avoid repeating long JWT and URL in every command
+- Credit amounts are in USD (e.g. `20` = $20)
+- See `references/admin-api.md` for REST fallback
