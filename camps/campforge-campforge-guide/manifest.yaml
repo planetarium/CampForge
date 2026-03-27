@@ -20,6 +20,7 @@ camp:
     optional:
       - camp-add-skill
       - camp-sync
+      - camp-bench
   dependencies:
     tools:
       - campforge-cli
