@@ -34,7 +34,7 @@ export function generateSkills(ctx: PipelineContext): void {
   }
 }
 
-function writeScaffold(skill: SkillSpec, skillDir: string): void {
+export function writeScaffold(skill: SkillSpec, skillDir: string): void {
   const desc = skill.spec?.description || `${skill.skill_id} skill`;
   const workflow = skill.spec?.workflow || [];
 

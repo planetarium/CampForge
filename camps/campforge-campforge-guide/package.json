@@ -1,0 +1,15 @@
+{
+  "name": "@campforge/camp-campforge-guide",
+  "version": "1.0.0",
+  "description": "CampForge camp for CampForge Usage Guide",
+  "keywords": [
+    "agent-skill",
+    "campforge",
+    "campforge",
+    "guide"
+  ],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@campforge/gql-ops": "^0.2.0"
+  }
+}
