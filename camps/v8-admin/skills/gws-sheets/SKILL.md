@@ -30,19 +30,34 @@ npm install -g @googleworkspace/cli
 
 Verify: `gws --version`
 
-### Authentication
+### Authentication (gcloud ADC)
 
 **You MUST run this yourself** before any gws call — do NOT ask the user to run it manually.
 
-Try methods in order until one succeeds:
+gcloud CLI의 ADC(Application Default Credentials)를 사용. 별도 OAuth 클라이언트 설정이 필요 없다.
 
-#### Method 1: gcloud ADC (추천 — 별도 OAuth 클라이언트 설정 불필요)
-
-gcloud CLI가 설치·인증된 환경에서 가장 간편한 방법.
-Sheets/Drive 스코프를 포함한 ADC(Application Default Credentials)를 발급받아 사용:
+#### 1. gcloud CLI 설치 확인
 
 ```bash
-# ADC가 이미 있는지 확인
+gcloud --version 2>/dev/null || echo "gcloud not installed"
+```
+
+미설치 시 사용자에게 안내:
+
+```bash
+# macOS
+brew install --cask google-cloud-sdk
+
+# Linux
+curl https://sdk.cloud.google.com | bash
+
+# 설치 후 초기 로그인
+gcloud auth login
+```
+
+#### 2. ADC 토큰 확인
+
+```bash
 gcloud auth application-default print-access-token 2>/dev/null && echo "ADC OK"
 ```
 
@@ -53,42 +68,11 @@ gcloud auth application-default login \
   --scopes="https://www.googleapis.com/auth/spreadsheets,https://www.googleapis.com/auth/drive,https://www.googleapis.com/auth/userinfo.email,openid"
 ```
 
-이후 매 호출 전 토큰 주입:
+#### 3. 매 호출 전 토큰 주입
 
 ```bash
 export GOOGLE_WORKSPACE_CLI_TOKEN=$(gcloud auth application-default print-access-token)
 ```
-
-#### Method 2: OAuth Client ID/Secret (gcloud 없는 환경)
-
-GCP Console에서 Desktop app OAuth 클라이언트를 만들어 환경변수로 주입:
-
-```bash
-export GOOGLE_WORKSPACE_CLI_CLIENT_ID="<client-id>.apps.googleusercontent.com"
-export GOOGLE_WORKSPACE_CLI_CLIENT_SECRET="<client-secret>"
-gws auth login
-```
-
-- `gws auth login`이 브라우저 URL을 출력 → 사용자가 열어서 동의
-- 이후 캐시된 credential로 자동 인증 (AES-256-GCM, OS keyring에 저장)
-- Client ID는 공개해도 무방. Client Secret은 시크릿 매니저나 환경변수로 관리
-
-#### Method 3: Service Account (CI/headless — 브라우저 없는 환경)
-
-```bash
-export GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE="/path/to/sa-key.json"
-```
-
-- SA 키 JSON 파일은 절대 커밋 금지. CI secrets로 주입
-- 대상 스프레드시트에 SA 이메일을 편집자로 공유해야 접근 가능
-
-#### Method 4: Pre-obtained Token (임시 사용)
-
-```bash
-export GOOGLE_WORKSPACE_CLI_TOKEN="ya29.xxx..."
-```
-
-- 1시간 후 만료. 장기 사용 불가. 디버깅/테스트용
 
 ## How to call
 
