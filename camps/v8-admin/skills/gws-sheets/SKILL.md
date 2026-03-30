@@ -25,7 +25,7 @@ If user doesn't specify a spreadsheet ID, ask for it.
 ### Installation
 
 ```bash
-npm install -g @googleworkspace/cli github:planetarium/gws-auth
+npm install -g @googleworkspace/cli https://github.com/planetarium/gws-auth/releases/download/v0.1.1/anthropic-kr-gws-auth-0.1.0.tgz
 ```
 
 Verify: `gws --version && gws-auth --help`
