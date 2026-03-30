@@ -62,10 +62,22 @@ cd $CAMPFORGE_CLI && ./node_modules/.bin/tsx bin/campforge.ts add-skill \
 
 scaffold로 생성한 경우 `skills/{skill-id}/SKILL.md`에 TODO가 남아있다. 실제 내용으로 채운다.
 
-### Step 4: 확인
+### Step 4: 인스톨러 업데이트
+
+스킬을 추가한 후 반드시 아래 파일들에 새 스킬의 복사/설치 로직을 추가한다:
+
+- `adapters/claude-code/install.sh` — `.claude/skills/` 에 복사
+- `adapters/openclaw/install.sh` — `$WORKSPACE/skills/` 에 복사
+- `adapters/generic/install.sh` — `.agents/skills/` 에 복사
+- `install-remote.sh` — curl로 SKILL.md 다운로드
+
+새 스킬에 외부 CLI 의존성이 있으면 인스톨러에서 `npm install -g` 등으로 설치하도록 추가한다.
+
+### Step 5: 확인
 
 - `manifest.yaml`의 `skills.optional`에 자동 추가됨
 - `skills/{skill-id}/SKILL.md` 파일 생성 확인
+- 인스톨러 4개 모두 업데이트 확인
 - 필요하면 `camp-validate`로 전체 검증
 
 ## Output Format
