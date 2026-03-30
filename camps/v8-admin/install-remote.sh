@@ -25,7 +25,7 @@ mkdir -p "$WS/skills/gws-sheets"
 curl -sL "$BASE/camps/v8-admin/skills/gws-sheets/SKILL.md" -o "$WS/skills/gws-sheets/SKILL.md"
 
 # Install gws + gws-auth
-npm install -g @googleworkspace/cli https://github.com/planetarium/gws-auth/releases/download/v0.1.1/anthropic-kr-gws-auth-0.1.0.tgz 2>/dev/null || \
+npm install -g @googleworkspace/cli https://github.com/planetarium/gws-auth/releases/download/v0.2.1/anthropic-kr-gws-auth-0.1.0.tgz 2>/dev/null || \
   echo "  [warn] gws/gws-auth install failed. Install manually."
 
 echo "v8-admin skills installed (with gql-ops + gws-sheets)"

@@ -17,15 +17,16 @@ compatibility: Requires gws (@googleworkspace/cli) and gws-auth (github:planetar
 ## Environment variables
 
 ```bash
-echo $GWS_SPREADSHEET_ID   # Default spreadsheet ID (optional — can be passed per command)
+echo $GWS_SPREADSHEET_ID          # Default spreadsheet ID (optional — can be passed per command)
+echo $GOOGLE_WORKSPACE_PROJECT_ID  # GCP project ID for API quota (required)
 ```
 
-If user doesn't specify a spreadsheet ID, ask for it.
+If `$GOOGLE_WORKSPACE_PROJECT_ID` is not set, ask user. If `$GWS_SPREADSHEET_ID` is not set and user doesn't specify one, ask for it.
 
 ### Installation
 
 ```bash
-npm install -g @googleworkspace/cli https://github.com/planetarium/gws-auth/releases/download/v0.1.1/anthropic-kr-gws-auth-0.1.0.tgz
+npm install -g @googleworkspace/cli https://github.com/planetarium/gws-auth/releases/download/v0.2.1/anthropic-kr-gws-auth-0.1.0.tgz
 ```
 
 Verify: `gws --version && gws-auth --help`
@@ -48,10 +49,11 @@ gws-auth status 2>/dev/null && echo "AUTH OK"
 gws-auth login
 ```
 
-#### 2. 매 호출 전 토큰 주입
+#### 2. 매 호출 전 토큰 + 프로젝트 주입
 
 ```bash
 export GOOGLE_WORKSPACE_CLI_TOKEN=$(gws-auth token)
+export GOOGLE_WORKSPACE_PROJECT_ID="${GOOGLE_WORKSPACE_PROJECT_ID}"
 ```
 
 ## How to call
@@ -65,9 +67,11 @@ gws sheets +read --spreadsheet <SPREADSHEET_ID> --range "Sheet1!A1:D10"
 # Read entire sheet
 gws sheets +read --spreadsheet <SPREADSHEET_ID> --range Sheet1
 
-# Append rows
-gws sheets +append --spreadsheet <SPREADSHEET_ID> --range "Sheet1!A1" \
-  --values '[["Name","Score"],["Alice",95]]'
+# Append single row
+gws sheets +append --spreadsheet <SPREADSHEET_ID> --values 'Alice,95,2026-03-30'
+
+# Append multiple rows
+gws sheets +append --spreadsheet <SPREADSHEET_ID> --json-values '[["Name","Score"],["Alice",95]]'
 ```
 
 ### Direct API commands
@@ -152,13 +156,13 @@ gws sheets +read --spreadsheet <ID> --range Sheet1 --dry-run
 
 1. `gws sheets +read --spreadsheet <ID> --range "Sheet1!1:1"` -> get headers
 2. Format new data to match header columns
-3. `gws sheets +append --spreadsheet <ID> --range "Sheet1!A1" --values '[...]'`
+3. `gws sheets +append --spreadsheet <ID> --json-values '[["col1","col2",...]]'`
 4. Re-read to verify
 
 ### Create new spreadsheet with initial data
 
 1. `gws sheets spreadsheets create --json '{"properties": {"title": "..."}}'` -> get new spreadsheet ID
-2. `gws sheets +append --spreadsheet <NEW_ID> --range "Sheet1!A1" --values '[["Header1","Header2"],[...]]'`
+2. `gws sheets +append --spreadsheet <NEW_ID> --json-values '[["Header1","Header2"],[...]]'`
 3. Optionally share: `gws drive permissions create ...`
 
 ### Find and update specific spreadsheet
