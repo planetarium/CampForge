@@ -1,18 +1,44 @@
-# CampForge: CampForge Usage Guide
+# campforge-guide
 
-Agent camp for CampForge Usage Guide.
+CampForge usage guide agent camp — camp creation, validation, skill management, sync, benchmarking.
+
+## Skills
+
+- **camp-create** — Create new camps from domain specs
+- **camp-validate** — Validate camp structure and settings
+- **camp-add-skill** — Add skills to existing camps
+- **camp-sync** — Synchronize camp configurations
+- **camp-bench** — Benchmark and performance testing
 
 ## Install
+
+### Claude Code (local)
 
 ```bash
 ./campforge-cli.sh
 ```
 
-## Skills
+### Codex
 
-- **camp-create**: 캠프 생성 가이드 — domain-spec 작성부터 scaffold 생성, SKILL.md 채우기까지
-- **camp-validate**: 캠프 검증 — campforge validate 실행 및 오류 해석
-- **camp-install**: 캠프 설치 안내 — 플랫폼별 어댑터 설명 및 설치 실행
+```bash
+./campforge-cli.sh
+```
+
+### OpenClaw (remote)
+
+```bash
+curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/campforge-guide/install-remote.sh | bash
+```
+
+Or set a custom workspace:
+
+```bash
+WORKSPACE=/path/to/workspace curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/campforge-guide/install-remote.sh | bash
+```
+
+## Prerequisites
+
+- `campforge-cli`
 
 ## Validate
 
