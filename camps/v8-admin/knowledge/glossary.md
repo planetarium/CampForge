@@ -40,6 +40,16 @@
 | 3 | 3D |
 | 4 | Deep Gameplay |
 
+## Google Sheets (gws-sheets skill)
+
+| Term | Definition |
+|------|-----------|
+| **gws** | Google Workspace CLI (`@googleworkspace/cli`). Google Drive, Sheets 등 Workspace API 통합 CLI |
+| **Spreadsheet ID** | Google Sheets URL의 `/d/<ID>/edit` 부분에 해당하는 고유 식별자 |
+| **Range** | 시트 내 셀 범위. A1 표기법 사용 (예: `Sheet1!A1:D10`, `Sheet1`) |
+| **valueInputOption** | 입력 해석 방식. `USER_ENTERED` (수식 파싱) vs `RAW` (문자열 그대로) |
+| **Skill shortcut** | gws의 `+read`, `+append` 등 간편 명령어. 직접 API 호출보다 간단한 구문 |
+
 ## Analytics
 
 | Term | Definition |
