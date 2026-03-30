@@ -1,20 +1,44 @@
-# CampForge: In-App Purchase Management
+# iap-manager
 
-Agent camp for In-App Purchase Management.
+In-App Purchase management agent camp — products, receipts, assets, images.
+
+## Skills
+
+- **iap-product-query** — IAP product listing and search
+- **iap-product-import** — Product, category, price CSV import
+- **iap-receipt-query** — IAP receipt lookup and search
+- **iap-asset-import** — FungibleAssets and FungibleItems CSV import
+- **iap-image-upload** — IAP product image upload
 
 ## Install
+
+### Claude Code (local)
 
 ```bash
 ./campforge-cli.sh
 ```
 
-## Skills
+### Codex
 
-- **iap-product-query**: IAP 상품 목록 조회 및 검색
-- **iap-product-import**: 상품, 카테고리, 가격 CSV 임포트
-- **iap-receipt-query**: IAP 영수증 조회 및 검색
-- **iap-asset-import**: FungibleAssets 및 FungibleItems CSV 임포트
-- **iap-image-upload**: IAP 상품 이미지 업로드
+```bash
+./campforge-cli.sh
+```
+
+### OpenClaw (remote)
+
+```bash
+curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/iap-manager/install-remote.sh | bash
+```
+
+Or set a custom workspace:
+
+```bash
+WORKSPACE=/path/to/workspace curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/iap-manager/install-remote.sh | bash
+```
+
+## Prerequisites
+
+- `gq` (graphqurl): `npm i -g graphqurl`
 
 ## Validate
 
