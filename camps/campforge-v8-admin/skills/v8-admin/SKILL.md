@@ -18,13 +18,28 @@ compatibility: Requires gq (graphqurl) CLI and a running GraphQL gateway
 
 ## Environment variables
 
-Check if set, ask user if not:
-
 ```bash
 echo $V8_GQL        # GraphQL gateway URL (default: https://planetarium-oag.fly.dev/v8-admin-test/graphql)
-echo $V8_TOKEN       # Admin JWT
 echo $V8_SKILL_DIR   # Absolute path to this skill directory
 ```
+
+If `$V8_GQL` or `$V8_SKILL_DIR` is not set, ask user.
+
+### Authentication
+
+**You MUST run this yourself** before any API call — do NOT ask the user to run it manually:
+
+```bash
+eval $(bash "$V8_SKILL_DIR/v8-auth.sh")
+```
+
+- If a cached token exists and is valid → instant, no user interaction needed.
+- If no valid token → the script starts RFC 8628 device flow:
+  1. Prints a **user code** and **URL** to stderr.
+  2. Polls for completion (blocks until user authorizes in browser).
+  3. **Show the user code and URL to the user** and ask them to open it in their browser.
+  4. The script will finish once the user completes browser auth (~30s typical).
+  5. Use `timeout 120` if worried about hanging: `eval $(timeout 120 bash "$V8_SKILL_DIR/v8-auth.sh")`
 
 ## How to call
 
