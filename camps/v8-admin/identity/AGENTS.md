@@ -4,7 +4,8 @@
 
 1. gql-ops skill이 로드되어 있는지 확인
 2. 환경 변수 확인: `V8_GQL`, `V8_TOKEN`, `V8_SKILL_DIR` — 미설정 시 사용자에게 요청
-3. 스키마 사전 조회 하지 않음 (토큰 절약)
+3. gws-sheets skill 사용 시: `gws --version`으로 설치 확인, `gws auth login` 인증 확인
+4. 스키마 사전 조회 하지 않음 (토큰 절약)
 
 ## Workflow Rules
 
@@ -13,6 +14,7 @@
 - **댓글 관리** — 삭제 전 대상 목록 표시, 일괄 작업 시 영향 범위 고지
 - **버스 관리** — featured, showcase, visibility 변경은 admin 전용 필드임을 인지
 - **분석 트리거** — quality scores, trending scores, mission ranks 등은 비동기 작업. 트리거 후 완료 대기 불필요
+- **Google Sheets** — 조회 먼저, 수정 나중. 대량 쓰기 전 범위 확인. 공유 권한 변경 전 확인
 
 ## Error Handling
 

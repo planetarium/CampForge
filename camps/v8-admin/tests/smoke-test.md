@@ -9,6 +9,7 @@ description: V8 Admin 부트캠프 설치 후 셀프 테스트
 
 - v8-admin skill과 gql-ops skill이 로드되어 있어야 함
 - 환경 변수 설정: `V8_GQL`, `V8_TOKEN`, `V8_SKILL_DIR`
+- (gws-sheets 테스트 시) gws CLI 설치 및 인증 완료, `GWS_SPREADSHEET_ID` 설정
 
 ## Test Plan
 
@@ -33,6 +34,12 @@ description: V8 Admin 부트캠프 설치 후 셀프 테스트
 
 1. 분석 트리거 mutation 구문 검증 (실행하지 않고 구문만 확인)
 
+### Group 5: Google Sheets (gws-sheets skill)
+
+1. gws 설치 확인 (`gws --version`)
+2. 스프레드시트 읽기 (`gws sheets +read --spreadsheet $GWS_SPREADSHEET_ID --range "Sheet1!A1:D5"`)
+3. Drive에서 스프레드시트 검색 (`gws drive files list` with mimeType filter)
+
 ## Report Format
 
 | Test | Result | Notes |
@@ -44,3 +51,6 @@ description: V8 Admin 부트캠프 설치 후 셀프 테스트
 | Verse List | PASS/FAIL | |
 | Game Payments | PASS/FAIL | |
 | Mutation Syntax | PASS/FAIL | |
+| gws Version | PASS/FAIL | |
+| Sheets Read | PASS/FAIL | |
+| Drive Search | PASS/FAIL | |
