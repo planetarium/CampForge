@@ -32,7 +32,7 @@ cd $CAMPFORGE_CLI && ./node_modules/.bin/tsx bin/campforge.ts validate <camp-dir
 
 ### Step 2: 결과 해석
 
-검증 항목 (총 9가지):
+검증 항목 (총 10가지):
 
 | # | 검증 항목 | 흔한 실패 원인 |
 |---|-----------|---------------|
@@ -44,7 +44,8 @@ cd $CAMPFORGE_CLI && ./node_modules/.bin/tsx bin/campforge.ts validate <camp-dir
 | 6 | 어댑터 install.sh 존재 | adapters/ 디렉토리가 비어있음 |
 | 7 | package.json (의존성 선언 시) | skill 의존성이 있는데 package.json 없음 |
 | 8 | campforge-cli.sh 존재 | 파일 누락 |
-| 9 | install-remote.sh 존재 | 원격 설치 스크립트 누락 |
+| 9 | README.md 존재 | 플랫폼별 설치 가이드 누락 |
+| 10 | install-remote.sh 존재 | 원격 설치 스크립트 누락 |
 
 ### Step 3: 오류 수정 안내
 

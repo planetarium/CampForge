@@ -108,11 +108,21 @@ mv $CAMPFORGE_CLI/campforge-{domain-id} <campforge-project>/camps/
 - Environment variables 정의
 - Output Format 작성
 
-### Step 6: 검증
+### Step 6: README.md 생성
+
+캠프 루트에 `README.md`를 작성한다. 기존 캠프의 README를 참고하여 다음 내용을 포함한다:
+
+- 캠프 이름과 한 줄 설명
+- 스킬 목록
+- 플랫폼별 설치 방법 (Claude Code, Codex, OpenClaw)
+- Prerequisites (필요한 도구)
+- 검증 명령어
+
+### Step 7: 검증
 
 `camp-validate` 스킬을 사용하여 생성 결과를 검증한다.
 
-### Step 7: install-remote.sh 생성
+### Step 8: install-remote.sh 생성
 
 원격 에이전트(예: OpenClaw on Docker)에서 curl 한 줄로 스킬을 설치할 수 있도록 `install-remote.sh`를 생성한다.
 
@@ -131,7 +141,7 @@ WS="${WORKSPACE:-workspace}"
 
 v8-admin의 `install-remote.sh`를 참고하여 해당 캠프의 스킬 파일 구조에 맞게 작성한다.
 
-### Step 8: 설치 안내
+### Step 9: 설치 안내
 
 검증 통과 후, 생성된 캠프를 에이전트에 설치하는 방법을 안내한다:
 
