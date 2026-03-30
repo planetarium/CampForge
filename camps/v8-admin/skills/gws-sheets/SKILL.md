@@ -9,7 +9,7 @@ license: Apache-2.0
 metadata:
   author: swen
   version: "0.1"
-compatibility: Requires gws (@googleworkspace/cli) installed and authenticated
+compatibility: Requires gws (@googleworkspace/cli) and gws-auth (@anthropic-kr/gws-auth)
 ---
 
 # Google Sheets Skill (gws CLI)
@@ -25,53 +25,33 @@ If user doesn't specify a spreadsheet ID, ask for it.
 ### Installation
 
 ```bash
-npm install -g @googleworkspace/cli
+npm install -g @googleworkspace/cli @anthropic-kr/gws-auth
 ```
 
-Verify: `gws --version`
+Verify: `gws --version && gws-auth --help`
 
-### Authentication (gcloud ADC)
+### Authentication (gws-auth)
 
 **You MUST run this yourself** before any gws call — do NOT ask the user to run it manually.
 
-gcloud CLI의 ADC(Application Default Credentials)를 사용. 별도 OAuth 클라이언트 설정이 필요 없다.
+`gws-auth`는 OAuth 인증 전용 CLI로, Client ID/Secret이 내장되어 있어 별도 GCP 설정이 필요 없다.
 
-#### 1. gcloud CLI 설치 확인
+#### 1. 로그인 상태 확인
 
 ```bash
-gcloud --version 2>/dev/null || echo "gcloud not installed"
+gws-auth status 2>/dev/null && echo "AUTH OK"
 ```
 
-미설치 시 사용자에게 안내:
+로그인되어 있지 않으면 사용자에게 아래 실행을 요청 (브라우저 동의 1회 필요):
 
 ```bash
-# macOS
-brew install --cask google-cloud-sdk
-
-# Linux
-curl https://sdk.cloud.google.com | bash
-
-# 설치 후 초기 로그인
-gcloud auth login
+gws-auth login
 ```
 
-#### 2. ADC 토큰 확인
+#### 2. 매 호출 전 토큰 주입
 
 ```bash
-gcloud auth application-default print-access-token 2>/dev/null && echo "ADC OK"
-```
-
-ADC가 없거나 스코프가 부족하면 사용자에게 아래 명령 실행을 요청 (브라우저 동의 1회 필요):
-
-```bash
-gcloud auth application-default login \
-  --scopes="https://www.googleapis.com/auth/spreadsheets,https://www.googleapis.com/auth/drive,https://www.googleapis.com/auth/userinfo.email,openid"
-```
-
-#### 3. 매 호출 전 토큰 주입
-
-```bash
-export GOOGLE_WORKSPACE_CLI_TOKEN=$(gcloud auth application-default print-access-token)
+export GOOGLE_WORKSPACE_CLI_TOKEN=$(gws-auth token)
 ```
 
 ## How to call
@@ -140,9 +120,10 @@ gws drive files get --params '{"fileId": "<SPREADSHEET_ID>", "fields": "id,name,
 
 ## IMPORTANT: Token Optimization
 
-**Combine independent gws calls into a single Bash call with `;`:**
+**Combine independent gws calls into a single Bash call with `;`. 토큰은 먼저 한번만 export:**
 
 ```bash
+export GOOGLE_WORKSPACE_CLI_TOKEN=$(gws-auth token)
 echo "=== Sheet Data ===" ; gws sheets +read --spreadsheet "$GWS_SPREADSHEET_ID" --range "Sheet1!A1:D10" 2>&1
 echo "=== File Info ===" ; gws drive files get --params "{\"fileId\": \"$GWS_SPREADSHEET_ID\", \"fields\": \"id,name,modifiedTime\"}" 2>&1
 ```
