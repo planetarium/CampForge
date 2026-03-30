@@ -112,12 +112,35 @@ mv $CAMPFORGE_CLI/campforge-{domain-id} <campforge-project>/camps/
 
 `camp-validate` 스킬을 사용하여 생성 결과를 검증한다.
 
-### Step 7: 설치 안내
+### Step 7: install-remote.sh 생성
+
+원격 에이전트(예: OpenClaw on Docker)에서 curl 한 줄로 스킬을 설치할 수 있도록 `install-remote.sh`를 생성한다.
+
+```bash
+#!/usr/bin/env bash
+# Remote installer for <camp-name> skill (run on OpenClaw or any agent workspace)
+# Usage: curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/<camp-name>/install-remote.sh | bash
+set -euo pipefail
+
+BASE="https://raw.githubusercontent.com/planetarium/CampForge/main"
+WS="${WORKSPACE:-workspace}"
+
+# 의존성 설치 (gql-ops 등)
+# 각 스킬의 SKILL.md 및 하위 파일(queries/, references/ 등) 설치
+```
+
+v8-admin의 `install-remote.sh`를 참고하여 해당 캠프의 스킬 파일 구조에 맞게 작성한다.
+
+### Step 8: 설치 안내
 
 검증 통과 후, 생성된 캠프를 에이전트에 설치하는 방법을 안내한다:
 
 ```bash
+# 로컬 설치
 cd <camp-directory> && ./campforge-cli.sh
+
+# 원격 설치 (OpenClaw 등)
+curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/<camp-name>/install-remote.sh | bash
 ```
 
 이 스크립트가 현재 환경을 감지하여 적절한 어댑터(Claude Code, OpenClaw 등)를 자동 실행한다.
