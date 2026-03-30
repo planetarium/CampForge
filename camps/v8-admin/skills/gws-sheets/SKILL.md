@@ -9,7 +9,7 @@ license: Apache-2.0
 metadata:
   author: swen
   version: "0.1"
-compatibility: Requires gws (@googleworkspace/cli) and gws-auth (@anthropic-kr/gws-auth)
+compatibility: Requires gws (@googleworkspace/cli) and gws-auth (github:planetarium/gws-auth)
 ---
 
 # Google Sheets Skill (gws CLI)
@@ -25,7 +25,7 @@ If user doesn't specify a spreadsheet ID, ask for it.
 ### Installation
 
 ```bash
-npm install -g @googleworkspace/cli @anthropic-kr/gws-auth
+npm install -g @googleworkspace/cli github:planetarium/gws-auth
 ```
 
 Verify: `gws --version && gws-auth --help`
