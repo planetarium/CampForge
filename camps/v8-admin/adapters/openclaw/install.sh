@@ -42,7 +42,7 @@ fi
 
 # 5. Install gws + gws-auth (for gws-sheets skill)
 if [ -d "$WORKSPACE/skills/gws-sheets" ]; then
-  npm install -g @googleworkspace/cli https://github.com/planetarium/gws-auth/releases/download/v0.1.1/anthropic-kr-gws-auth-0.1.0.tgz 2>/dev/null || \
+  npm install -g @googleworkspace/cli https://github.com/planetarium/gws-auth/releases/download/v0.2.1/anthropic-kr-gws-auth-0.1.0.tgz 2>/dev/null || \
     echo "  [warn] gws/gws-auth install failed. Install manually."
 fi
 
