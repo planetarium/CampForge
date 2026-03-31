@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Remote installer for iap-manager skills (run on OpenClaw or any agent workspace)
+# Remote installer for iap-manager camp (run on OpenClaw or any agent workspace)
 # Usage: curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/iap-manager/install-remote.sh | bash
 set -euo pipefail
 
@@ -13,7 +13,7 @@ curl -sL "$BASE/packages/gql-ops/skills/gql-ops/SKILL.md" -o "$WS/skills/gql-ops
 # iap-manager skills
 for skill in iap-asset-import iap-image-upload iap-product-import iap-product-query iap-receipt-query; do
   mkdir -p "$WS/skills/${skill}"
-  curl -sL "$BASE/camps/iap-manager/skills/${skill}/SKILL.md" -o "$WS/skills/${skill}/SKILL.md"
+  curl -sL "$BASE/packages/${skill}/skills/${skill}/SKILL.md" -o "$WS/skills/${skill}/SKILL.md"
 done
 
-echo "iap-manager skills installed (with gql-ops dependency)"
+echo "iap-manager camp installed (with gql-ops)"

@@ -1,19 +1,16 @@
 #!/bin/bash
-# CampForge adapter for Claude Code
+# CampForge campforge-guide adapter for Claude Code
 
 CAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 TARGET_DIR="${1:-.}"
 
-# 1. Install skill dependencies via skillpm
-if command -v skillpm &> /dev/null; then
-  (cd "$CAMP_DIR" && skillpm install)
-fi
+# 1. Resolve all skill dependencies
+cd "$CAMP_DIR" && npx skillpm install 2>/dev/null || npm install 2>/dev/null || true
 
-# 2. Copy camp skills
+# 2. Copy skills from resolved packages
 mkdir -p "$TARGET_DIR/.claude/skills"
-for skill_dir in "$CAMP_DIR/skills"/*/; do
-  skill_name=$(basename "$skill_dir")
-  cp -r "$skill_dir" "$TARGET_DIR/.claude/skills/$skill_name"
+for skill_dir in "$CAMP_DIR"/node_modules/@campforge/*/skills/*/; do
+  [ -d "$skill_dir" ] && cp -r "$skill_dir" "$TARGET_DIR/.claude/skills/$(basename "$skill_dir")"
 done
 
 # 3. Identity -> CLAUDE.md
@@ -31,5 +28,5 @@ if [ -d "$CAMP_DIR/knowledge" ]; then
 fi
 
 echo ":: CampForge campforge-guide installed for Claude Code"
-echo "   Skills: $(ls "$TARGET_DIR/.claude/skills" | wc -l | tr -d ' ') installed"
+echo "   Skills: $(ls "$TARGET_DIR/.claude/skills" 2>/dev/null | wc -l | tr -d ' ') installed"
 echo "   Identity: .claude/CLAUDE.md created"

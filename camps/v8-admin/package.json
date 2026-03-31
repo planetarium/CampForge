@@ -5,6 +5,7 @@
   "keywords": ["agent-skill", "campforge", "v8", "admin"],
   "license": "Apache-2.0",
   "dependencies": {
+    "@campforge/v8-admin": "^1.0.0",
     "@campforge/gql-ops": "^0.2.0",
     "@campforge/gws-sheets": "^0.1.0"
   }

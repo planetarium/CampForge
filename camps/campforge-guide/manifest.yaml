@@ -15,18 +15,17 @@ camp:
     language: ko
   skills:
     required:
-      - camp-create
-      - camp-validate
+      - "@campforge/camp-create"
+      - "@campforge/camp-validate"
     optional:
-      - camp-add-skill
-      - camp-sync
-      - camp-bench
-      - campforge-interview
+      - "@campforge/camp-add-skill"
+      - "@campforge/camp-sync"
+      - "@campforge/camp-bench"
+      - "@campforge/campforge-interview"
   dependencies:
     tools:
       - campforge-cli
     mcp_servers: []
-    skills: []
   compatibility:
     tested:
       - platform: claude-code

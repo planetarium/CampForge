@@ -1,0 +1,8 @@
+{
+  "name": "@campforge/campforge-interview",
+  "version": "0.1.0",
+  "description": "CampForge guide campforge-interview skill",
+  "keywords": ["agent-skill", "campforge", "guide"],
+  "license": "Apache-2.0",
+  "files": ["skills/"]
+}

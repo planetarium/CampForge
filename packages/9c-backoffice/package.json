@@ -1,0 +1,11 @@
+{
+  "name": "@campforge/9c-backoffice",
+  "version": "1.0.0",
+  "description": "Nine Chronicles backoffice table patch skill",
+  "keywords": ["agent-skill", "nine-chronicles", "backoffice", "campforge"],
+  "license": "Apache-2.0",
+  "files": ["skills/"],
+  "dependencies": {
+    "@campforge/gql-ops": "^0.2.0"
+  }
+}

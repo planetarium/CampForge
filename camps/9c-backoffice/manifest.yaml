@@ -16,15 +16,14 @@ camp:
 
   skills:
     required:
-      - 9c-backoffice
+      - "@campforge/9c-backoffice"
+      - "@campforge/gql-ops"
     optional: []
 
   dependencies:
     tools:
       - gq                         # npm i -g graphqurl
     mcp_servers: []
-    skills:                         # npm 호환 (skillpm으로 해결)
-      - "@campforge/gql-ops": "^0.2.0"
 
   compatibility:
     tested:

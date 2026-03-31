@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Remote installer for v8-admin skill (run on OpenClaw or any agent workspace)
+# Remote installer for v8-admin camp (run on OpenClaw or any agent workspace)
 # Usage: curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/v8-admin/install-remote.sh | bash
 set -euo pipefail
 
@@ -12,12 +12,12 @@ curl -sL "$BASE/packages/gql-ops/skills/gql-ops/SKILL.md" -o "$WS/skills/gql-ops
 
 # v8-admin
 mkdir -p "$WS/skills/v8-admin/queries" "$WS/skills/v8-admin/references"
-curl -sL "$BASE/camps/v8-admin/skills/v8-admin/SKILL.md" -o "$WS/skills/v8-admin/SKILL.md"
-curl -sL "$BASE/camps/v8-admin/skills/v8-admin/v8-auth.sh" -o "$WS/skills/v8-admin/v8-auth.sh"
+curl -sL "$BASE/packages/v8-admin/skills/v8-admin/SKILL.md" -o "$WS/skills/v8-admin/SKILL.md"
+curl -sL "$BASE/packages/v8-admin/skills/v8-admin/v8-auth.sh" -o "$WS/skills/v8-admin/v8-auth.sh"
 chmod +x "$WS/skills/v8-admin/v8-auth.sh"
-curl -sL "$BASE/camps/v8-admin/skills/v8-admin/references/admin-api.md" -o "$WS/skills/v8-admin/references/admin-api.md"
+curl -sL "$BASE/packages/v8-admin/skills/v8-admin/references/admin-api.md" -o "$WS/skills/v8-admin/references/admin-api.md"
 for f in users-search users-low-balance comments-list verse-list game-payments-list game-payment-items-list; do
-  curl -sL "$BASE/camps/v8-admin/skills/v8-admin/queries/${f}.gql" -o "$WS/skills/v8-admin/queries/${f}.gql"
+  curl -sL "$BASE/packages/v8-admin/skills/v8-admin/queries/${f}.gql" -o "$WS/skills/v8-admin/queries/${f}.gql"
 done
 
 # gws-sheets (dependency)
@@ -28,4 +28,4 @@ curl -sL "$BASE/packages/gws-sheets/skills/gws-sheets/SKILL.md" -o "$WS/skills/g
 npm install -g @googleworkspace/cli https://github.com/planetarium/gws-auth/releases/download/v0.3.0/anthropic-kr-gws-auth-0.1.0.tgz 2>/dev/null || \
   echo "  [warn] gws/gws-auth install failed. Install manually."
 
-echo "v8-admin skills installed (with gql-ops + gws-sheets)"
+echo "v8-admin camp installed (with gql-ops + gws-sheets)"

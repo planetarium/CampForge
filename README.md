@@ -234,17 +234,17 @@ camp:
 
 ## Camp Structure
 
+A camp contains no skill code — skills are pulled in via [skillpm](https://skillpm.dev/) from `packages/`.
+
 ```
 campforge-{domain}/
-├── manifest.yaml              # Metadata, dependencies, compatibility
+├── manifest.yaml              # Metadata, skill references, compatibility
 ├── package.json               # Skill dependencies (skillpm/npm)
 ├── campforge-cli.sh           # One-shot install script
 ├── identity/                  # Agent identity
 │   ├── SOUL.md                # Personality, values, tone
 │   ├── IDENTITY.md            # Name, role
 │   └── AGENTS.md              # Operating rules, error handling
-├── skills/                    # AgentSkills compatible
-│   └── {skill-name}/SKILL.md
 ├── knowledge/                 # Domain knowledge
 │   ├── glossary.md
 │   └── decision-trees/
@@ -257,6 +257,19 @@ campforge-{domain}/
     └── scenarios/
 ```
 
+## Skill Package Structure
+
+All skills live in `packages/` as npm-compatible packages:
+
+```
+packages/{skill-name}/
+├── package.json               # Name, version, dependencies
+└── skills/{skill-name}/
+    ├── SKILL.md               # AgentSkills compatible skill definition
+    ├── queries/               # (optional) GraphQL query files
+    └── references/            # (optional) API docs, examples
+```
+
 ## Platform Support
 
 | Platform | Identity | Skills | Heartbeat |
@@ -267,14 +280,18 @@ campforge-{domain}/
 | Gemini CLI | — | .gemini/skills/ | — |
 | Generic | — | .agents/skills/ | — |
 
-## Shared Skill Packages
+## Skill Packages
 
-Shared skills live in `packages/` and are resolved via [skillpm](https://skillpm.dev/) or npm workspaces.
+All skills live in `packages/` and are resolved via [skillpm](https://skillpm.dev/) or npm workspaces.
 
-| Package | Description |
-|---------|-------------|
-| [`@campforge/gql-ops`](./packages/gql-ops/) | GraphQL operations — gq CLI conventions, schema introspection, self-healing |
-| [`@campforge/gws-sheets`](./packages/gws-sheets/) | Google Sheets operations via gws CLI |
+| Package | Description | Used by |
+|---------|-------------|---------|
+| [`@campforge/gql-ops`](./packages/gql-ops/) | GraphQL operations — gq CLI, schema introspection, self-healing | v8-admin, 9c-backoffice, iap-manager |
+| [`@campforge/gws-sheets`](./packages/gws-sheets/) | Google Sheets operations via gws CLI | v8-admin |
+| [`@campforge/v8-admin`](./packages/v8-admin/) | V8 platform admin — users, credits, verses, comments | v8-admin |
+| [`@campforge/9c-backoffice`](./packages/9c-backoffice/) | Nine Chronicles table patch operations | 9c-backoffice |
+| `@campforge/iap-*` | IAP product/receipt/asset management (5 skills) | iap-manager |
+| `@campforge/camp-*` | CampForge guide skills (6 skills) | campforge-guide |
 
 ## License
 
