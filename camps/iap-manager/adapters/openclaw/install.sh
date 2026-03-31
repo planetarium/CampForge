@@ -2,24 +2,28 @@
 # CampForge iap-manager adapter for OpenClaw
 
 CAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+REPO_ROOT="$(cd "$CAMP_DIR/../.." && pwd)"
 WORKSPACE="${OPENCLAW_WORKSPACE:-$HOME/.openclaw/workspace}"
 
-# 1. Install all skills via skillpm
-cd "$CAMP_DIR" && npx skillpm install
+# 1. Ensure skill dependencies are resolved
+cd "$REPO_ROOT" && npx skillpm install
 
 # 2. Identity files (backup first)
 for f in SOUL.md IDENTITY.md AGENTS.md; do
-  if [ -f "$WORKSPACE/$f" ]; then
-    cp "$WORKSPACE/$f" "$WORKSPACE/$f.bak"
-  fi
-  if [ -f "$CAMP_DIR/identity/$f" ]; then
-    cp "$CAMP_DIR/identity/$f" "$WORKSPACE/$f"
+  [ -f "$WORKSPACE/$f" ] && cp "$WORKSPACE/$f" "$WORKSPACE/$f.bak"
+  [ -f "$CAMP_DIR/identity/$f" ] && cp "$CAMP_DIR/identity/$f" "$WORKSPACE/$f"
+done
+
+# 3. Copy camp's declared skill dependencies
+mkdir -p "$WORKSPACE/skills"
+for pkg_dir in "$REPO_ROOT/node_modules/@campforge"/*/; do
+  pkg_name=$(basename "$pkg_dir")
+  if grep -q "\"@campforge/$pkg_name\"" "$CAMP_DIR/package.json" 2>/dev/null; then
+    [ -d "$pkg_dir/skills/$pkg_name" ] && cp -rL "$pkg_dir/skills/$pkg_name" "$WORKSPACE/skills/$pkg_name"
   fi
 done
 
-# 3. Gateway restart
-if command -v openclaw &> /dev/null; then
-  openclaw gateway restart 2>/dev/null || true
-fi
+# 4. Gateway restart
+command -v openclaw &> /dev/null && openclaw gateway restart 2>/dev/null || true
 
 echo ":: CampForge iap-manager installed for OpenClaw"
