@@ -45,8 +45,8 @@ export const validateCommand = new Command("validate")
       return true;
     });
 
-    // 2. Required directories
-    for (const d of ["identity", "skills", "adapters", "tests"]) {
+    // 2. Required directories (skills/ no longer required — skills come from packages)
+    for (const d of ["identity", "adapters", "tests"]) {
       check(`${d}/ directory exists`, () => exists(join(abs, d)));
     }
 
@@ -55,28 +55,28 @@ export const validateCommand = new Command("validate")
       check(`identity/${f} exists`, () => exists(join(abs, "identity", f)));
     }
 
-    // 4. Skills match manifest
+    // 4. Skills declared in package.json
     if (manifest) {
       const required: string[] = manifest.camp.skills.required;
-      for (const skill of required) {
-        check(`skills/${skill}/SKILL.md exists`, () =>
-          exists(join(abs, "skills", skill, "SKILL.md"))
-        );
-      }
+      const pkgJsonPath = join(abs, "package.json");
 
-      // 5. SKILL.md frontmatter validation
-      for (const skill of required) {
-        check(`skills/${skill}/SKILL.md has valid frontmatter`, () => {
-          const content = readFileSync(join(abs, "skills", skill, "SKILL.md"), "utf-8");
-          const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
-          if (!fmMatch) return false;
-          const fm = yaml.load(fmMatch[1]) as any;
-          return typeof fm.name === "string" && typeof fm.description === "string";
-        });
+      if (exists(pkgJsonPath)) {
+        const pkgJson = JSON.parse(readFileSync(pkgJsonPath, "utf-8"));
+        const deps = Object.keys(pkgJson.dependencies || {});
+
+        for (const skill of required) {
+          // skill can be "@campforge/v8-admin" (scoped) or "v8-admin" (bare)
+          const scopedName = skill.startsWith("@") ? skill : `@campforge/${skill}`;
+          check(`${scopedName} declared in package.json`, () =>
+            deps.includes(scopedName)
+          );
+        }
+      } else {
+        check("package.json exists (skills are declared as dependencies)", () => false);
       }
     }
 
-    // 6. At least one adapter with install.sh
+    // 5. At least one adapter with install.sh
     check("At least one adapter with install.sh", () => {
       for (const adapter of ["claude-code", "openclaw", "codex", "gemini-cli", "generic"]) {
         if (exists(join(abs, "adapters", adapter, "install.sh"))) return true;
@@ -84,14 +84,7 @@ export const validateCommand = new Command("validate")
       return false;
     });
 
-    // 7. package.json if skill deps exist
-    if (manifest?.camp.dependencies?.skills?.length) {
-      check("package.json exists (skill dependencies declared)", () =>
-        exists(join(abs, "package.json"))
-      );
-    }
-
-    // 8. campforge-cli.sh
+    // 6. campforge-cli.sh
     check("campforge-cli.sh exists", () => exists(join(abs, "campforge-cli.sh")));
 
     // Summary

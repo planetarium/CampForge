@@ -10,13 +10,19 @@ mkdir -p "$OUT"
 
 echo "=== Packing skill packages ==="
 for pkg_dir in "$REPO_ROOT/packages"/*/; do
+  [ -f "$pkg_dir/package.json" ] || continue
   pkg_name=$(basename "$pkg_dir")
-  (cd "$pkg_dir" && npm pack --pack-destination "$OUT" 2>/dev/null)
-  echo "  $pkg_name -> $(ls -1 "$OUT"/*"$pkg_name"* 2>/dev/null | tail -1 | xargs basename)"
+  tgz=$(cd "$pkg_dir" && npm pack --pack-destination "$OUT" 2>/dev/null)
+  if [ -n "$tgz" ]; then
+    echo "  $pkg_name -> $tgz"
+  else
+    echo "  $pkg_name -> [warn] npm pack produced no output"
+  fi
 done
 
+count=$(find "$OUT" -name '*.tgz' 2>/dev/null | wc -l | tr -d ' ')
 echo ""
-echo "=== $(ls "$OUT"/*.tgz 2>/dev/null | wc -l | tr -d ' ') tarballs ready in $OUT ==="
+echo "=== $count tarballs ready in $OUT ==="
 echo ""
 echo "To release:"
 echo "  gh release create v1.0.0 $OUT/*.tgz"
