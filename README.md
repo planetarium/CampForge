@@ -68,12 +68,14 @@ Each camp requires specific environment variables. The agent will ask for them o
 ```bash
 export V8_GQL="https://planetarium-oag.fly.dev/v8-admin-test/graphql"
 export V8_TOKEN="<your JWT>"
+export V8_SKILL_DIR="<path to v8-admin skill directory>"  # for --queryFile paths
 ```
 
 **9c-backoffice:**
 ```bash
 export BO_GQL="https://planetarium-oag.fly.dev/9c-bo/graphql"
 export BO_API_KEY="<your API key>"
+export BO_SKILL_DIR="<path to 9c-backoffice skill directory>"  # for --queryFile paths
 ```
 
 **iap-manager:**
