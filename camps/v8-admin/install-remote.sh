@@ -1,31 +1,23 @@
 #!/usr/bin/env bash
-# Remote installer for v8-admin camp (run on OpenClaw or any agent workspace)
+# Remote installer for v8-admin camp
 # Usage: curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/v8-admin/install-remote.sh | bash
 set -euo pipefail
 
-BASE="https://raw.githubusercontent.com/planetarium/CampForge/main"
-WS="${WORKSPACE:-workspace}"
+VERSION="${CAMPFORGE_VERSION:-v1.0.0}"
+BASE="https://github.com/planetarium/CampForge/releases/download/$VERSION"
 
-# gql-ops (dependency)
-mkdir -p "$WS/skills/gql-ops"
-curl -sL "$BASE/packages/gql-ops/skills/gql-ops/SKILL.md" -o "$WS/skills/gql-ops/SKILL.md"
+cd "${WORKSPACE:-workspace}"
 
-# v8-admin
-mkdir -p "$WS/skills/v8-admin/queries" "$WS/skills/v8-admin/references"
-curl -sL "$BASE/packages/v8-admin/skills/v8-admin/SKILL.md" -o "$WS/skills/v8-admin/SKILL.md"
-curl -sL "$BASE/packages/v8-admin/skills/v8-admin/v8-auth.sh" -o "$WS/skills/v8-admin/v8-auth.sh"
-chmod +x "$WS/skills/v8-admin/v8-auth.sh"
-curl -sL "$BASE/packages/v8-admin/skills/v8-admin/references/admin-api.md" -o "$WS/skills/v8-admin/references/admin-api.md"
-for f in users-search users-low-balance comments-list verse-list game-payments-list game-payment-items-list; do
-  curl -sL "$BASE/packages/v8-admin/skills/v8-admin/queries/${f}.gql" -o "$WS/skills/v8-admin/queries/${f}.gql"
-done
+npm init -y --silent 2>/dev/null
+npm pkg set \
+  "dependencies.@campforge/v8-admin=$BASE/campforge-v8-admin-1.0.0.tgz" \
+  "dependencies.@campforge/gql-ops=$BASE/campforge-gql-ops-0.2.0.tgz" \
+  "dependencies.@campforge/gws-sheets=$BASE/campforge-gws-sheets-0.1.0.tgz"
 
-# gws-sheets (dependency)
-mkdir -p "$WS/skills/gws-sheets"
-curl -sL "$BASE/packages/gws-sheets/skills/gws-sheets/SKILL.md" -o "$WS/skills/gws-sheets/SKILL.md"
+npx skillpm install
 
 # Install gws + gws-auth
 npm install -g @googleworkspace/cli https://github.com/planetarium/gws-auth/releases/download/v0.3.0/anthropic-kr-gws-auth-0.1.0.tgz 2>/dev/null || \
   echo "  [warn] gws/gws-auth install failed. Install manually."
 
-echo "v8-admin camp installed (with gql-ops + gws-sheets)"
+echo "v8-admin camp installed (via skillpm + release tarball)"
