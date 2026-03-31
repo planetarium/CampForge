@@ -26,7 +26,7 @@ If `$GOOGLE_WORKSPACE_PROJECT_ID` is not set, ask user. If `$GWS_SPREADSHEET_ID`
 ### Installation
 
 ```bash
-npm install -g @googleworkspace/cli https://github.com/planetarium/gws-auth/releases/download/v0.2.1/anthropic-kr-gws-auth-0.1.0.tgz
+npm install -g @googleworkspace/cli https://github.com/planetarium/gws-auth/releases/download/v0.3.0/anthropic-kr-gws-auth-0.1.0.tgz
 ```
 
 Verify: `gws --version && gws-auth --help`
