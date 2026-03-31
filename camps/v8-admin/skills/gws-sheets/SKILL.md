@@ -26,7 +26,7 @@ If `$GOOGLE_WORKSPACE_PROJECT_ID` is not set, ask user. If `$GWS_SPREADSHEET_ID`
 ### Installation
 
 ```bash
-npm install -g @googleworkspace/cli https://github.com/planetarium/gws-auth/releases/download/v0.2.1/anthropic-kr-gws-auth-0.1.0.tgz
+npm install -g @googleworkspace/cli https://github.com/planetarium/gws-auth/releases/download/v0.3.0/anthropic-kr-gws-auth-0.1.0.tgz
 ```
 
 Verify: `gws --version && gws-auth --help`
@@ -43,11 +43,19 @@ Verify: `gws --version && gws-auth --help`
 gws-auth status 2>/dev/null && echo "AUTH OK"
 ```
 
-로그인되어 있지 않으면 사용자에게 아래 실행을 요청 (브라우저 동의 1회 필요):
+로그인되어 있지 않으면 사용자에게 아래 실행을 요청 (device flow, 브라우저 동의 1회 필요):
 
 ```bash
 gws-auth login
 ```
+
+Sheets/Drive 외 추가 스코프가 필요하면 `--scope`로 지정하여 재로그인 요청:
+
+```bash
+gws-auth login --scope gmail.readonly --scope calendar
+```
+
+사용 가능한 스코프 확인: `gws-auth scopes`
 
 #### 2. 매 호출 전 토큰 + 프로젝트 주입
 
