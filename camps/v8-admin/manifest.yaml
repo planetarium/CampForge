@@ -27,6 +27,7 @@ camp:
     mcp_servers: []
     skills:                         # npm 호환 (skillpm으로 해결)
       - "@campforge/gql-ops": "^0.2.0"
+      - "@campforge/gws-sheets": "^0.1.0"
 
   compatibility:
     tested:

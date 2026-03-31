@@ -21,12 +21,12 @@ camp:
       - camp-add-skill
       - camp-sync
       - camp-bench
+      - campforge-interview
   dependencies:
     tools:
       - campforge-cli
     mcp_servers: []
-    skills:
-      - '@campforge/gql-ops': ^0.2.0
+    skills: []
   compatibility:
     tested:
       - platform: claude-code

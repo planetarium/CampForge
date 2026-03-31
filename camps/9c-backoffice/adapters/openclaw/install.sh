@@ -3,11 +3,10 @@
 
 CAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 WORKSPACE="${OPENCLAW_WORKSPACE:-$HOME/.openclaw/workspace}"
+REPO_ROOT="$(cd "$CAMP_DIR/../.." && pwd)"
 
-# 1. Install skill dependencies via skillpm
-if command -v skillpm &> /dev/null; then
-  (cd "$CAMP_DIR" && skillpm install)
-fi
+# 1. Resolve skill dependencies via skillpm
+npx skillpm install 2>/dev/null || true
 
 # 2. Identity files (backup first)
 for f in SOUL.md IDENTITY.md AGENTS.md; do
@@ -19,18 +18,20 @@ for f in SOUL.md IDENTITY.md AGENTS.md; do
   fi
 done
 
-# 3. Skills
+# 3. Copy camp skills
 mkdir -p "$WORKSPACE/skills"
 cp -r "$CAMP_DIR/skills/9c-backoffice" "$WORKSPACE/skills/9c-backoffice"
 
-# gql-ops: skillpm → local fallback
-if [ -d "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" ]; then
-  cp -r "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" "$WORKSPACE/skills/gql-ops"
-elif [ -d "$CAMP_DIR/../../packages/gql-ops/skills/gql-ops" ]; then
-  cp -r "$CAMP_DIR/../../packages/gql-ops/skills/gql-ops" "$WORKSPACE/skills/gql-ops"
-fi
+# 4. Copy shared skill dependencies (skillpm node_modules → local packages/ fallback)
+for pkg in gql-ops; do
+  if [ -d "$CAMP_DIR/node_modules/@campforge/$pkg/skills/$pkg" ]; then
+    cp -r "$CAMP_DIR/node_modules/@campforge/$pkg/skills/$pkg" "$WORKSPACE/skills/$pkg"
+  elif [ -d "$REPO_ROOT/packages/$pkg/skills/$pkg" ]; then
+    cp -r "$REPO_ROOT/packages/$pkg/skills/$pkg" "$WORKSPACE/skills/$pkg"
+  fi
+done
 
-# 4. Gateway restart
+# 5. Gateway restart
 if command -v openclaw &> /dev/null; then
   openclaw gateway restart 2>/dev/null || true
 fi

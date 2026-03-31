@@ -19,23 +19,16 @@ for f in SOUL.md IDENTITY.md AGENTS.md; do
   fi
 done
 
-# 3. Skills
+# 3. Copy camp skills
 mkdir -p "$WORKSPACE/skills"
 for skill_dir in "$CAMP_DIR/skills"/*/; do
   skill_name=$(basename "$skill_dir")
   cp -r "$skill_dir" "$WORKSPACE/skills/$skill_name"
 done
 
-# gql-ops: skillpm -> local fallback
-if [ -d "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" ]; then
-  cp -r "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" "$WORKSPACE/skills/gql-ops"
-elif [ -d "$CAMP_DIR/../../packages/gql-ops/skills/gql-ops" ]; then
-  cp -r "$CAMP_DIR/../../packages/gql-ops/skills/gql-ops" "$WORKSPACE/skills/gql-ops"
-fi
-
 # 4. Gateway restart
 if command -v openclaw &> /dev/null; then
   openclaw gateway restart 2>/dev/null || true
 fi
 
-echo ":: CampForge installed for OpenClaw"
+echo ":: CampForge campforge-guide installed for OpenClaw"

@@ -20,9 +20,9 @@ for f in users-search users-low-balance comments-list verse-list game-payments-l
   curl -sL "$BASE/camps/v8-admin/skills/v8-admin/queries/${f}.gql" -o "$WS/skills/v8-admin/queries/${f}.gql"
 done
 
-# gws-sheets
+# gws-sheets (dependency)
 mkdir -p "$WS/skills/gws-sheets"
-curl -sL "$BASE/camps/v8-admin/skills/gws-sheets/SKILL.md" -o "$WS/skills/gws-sheets/SKILL.md"
+curl -sL "$BASE/packages/gws-sheets/skills/gws-sheets/SKILL.md" -o "$WS/skills/gws-sheets/SKILL.md"
 
 # Install gws + gws-auth
 npm install -g @googleworkspace/cli https://github.com/planetarium/gws-auth/releases/download/v0.3.0/anthropic-kr-gws-auth-0.1.0.tgz 2>/dev/null || \

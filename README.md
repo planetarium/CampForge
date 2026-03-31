@@ -104,7 +104,7 @@ Each camp includes a smoke test (`tests/smoke-test.md`) that validates all skill
 
 ### Option 1: Interactive Interview
 
-Load the [interview skill](./skills/interview/SKILL.md) into your LLM and say:
+Load the [interview skill](./camps/campforge-guide/skills/campforge-interview/SKILL.md) into your LLM and say:
 
 ```
 "Create a new camp"
@@ -183,7 +183,7 @@ domain:
       expect: "Uses my-skill correctly"
 ```
 
-See [domains/](./domains/) for examples.
+See the CLI usage below for examples.
 
 ### manifest.yaml Spec
 
@@ -267,9 +267,14 @@ campforge-{domain}/
 | Gemini CLI | — | .gemini/skills/ | — |
 | Generic | — | .agents/skills/ | — |
 
-## Shared Dependencies
+## Shared Skill Packages
 
-[`@campforge/gql-ops`](./packages/gql-ops/) — Shared infrastructure for GraphQL-based skills (gq CLI conventions, schema introspection, self-healing).
+Shared skills live in `packages/` and are resolved via [skillpm](https://skillpm.dev/) or npm workspaces.
+
+| Package | Description |
+|---------|-------------|
+| [`@campforge/gql-ops`](./packages/gql-ops/) | GraphQL operations — gq CLI conventions, schema introspection, self-healing |
+| [`@campforge/gws-sheets`](./packages/gws-sheets/) | Google Sheets operations via gws CLI |
 
 ## License
 
