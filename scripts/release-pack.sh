@@ -12,11 +12,11 @@ echo "=== Packing skill packages ==="
 for pkg_dir in "$REPO_ROOT/packages"/*/; do
   [ -f "$pkg_dir/package.json" ] || continue
   pkg_name=$(basename "$pkg_dir")
-  tgz=$(cd "$pkg_dir" && npm pack --pack-destination "$OUT" 2>/dev/null)
-  if [ -n "$tgz" ]; then
+  if tgz=$(cd "$pkg_dir" && npm pack --pack-destination "$OUT" 2>&1); then
     echo "  $pkg_name -> $tgz"
   else
-    echo "  $pkg_name -> [warn] npm pack produced no output"
+    echo "  $pkg_name -> [error] npm pack failed:"
+    echo "    $tgz"
   fi
 done
 
