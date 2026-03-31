@@ -60,19 +60,26 @@ export const validateCommand = new Command("validate")
       const required: string[] = manifest.camp.skills.required;
       const pkgJsonPath = join(abs, "package.json");
 
-      if (exists(pkgJsonPath)) {
-        const pkgJson = JSON.parse(readFileSync(pkgJsonPath, "utf-8"));
-        const deps = Object.keys(pkgJson.dependencies || {});
+      check("package.json exists and is valid JSON", () => {
+        if (!exists(pkgJsonPath)) return false;
+        JSON.parse(readFileSync(pkgJsonPath, "utf-8"));
+        return true;
+      });
 
-        for (const skill of required) {
-          // skill can be "@campforge/v8-admin" (scoped) or "v8-admin" (bare)
-          const scopedName = skill.startsWith("@") ? skill : `@campforge/${skill}`;
-          check(`${scopedName} declared in package.json`, () =>
-            deps.includes(scopedName)
-          );
+      if (exists(pkgJsonPath)) {
+        try {
+          const pkgJson = JSON.parse(readFileSync(pkgJsonPath, "utf-8"));
+          const deps = Object.keys(pkgJson.dependencies || {});
+
+          for (const skill of required) {
+            const scopedName = skill.startsWith("@") ? skill : `@campforge/${skill}`;
+            check(`${scopedName} declared in package.json`, () =>
+              deps.includes(scopedName)
+            );
+          }
+        } catch {
+          // Already reported by the check above
         }
-      } else {
-        check("package.json exists (skills are declared as dependencies)", () => false);
       }
     }
 

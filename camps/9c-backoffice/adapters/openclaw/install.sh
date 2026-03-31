@@ -23,6 +23,8 @@ for pkg_dir in "$REPO_ROOT/node_modules/@campforge"/*/; do
     [ -d "$pkg_dir/skills/$pkg_name" ] && cp -rL "$pkg_dir/skills/$pkg_name" "$WORKSPACE/skills/$pkg_name"
   fi
 done
+else
+  echo "  [warn] No skill packages found. Run: cd $REPO_ROOT && npx skillpm install"
 fi
 
 # 4. Gateway restart

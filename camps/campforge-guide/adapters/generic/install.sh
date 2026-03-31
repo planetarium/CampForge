@@ -17,6 +17,8 @@ for pkg_dir in "$REPO_ROOT/node_modules/@campforge"/*/; do
     [ -d "$pkg_dir/skills/$pkg_name" ] && cp -rL "$pkg_dir/skills/$pkg_name" "$TARGET_DIR/.agents/skills/$pkg_name"
   fi
 done
+else
+  echo "  [warn] No skill packages found. Run: cd $REPO_ROOT && npx skillpm install"
 fi
 
 echo ":: CampForge campforge-guide installed (generic)"
