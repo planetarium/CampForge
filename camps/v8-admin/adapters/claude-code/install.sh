@@ -15,7 +15,7 @@ if [ -d "$REPO_ROOT/node_modules/@campforge" ]; then
   for pkg_dir in "$REPO_ROOT/node_modules/@campforge"/*/; do
     pkg_name=$(basename "$pkg_dir")
     if grep -q "\"@campforge/$pkg_name\"" "$CAMP_DIR/package.json" 2>/dev/null; then
-      [ -d "$pkg_dir/skills/$pkg_name" ] && cp -rL "$pkg_dir/skills/$pkg_name" "$TARGET_DIR/.claude/skills/$pkg_name" && installed=$((installed + 1))
+      [ -d "$pkg_dir/skills/$pkg_name" ] && rm -rf "$TARGET_DIR/.claude/skills/$pkg_name" && cp -rL "$pkg_dir/skills/$pkg_name" "$TARGET_DIR/.claude/skills/$pkg_name" && installed=$((installed + 1))
     fi
   done
 fi
@@ -23,7 +23,7 @@ fi
 if [ "$installed" -eq 0 ] && [ -d "$REPO_ROOT/packages" ]; then
   for pkg_name in $(grep -o '"@campforge/[^"]*"' "$CAMP_DIR/package.json" 2>/dev/null | tr -d '"' | sed 's|@campforge/||'); do
     if [ -d "$REPO_ROOT/packages/$pkg_name/skills/$pkg_name" ]; then
-      cp -rL "$REPO_ROOT/packages/$pkg_name/skills/$pkg_name" "$TARGET_DIR/.claude/skills/$pkg_name" && installed=$((installed + 1))
+      rm -rf "$TARGET_DIR/.claude/skills/$pkg_name" && cp -rL "$REPO_ROOT/packages/$pkg_name/skills/$pkg_name" "$TARGET_DIR/.claude/skills/$pkg_name" && installed=$((installed + 1))
     fi
   done
 fi
