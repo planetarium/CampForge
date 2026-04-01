@@ -1,0 +1,8 @@
+{
+  "name": "@campforge/camp-sync",
+  "version": "0.1.0",
+  "description": "CampForge guide camp-sync skill",
+  "keywords": ["agent-skill", "campforge", "guide"],
+  "license": "Apache-2.0",
+  "files": ["skills/"]
+}

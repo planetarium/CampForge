@@ -18,17 +18,14 @@ Camp = Identity (who am I?) + Skills (what can I do?) + Knowledge (what do I kno
 
 A camp is agent-agnostic — platform **adapters** handle installation across Claude Code, OpenClaw, Codex, Gemini CLI, and others.
 
-```
-CampForge(domain_spec) → Camp → Install on Agent
-```
-
 ## Available Camps
 
 | Camp | Domain | Skills |
 |----------|--------|--------|
-| [v8-admin](./camps/v8-admin/) | V8 Platform Admin | v8-admin (users, credits, verses, comments) |
-| [9c-backoffice](./camps/9c-backoffice/) | Nine Chronicles Table Patch | 9c-backoffice (validate → sign → stage → poll → upload → purge) |
-| [iap-manager](./camps/iap-manager/) | IAP Product Management | iap-product-query, iap-product-import, iap-receipt-query, iap-asset-import, iap-image-upload |
+| [v8-admin](./camps/v8-admin/) | V8 Platform Admin | v8-admin, gql-ops, gws-sheets |
+| [9c-backoffice](./camps/9c-backoffice/) | Nine Chronicles Table Patch | 9c-backoffice, gql-ops |
+| [iap-manager](./camps/iap-manager/) | IAP Product Management | iap-product-query, iap-product-import, iap-receipt-query, iap-asset-import, iap-image-upload, gql-ops |
+| [campforge-guide](./camps/campforge-guide/) | CampForge Usage Guide | camp-create, camp-validate, camp-add-skill, camp-sync, camp-bench, campforge-interview |
 
 ---
 
@@ -36,13 +33,24 @@ CampForge(domain_spec) → Camp → Install on Agent
 
 ### Install a Camp
 
+**Option A: Clone and install (local)**
+
 ```bash
 git clone https://github.com/planetarium/CampForge
-cd CampForge/camps/v8-admin
-./campforge-cli.sh
+cd CampForge
+npm install                          # resolve workspaces
+cd camps/v8-admin
+./campforge-cli.sh                   # auto-detects platform
 ```
 
-`campforge-cli.sh` auto-detects the platform (Claude Code / OpenClaw / Generic) and runs the appropriate adapter.
+**Option B: Remote install (no clone needed)**
+
+```bash
+mkdir workspace && cd workspace
+curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/v8-admin/install-remote.sh | bash
+```
+
+This uses [skillpm](https://skillpm.dev/) + GitHub Release tarballs to install skills without cloning the repo. Set `CAMPFORGE_VERSION` to pin a specific release.
 
 ### What Gets Installed
 
@@ -60,14 +68,14 @@ Each camp requires specific environment variables. The agent will ask for them o
 ```bash
 export V8_GQL="https://planetarium-oag.fly.dev/v8-admin-test/graphql"
 export V8_TOKEN="<your JWT>"
-export V8_SKILL_DIR="<path to v8-admin skill>"
+export V8_SKILL_DIR="<path to v8-admin skill directory>"  # for --queryFile paths
 ```
 
 **9c-backoffice:**
 ```bash
 export BO_GQL="https://planetarium-oag.fly.dev/9c-bo/graphql"
 export BO_API_KEY="<your API key>"
-export BO_SKILL_DIR="<path to 9c-backoffice skill>"
+export BO_SKILL_DIR="<path to 9c-backoffice skill directory>"  # for --queryFile paths
 ```
 
 **iap-manager:**
@@ -75,20 +83,6 @@ export BO_SKILL_DIR="<path to 9c-backoffice skill>"
 export BO_GQL="https://planetarium-oag.fly.dev/9c-bo/graphql"
 export BO_API_KEY="<your API key>"
 ```
-
-### Using with Claude Code
-
-After install, skills are automatically available. Just ask:
-
-```
-"V8에서 swen 유저를 검색해줘"
-"오딘에 WorldSheet.csv 패치해줘"
-"IAP 상품 목록을 보여줘"
-```
-
-### Using with OpenClaw
-
-After install, the agent's identity and skills are loaded on gateway restart. Skills are invoked through natural conversation.
 
 ### Verify Installation
 
@@ -104,7 +98,7 @@ Each camp includes a smoke test (`tests/smoke-test.md`) that validates all skill
 
 ### Option 1: Interactive Interview
 
-Load the [interview skill](./skills/interview/SKILL.md) into your LLM and say:
+Load the [interview skill](./packages/campforge-interview/) into your LLM and say:
 
 ```
 "Create a new camp"
@@ -122,12 +116,12 @@ cd cli && npm install
 
 ```bash
 ./node_modules/.bin/tsx bin/campforge.ts create \
-  --from ../domains/iap-manager.yaml \
+  --from domain-spec.yaml \
   --persona senior \
   --language ko
 ```
 
-This generates a full camp scaffold (identity, skills, adapters, tests). The SKILL.md files contain placeholder content — have your LLM fill them in.
+This generates a camp scaffold (identity, adapters, tests). Skills are created as separate packages in `packages/` and referenced from the camp's `package.json`.
 
 **Validate** a camp:
 
@@ -146,105 +140,51 @@ This generates a full camp scaffold (identity, skills, adapters, tests). The SKI
 
 ### Option 3: Manual
 
-Copy an existing camp directory and modify:
-
-1. Edit `manifest.yaml` with your domain info
-2. Write identity files (`identity/SOUL.md`, `IDENTITY.md`, `AGENTS.md`)
-3. Create skills in `skills/{name}/SKILL.md` following [AgentSkills](https://agentskills.io) format
-4. Add domain knowledge to `knowledge/`
+1. Create a camp directory with identity files (`identity/SOUL.md`, `IDENTITY.md`, `AGENTS.md`)
+2. Create skill packages in `packages/{skill-name}/` following [AgentSkills](https://agentskills.io) format
+3. Add domain knowledge to `knowledge/`
+4. Add skill dependencies to the camp's `package.json`
 5. Run `campforge validate` to check structure
-
-### Domain Spec YAML
-
-The input to `campforge create`. Defines the domain, identity, skills, and knowledge:
-
-```yaml
-domain:
-  id: "my-domain"
-  name: "My Domain"
-  identity:
-    role_template: "You are a {level} agent for ..."
-    core_values: ["Accuracy first"]
-    boundaries: ["Always confirm before changes"]
-  curriculum:
-    core:
-      - skill_id: "my-skill"
-        source: "generate"
-        spec:
-          description: "What this skill does"
-          workflow: ["Step 1", "Step 2"]
-          tools_needed: ["gq"]
-  knowledge:
-    glossary:
-      Term: "Definition"
-  test_scenarios:
-    - name: "Basic test"
-      prompt: "Do the thing"
-      expect: "Uses my-skill correctly"
-```
-
-See [domains/](./domains/) for examples.
-
-### manifest.yaml Spec
-
-Every camp has a `manifest.yaml` that describes its metadata, skills, dependencies, and compatibility:
-
-```yaml
-camp:
-  name: "my-domain"
-  version: "1.0.0"
-  spec_version: "camp/1.0"
-  description: "My domain agent camp"
-
-  domain:
-    primary: "ops"
-    tags: ["my-domain", "graphql"]
-
-  persona:
-    level: "senior"          # junior | mid | senior | lead
-    tone: "direct"           # friendly | direct | formal | casual
-    proactivity: "medium"    # low | medium | high
-    language: "ko"
-
-  skills:
-    required:
-      - my-skill
-    optional:
-      - extra-skill
-
-  dependencies:
-    tools:
-      - gq                  # System CLIs that must be available
-    mcp_servers: []
-    skills:                  # npm-compatible packages (resolved via skillpm)
-      - "@campforge/gql-ops": "^0.2.0"
-
-  compatibility:
-    tested:
-      - platform: "claude-code"
-        status: "pass"
-      - platform: "openclaw"
-        status: "pass"
-    frontmatter_mode: "minimal"
-```
-
-`campforge validate` checks the manifest against this schema.
 
 ---
 
-## Camp Structure
+## Repository Structure
 
 ```
-campforge-{domain}/
-├── manifest.yaml              # Metadata, dependencies, compatibility
-├── package.json               # Skill dependencies (skillpm/npm)
+CampForge/
+├── packages/                  # All skill packages (resolved via skillpm)
+│   ├── gql-ops/               #   Shared: GraphQL operations
+│   ├── gws-sheets/            #   Shared: Google Sheets operations
+│   ├── v8-admin/              #   V8 platform admin
+│   ├── 9c-backoffice/         #   Nine Chronicles table patch
+│   ├── iap-*/                 #   IAP management (5 packages)
+│   ├── camp-*/                #   CampForge guide (5 packages)
+│   └── campforge-interview/   #   Camp creation interview
+├── camps/                     # Camp definitions (no skill code)
+│   ├── v8-admin/
+│   ├── 9c-backoffice/
+│   ├── iap-manager/
+│   └── campforge-guide/
+├── cli/                       # CampForge CLI
+├── scripts/                   # Release tooling
+│   └── release-pack.sh        #   Pack tarballs for GitHub Release
+└── package.json               # npm workspaces root
+```
+
+## Camp Structure
+
+A camp contains no skill code — skills are pulled in via [skillpm](https://skillpm.dev/) from `packages/`.
+
+```
+camps/{domain}/
+├── manifest.yaml              # Metadata, skill references, compatibility
+├── package.json               # Skill dependencies (@campforge/* packages)
 ├── campforge-cli.sh           # One-shot install script
+├── install-remote.sh          # Remote install (skillpm + release tarballs)
 ├── identity/                  # Agent identity
-│   ├── SOUL.md                # Personality, values, tone
-│   ├── IDENTITY.md            # Name, role
-│   └── AGENTS.md              # Operating rules, error handling
-├── skills/                    # AgentSkills compatible
-│   └── {skill-name}/SKILL.md
+│   ├── SOUL.md
+│   ├── IDENTITY.md
+│   └── AGENTS.md
 ├── knowledge/                 # Domain knowledge
 │   ├── glossary.md
 │   └── decision-trees/
@@ -252,10 +192,45 @@ campforge-{domain}/
 │   ├── claude-code/install.sh
 │   ├── openclaw/install.sh
 │   └── generic/install.sh
-└── tests/                     # Validation scenarios
+└── tests/
     ├── smoke-test.md
     └── scenarios/
 ```
+
+## Skill Package Structure
+
+```
+packages/{skill-name}/
+├── package.json               # Name, version, skill dependencies
+└── skills/{skill-name}/
+    ├── SKILL.md               # AgentSkills skill definition
+    ├── queries/               # (optional) GraphQL query files
+    └── references/            # (optional) API docs, examples
+```
+
+## Skill Packages
+
+| Package | Description | Used by |
+|---------|-------------|---------|
+| [`@campforge/gql-ops`](./packages/gql-ops/) | GraphQL operations — gq CLI, schema introspection, self-healing | v8-admin, 9c-backoffice, iap-manager |
+| [`@campforge/gws-sheets`](./packages/gws-sheets/) | Google Sheets operations via gws CLI | v8-admin |
+| [`@campforge/v8-admin`](./packages/v8-admin/) | V8 platform admin — users, credits, verses, comments | v8-admin |
+| [`@campforge/9c-backoffice`](./packages/9c-backoffice/) | Nine Chronicles table patch operations | 9c-backoffice |
+| `@campforge/iap-*` | IAP product/receipt/asset management (5 packages) | iap-manager |
+| `@campforge/camp-*` | CampForge guide skills (5 packages) | campforge-guide |
+| [`@campforge/campforge-interview`](./packages/campforge-interview/) | Interactive camp creation via guided interview | campforge-guide |
+
+## Releasing
+
+```bash
+# 1. Pack all skill packages into tarballs
+bash scripts/release-pack.sh
+
+# 2. Create a GitHub Release with all tarballs
+gh release create v1.0.0 dist/tarballs/*.tgz
+```
+
+Camps reference these tarballs in `install-remote.sh` for remote installation without npm publish.
 
 ## Platform Support
 
@@ -266,10 +241,6 @@ campforge-{domain}/
 | Codex | AGENTS.md (merged) | .codex/skills/ | — |
 | Gemini CLI | — | .gemini/skills/ | — |
 | Generic | — | .agents/skills/ | — |
-
-## Shared Dependencies
-
-[`@campforge/gql-ops`](./packages/gql-ops/) — Shared infrastructure for GraphQL-based skills (gq CLI conventions, schema introspection, self-healing).
 
 ## License
 

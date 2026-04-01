@@ -1,0 +1,8 @@
+{
+  "name": "@campforge/camp-validate",
+  "version": "0.1.0",
+  "description": "CampForge guide camp-validate skill",
+  "keywords": ["agent-skill", "campforge", "guide"],
+  "license": "Apache-2.0",
+  "files": ["skills/"]
+}

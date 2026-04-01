@@ -1,8 +1,10 @@
 node_modules/
 dist/
+/dist/
 .DS_Store
 *.log
 /cli/node_modules/
 /cli/dist/
 .claude/
 agent-bootcamp-meta-generator.md
+package-lock.json

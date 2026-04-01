@@ -1,0 +1,8 @@
+{
+  "name": "@campforge/camp-add-skill",
+  "version": "0.1.0",
+  "description": "CampForge guide camp-add-skill skill",
+  "keywords": ["agent-skill", "campforge", "guide"],
+  "license": "Apache-2.0",
+  "files": ["skills/"]
+}

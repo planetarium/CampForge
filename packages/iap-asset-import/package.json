@@ -1,0 +1,11 @@
+{
+  "name": "@campforge/iap-asset-import",
+  "version": "1.0.0",
+  "description": "IAP iap-asset-import skill",
+  "keywords": ["agent-skill", "iap", "campforge"],
+  "license": "Apache-2.0",
+  "files": ["skills/"],
+  "dependencies": {
+    "@campforge/gql-ops": "^0.2.0"
+  }
+}

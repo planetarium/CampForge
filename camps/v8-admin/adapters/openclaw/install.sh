@@ -2,43 +2,42 @@
 # CampForge v8-admin adapter for OpenClaw
 
 CAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+REPO_ROOT="$(cd "$CAMP_DIR/../.." && pwd)"
 WORKSPACE="${OPENCLAW_WORKSPACE:-$HOME/.openclaw/workspace}"
 
-# 1. Install skill dependencies via skillpm
-if command -v skillpm &> /dev/null; then
-  (cd "$CAMP_DIR" && skillpm install)
-fi
+# 1. Ensure skill dependencies are resolved
+cd "$REPO_ROOT" && npx skillpm install
 
 # 2. Identity files (backup first)
 for f in SOUL.md IDENTITY.md AGENTS.md; do
-  if [ -f "$WORKSPACE/$f" ]; then
-    cp "$WORKSPACE/$f" "$WORKSPACE/$f.bak"
-  fi
-  if [ -f "$CAMP_DIR/identity/$f" ]; then
-    cp "$CAMP_DIR/identity/$f" "$WORKSPACE/$f"
-  fi
+  [ -f "$WORKSPACE/$f" ] && cp "$WORKSPACE/$f" "$WORKSPACE/$f.bak"
+  [ -f "$CAMP_DIR/identity/$f" ] && cp "$CAMP_DIR/identity/$f" "$WORKSPACE/$f"
 done
 
-# 3. Skills
+# 3. Copy camp's declared skill dependencies
 mkdir -p "$WORKSPACE/skills"
-cp -r "$CAMP_DIR/skills/v8-admin" "$WORKSPACE/skills/v8-admin"
-
-# gws-sheets (optional)
-if [ -d "$CAMP_DIR/skills/gws-sheets" ]; then
-  cp -r "$CAMP_DIR/skills/gws-sheets" "$WORKSPACE/skills/gws-sheets"
+installed=0
+if [ -d "$REPO_ROOT/node_modules/@campforge" ]; then
+  for pkg_dir in "$REPO_ROOT/node_modules/@campforge"/*/; do
+    pkg_name=$(basename "$pkg_dir")
+    if grep -q "\"@campforge/$pkg_name\"" "$CAMP_DIR/package.json" 2>/dev/null; then
+      [ -d "$pkg_dir/skills/$pkg_name" ] && rm -rf "$WORKSPACE/skills/$pkg_name" && cp -rL "$pkg_dir/skills/$pkg_name" "$WORKSPACE/skills/$pkg_name" && installed=$((installed + 1))
+    fi
+  done
 fi
-
-# gql-ops: skillpm → local fallback
-if [ -d "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" ]; then
-  cp -r "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" "$WORKSPACE/skills/gql-ops"
-elif [ -d "$CAMP_DIR/../../packages/gql-ops/skills/gql-ops" ]; then
-  cp -r "$CAMP_DIR/../../packages/gql-ops/skills/gql-ops" "$WORKSPACE/skills/gql-ops"
+if [ "$installed" -eq 0 ] && [ -d "$REPO_ROOT/packages" ]; then
+  for pkg_name in $(grep -o '"@campforge/[^"]*"' "$CAMP_DIR/package.json" 2>/dev/null | tr -d '"' | sed 's|@campforge/||'); do
+    if [ -d "$REPO_ROOT/packages/$pkg_name/skills/$pkg_name" ]; then
+      rm -rf "$WORKSPACE/skills/$pkg_name" && cp -rL "$REPO_ROOT/packages/$pkg_name/skills/$pkg_name" "$WORKSPACE/skills/$pkg_name" && installed=$((installed + 1))
+    fi
+  done
+fi
+if [ "$installed" -eq 0 ]; then
+  echo "  [warn] No skills installed. Run: cd $REPO_ROOT && npx skillpm install"
 fi
 
 # 4. Gateway restart
-if command -v openclaw &> /dev/null; then
-  openclaw gateway restart 2>/dev/null || true
-fi
+command -v openclaw &> /dev/null && openclaw gateway restart 2>/dev/null || true
 
 # 5. Install gws + gws-auth (for gws-sheets skill)
 if [ -d "$WORKSPACE/skills/gws-sheets" ]; then

@@ -1,0 +1,14 @@
+{
+  "name": "@campforge/gws-sheets",
+  "version": "0.1.0",
+  "description": "Google Sheets operations skill for CampForge camps",
+  "keywords": ["agent-skill", "google-sheets", "gws", "campforge"],
+  "license": "Apache-2.0",
+  "author": "swen",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/planetarium/CampForge",
+    "directory": "packages/gws-sheets"
+  },
+  "files": ["skills/"]
+}

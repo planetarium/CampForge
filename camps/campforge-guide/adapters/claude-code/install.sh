@@ -1,29 +1,37 @@
 #!/bin/bash
-# CampForge adapter for Claude Code
+# CampForge campforge-guide adapter for Claude Code
 
 CAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+REPO_ROOT="$(cd "$CAMP_DIR/../.." && pwd)"
 TARGET_DIR="${1:-.}"
 
-# 1. Install skill dependencies via skillpm
-if command -v skillpm &> /dev/null; then
-  (cd "$CAMP_DIR" && skillpm install)
-fi
+# 1. Ensure skill dependencies are resolved
+cd "$REPO_ROOT" && npx skillpm install
 
-# 2. Copy skills
+# 2. Copy camp's declared skill dependencies to target
 mkdir -p "$TARGET_DIR/.claude/skills"
-for skill_dir in "$CAMP_DIR/skills"/*/; do
-  skill_name=$(basename "$skill_dir")
-  cp -r "$skill_dir" "$TARGET_DIR/.claude/skills/$skill_name"
-done
-
-# Copy gql-ops: skillpm (node_modules) -> local fallback (packages/)
-if [ -d "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" ]; then
-  cp -r "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" "$TARGET_DIR/.claude/skills/gql-ops"
-elif [ -d "$CAMP_DIR/../../packages/gql-ops/skills/gql-ops" ]; then
-  cp -r "$CAMP_DIR/../../packages/gql-ops/skills/gql-ops" "$TARGET_DIR/.claude/skills/gql-ops"
+installed=0
+if [ -d "$REPO_ROOT/node_modules/@campforge" ]; then
+  for pkg_dir in "$REPO_ROOT/node_modules/@campforge"/*/; do
+    pkg_name=$(basename "$pkg_dir")
+    if grep -q "\"@campforge/$pkg_name\"" "$CAMP_DIR/package.json" 2>/dev/null; then
+      [ -d "$pkg_dir/skills/$pkg_name" ] && rm -rf "$TARGET_DIR/.claude/skills/$pkg_name" && cp -rL "$pkg_dir/skills/$pkg_name" "$TARGET_DIR/.claude/skills/$pkg_name" && installed=$((installed + 1))
+    fi
+  done
+fi
+if [ "$installed" -eq 0 ] && [ -d "$REPO_ROOT/packages" ]; then
+  for pkg_name in $(grep -o '"@campforge/[^"]*"' "$CAMP_DIR/package.json" 2>/dev/null | tr -d '"' | sed 's|@campforge/||'); do
+    if [ -d "$REPO_ROOT/packages/$pkg_name/skills/$pkg_name" ]; then
+      rm -rf "$TARGET_DIR/.claude/skills/$pkg_name" && cp -rL "$REPO_ROOT/packages/$pkg_name/skills/$pkg_name" "$TARGET_DIR/.claude/skills/$pkg_name" && installed=$((installed + 1))
+    fi
+  done
+fi
+if [ "$installed" -eq 0 ]; then
+  echo "  [warn] No skills installed. Run: cd $REPO_ROOT && npx skillpm install"
 fi
 
 # 3. Identity -> CLAUDE.md
+mkdir -p "$TARGET_DIR/.claude"
 {
   cat "$CAMP_DIR/identity/SOUL.md"
   echo ""
@@ -37,6 +45,6 @@ if [ -d "$CAMP_DIR/knowledge" ]; then
   cp -r "$CAMP_DIR/knowledge" "$TARGET_DIR/.claude/knowledge"
 fi
 
-echo ":: CampForge installed for Claude Code"
-echo "   Skills: $(ls "$TARGET_DIR/.claude/skills" | wc -l | tr -d ' ') installed"
+echo ":: CampForge campforge-guide installed for Claude Code"
+echo "   Skills: $(ls "$TARGET_DIR/.claude/skills" 2>/dev/null | wc -l | tr -d ' ') installed"
 echo "   Identity: .claude/CLAUDE.md created"

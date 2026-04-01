@@ -16,17 +16,16 @@ camp:
 
   skills:
     required:
-      - v8-admin
+      - "@campforge/v8-admin"
+      - "@campforge/gql-ops"
     optional:
-      - gws-sheets
+      - "@campforge/gws-sheets"
 
   dependencies:
     tools:
       - gq                         # npm i -g graphqurl
       - gws                        # npm i -g @googleworkspace/cli
     mcp_servers: []
-    skills:                         # npm 호환 (skillpm으로 해결)
-      - "@campforge/gql-ops": "^0.2.0"
 
   compatibility:
     tested:

@@ -5,6 +5,7 @@
   "keywords": ["agent-skill", "campforge", "nine-chronicles", "backoffice"],
   "license": "Apache-2.0",
   "dependencies": {
+    "@campforge/9c-backoffice": "^1.0.0",
     "@campforge/gql-ops": "^0.2.0"
   }
 }

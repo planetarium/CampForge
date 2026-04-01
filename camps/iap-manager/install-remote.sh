@@ -1,19 +1,24 @@
 #!/usr/bin/env bash
-# Remote installer for iap-manager skills (run on OpenClaw or any agent workspace)
+# Remote installer for iap-manager camp
 # Usage: curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/iap-manager/install-remote.sh | bash
 set -euo pipefail
 
-BASE="https://raw.githubusercontent.com/planetarium/CampForge/main"
+VERSION="${CAMPFORGE_VERSION:-v1.0.0}"
+BASE="https://github.com/planetarium/CampForge/releases/download/$VERSION"
+
 WS="${WORKSPACE:-workspace}"
+mkdir -p "$WS"
+cd "$WS"
 
-# gql-ops (dependency)
-mkdir -p "$WS/skills/gql-ops"
-curl -sL "$BASE/packages/gql-ops/skills/gql-ops/SKILL.md" -o "$WS/skills/gql-ops/SKILL.md"
+npm init -y --silent 2>/dev/null
+npm pkg set \
+  "dependencies.@campforge/iap-product-query=$BASE/campforge-iap-product-query-1.0.0.tgz" \
+  "dependencies.@campforge/iap-product-import=$BASE/campforge-iap-product-import-1.0.0.tgz" \
+  "dependencies.@campforge/iap-receipt-query=$BASE/campforge-iap-receipt-query-1.0.0.tgz" \
+  "dependencies.@campforge/iap-asset-import=$BASE/campforge-iap-asset-import-1.0.0.tgz" \
+  "dependencies.@campforge/iap-image-upload=$BASE/campforge-iap-image-upload-1.0.0.tgz" \
+  "dependencies.@campforge/gql-ops=$BASE/campforge-gql-ops-0.2.0.tgz"
 
-# iap-manager skills
-for skill in iap-asset-import iap-image-upload iap-product-import iap-product-query iap-receipt-query; do
-  mkdir -p "$WS/skills/${skill}"
-  curl -sL "$BASE/camps/iap-manager/skills/${skill}/SKILL.md" -o "$WS/skills/${skill}/SKILL.md"
-done
+npx skillpm install
 
-echo "iap-manager skills installed (with gql-ops dependency)"
+echo "iap-manager camp installed (via skillpm + release tarball)"

@@ -15,18 +15,17 @@ camp:
     language: ko
   skills:
     required:
-      - iap-product-query
-      - iap-product-import
-      - iap-receipt-query
-      - iap-asset-import
-      - iap-image-upload
+      - "@campforge/iap-product-query"
+      - "@campforge/iap-product-import"
+      - "@campforge/iap-receipt-query"
+      - "@campforge/iap-asset-import"
+      - "@campforge/iap-image-upload"
+      - "@campforge/gql-ops"
     optional: []
   dependencies:
     tools:
       - gq
     mcp_servers: []
-    skills:
-      - '@campforge/gql-ops': ^0.2.0
   compatibility:
     tested:
       - platform: claude-code

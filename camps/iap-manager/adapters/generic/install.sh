@@ -1,26 +1,33 @@
 #!/bin/bash
-# CampForge adapter — generic fallback
+# CampForge iap-manager adapter — generic fallback
 
 CAMP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+REPO_ROOT="$(cd "$CAMP_DIR/../.." && pwd)"
 TARGET_DIR="${1:-.}"
 
-# 1. Install skill dependencies via skillpm
-if command -v skillpm &> /dev/null; then
-  (cd "$CAMP_DIR" && skillpm install)
-fi
+# 1. Ensure skill dependencies are resolved
+cd "$REPO_ROOT" && npx skillpm install
 
-# 2. Copy skills only
+# 2. Copy camp's declared skill dependencies
 mkdir -p "$TARGET_DIR/.agents/skills"
-for skill_dir in "$CAMP_DIR/skills"/*/; do
-  skill_name=$(basename "$skill_dir")
-  cp -r "$skill_dir" "$TARGET_DIR/.agents/skills/$skill_name"
-done
-
-# gql-ops: skillpm -> local fallback
-if [ -d "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" ]; then
-  cp -r "$CAMP_DIR/node_modules/@campforge/gql-ops/skills/gql-ops" "$TARGET_DIR/.agents/skills/gql-ops"
-elif [ -d "$CAMP_DIR/../../packages/gql-ops/skills/gql-ops" ]; then
-  cp -r "$CAMP_DIR/../../packages/gql-ops/skills/gql-ops" "$TARGET_DIR/.agents/skills/gql-ops"
+installed=0
+if [ -d "$REPO_ROOT/node_modules/@campforge" ]; then
+  for pkg_dir in "$REPO_ROOT/node_modules/@campforge"/*/; do
+    pkg_name=$(basename "$pkg_dir")
+    if grep -q "\"@campforge/$pkg_name\"" "$CAMP_DIR/package.json" 2>/dev/null; then
+      [ -d "$pkg_dir/skills/$pkg_name" ] && rm -rf "$TARGET_DIR/.agents/skills/$pkg_name" && cp -rL "$pkg_dir/skills/$pkg_name" "$TARGET_DIR/.agents/skills/$pkg_name" && installed=$((installed + 1))
+    fi
+  done
+fi
+if [ "$installed" -eq 0 ] && [ -d "$REPO_ROOT/packages" ]; then
+  for pkg_name in $(grep -o '"@campforge/[^"]*"' "$CAMP_DIR/package.json" 2>/dev/null | tr -d '"' | sed 's|@campforge/||'); do
+    if [ -d "$REPO_ROOT/packages/$pkg_name/skills/$pkg_name" ]; then
+      rm -rf "$TARGET_DIR/.agents/skills/$pkg_name" && cp -rL "$REPO_ROOT/packages/$pkg_name/skills/$pkg_name" "$TARGET_DIR/.agents/skills/$pkg_name" && installed=$((installed + 1))
+    fi
+  done
+fi
+if [ "$installed" -eq 0 ]; then
+  echo "  [warn] No skills installed. Run: cd $REPO_ROOT && npx skillpm install"
 fi
 
-echo ":: CampForge installed (generic)"
+echo ":: CampForge iap-manager installed (generic)"
