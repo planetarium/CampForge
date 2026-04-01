@@ -98,7 +98,7 @@ Each camp includes a smoke test (`tests/smoke-test.md`) that validates all skill
 
 ### Option 1: Interactive Interview
 
-Load the [interview skill](./packages/campforge-interview/skills/campforge-interview/SKILL.md) into your LLM and say:
+Load the [interview skill](./packages/campforge-interview/) into your LLM and say:
 
 ```
 "Create a new camp"

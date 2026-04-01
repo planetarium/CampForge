@@ -7,10 +7,11 @@ export function writeManifest(ctx: PipelineContext): void {
   const { domainSpec, persona, language, outputDir, extras } = ctx;
   const d = domainSpec.domain;
 
-  const coreSkills = d.curriculum.core.map((s) => s.skill_id);
+  const toScoped = (id: string) => id.startsWith("@") ? id : `@campforge/${id}`;
+  const coreSkills = d.curriculum.core.map((s) => toScoped(s.skill_id));
   const optionalSkills = (d.curriculum.elective || [])
-    .map((s) => s.skill_id)
-    .filter((id) => !extras.includes(id));
+    .map((s) => toScoped(s.skill_id))
+    .filter((id) => !extras.map(toScoped).includes(id));
   const tools = [
     ...new Set(d.curriculum.core.flatMap((s) => s.spec?.tools_needed || [])),
   ];

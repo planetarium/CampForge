@@ -8,9 +8,9 @@ Camps contain no skill code. A camp declares identity (who the agent is), knowle
 
 Why: Skills have their own dependency graphs (e.g. v8-admin depends on gql-ops). The same skill can be shared across multiple camps. Embedding skills inside camps makes dependency management and recomposition impossible.
 
-### skillpm is the single skill installation path
+### skillpm resolves dependencies; adapters place them
 
-Skills are always installed through [skillpm](https://skillpm.dev/). Adapter install scripts never copy files directly or hardcode paths. skillpm operates on top of npm's dependency resolution, so transitive skill dependencies are resolved automatically.
+Skills are resolved through [skillpm](https://skillpm.dev/), which operates on top of npm's dependency resolution so transitive skill dependencies are handled automatically. Adapter install scripts then copy the resolved skill folders from `node_modules/@campforge/*/skills/` to the agent-specific location (e.g. `.claude/skills/`). Adapters never hardcode skill names — they filter by the camp's `package.json` dependencies.
 
 ### npm workspaces for local dev, GitHub Release tarballs for distribution
 
@@ -23,8 +23,8 @@ Why not npm publish: Some skills (v8-admin, 9c-backoffice, iap-*) contain intern
 ### Adapters handle camp-specific context only
 
 An adapter install script does exactly three things:
-1. Run `npx skillpm install` from the repo root (resolves skills)
-2. Copy only the skills declared in the camp's `package.json` to the target (grep filter)
+1. Run `npx skillpm install` from the repo root (resolves skills into `node_modules/@campforge/`)
+2. Copy resolved skill folders to the agent-specific location, filtered by the camp's `package.json` deps. Falls back to `packages/` if `node_modules` is missing (local dev without skillpm).
 3. Place identity and knowledge files according to the platform
 
 Skill names are never hardcoded in adapters. `package.json` is the single source of truth.
