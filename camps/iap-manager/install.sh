@@ -3,7 +3,7 @@
 # Usage: curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/iap-manager/install.sh | bash
 set -euo pipefail
 
-VERSION="${CAMPFORGE_VERSION:-v1.0.0}"
+VERSION="${CAMPFORGE_VERSION:-v1.0.1}"
 BASE="https://github.com/planetarium/CampForge/releases/download/$VERSION"
 
 WS="${WORKSPACE:-workspace}"

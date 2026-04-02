@@ -1,7 +1,7 @@
 #!/bin/bash
 # Pack all skill packages into tarballs for GitHub Release
 # Usage: ./scripts/release-pack.sh [output-dir]
-#   Then: gh release create v1.0.0 dist/tarballs/*.tgz
+#   Then: gh release create v1.0.1 dist/tarballs/*.tgz
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -29,4 +29,4 @@ echo ""
 echo "=== $count tarballs + install-common.sh ready in $OUT ==="
 echo ""
 echo "To release:"
-echo "  gh release create v1.0.0 $OUT/*.tgz $OUT/install-common.sh"
+echo "  gh release create v1.0.1 $OUT/*.tgz $OUT/install-common.sh"
