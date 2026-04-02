@@ -1,6 +1,6 @@
 {
   "name": "@campforge/v8-api",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "V8 platform API skill — users, credits, verses, comments, game payments",
   "keywords": ["agent-skill", "v8", "api", "campforge"],
   "license": "Apache-2.0",
