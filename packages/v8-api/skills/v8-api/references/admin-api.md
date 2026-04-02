@@ -3,9 +3,9 @@
 Auth: `Authorization: Bearer <token>` (JWT)
 
 Environments:
+- Production: `https://v8-meme-api.verse8.io`
 - Test: `https://v8api.tests.mothership-pla.net`
 - Local dev: `https://<ngrok-url>` (changes per session)
-- Production: not yet supported
 
 ---
 

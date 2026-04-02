@@ -19,7 +19,7 @@ compatibility: Requires gq (graphqurl) CLI and a running GraphQL gateway
 ## Environment variables
 
 ```bash
-echo $V8_GQL        # GraphQL gateway URL (default: https://planetarium-oag.fly.dev/v8-admin-test/graphql)
+echo $V8_GQL        # GraphQL gateway URL (default: https://planetarium-oag.fly.dev/v8-admin/graphql)
 echo $V8_SKILL_DIR   # Absolute path to this skill directory
 ```
 
