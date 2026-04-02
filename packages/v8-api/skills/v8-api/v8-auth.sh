@@ -6,7 +6,7 @@
 #   bash v8-auth.sh logout           # clear stored token
 set -euo pipefail
 
-V8_API="${V8_API_BASE:-https://v8api.tests.mothership-pla.net}"
+V8_API="${V8_API_BASE:-https://v8-meme-api.verse8.io}"
 TOKEN_FILE="${V8_TOKEN_FILE:-${HOME}/.config/v8/token}"
 
 # --- helpers ---
