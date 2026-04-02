@@ -20,9 +20,13 @@ for pkg_dir in "$REPO_ROOT/packages"/*/; do
   fi
 done
 
+# Include shared install helper so camp installers can fetch it from the same release
+cp "$REPO_ROOT/scripts/install-common.sh" "$OUT/install-common.sh"
+echo "  install-common.sh -> $OUT/install-common.sh"
+
 count=$(find "$OUT" -name '*.tgz' 2>/dev/null | wc -l | tr -d ' ')
 echo ""
-echo "=== $count tarballs ready in $OUT ==="
+echo "=== $count tarballs + install-common.sh ready in $OUT ==="
 echo ""
 echo "To release:"
-echo "  gh release create v1.0.0 $OUT/*.tgz"
+echo "  gh release create v1.0.0 $OUT/*.tgz $OUT/install-common.sh"

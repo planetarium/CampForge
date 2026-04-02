@@ -25,7 +25,7 @@ if [ -f "$COMMON" ]; then
   source "$COMMON"
 else
   TMP_COMMON="$(mktemp)"
-  curl -fsSL "https://raw.githubusercontent.com/planetarium/CampForge/${VERSION}/scripts/install-common.sh" -o "$TMP_COMMON"
+  curl -fsSL "$BASE/install-common.sh" -o "$TMP_COMMON"
   # shellcheck disable=SC1090
   source "$TMP_COMMON"
   rm -f "$TMP_COMMON"
