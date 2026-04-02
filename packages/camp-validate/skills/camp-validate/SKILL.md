@@ -43,7 +43,7 @@ cd $CAMPFORGE_CLI && ./node_modules/.bin/tsx bin/campforge.ts validate <camp-dir
 | 5 | SKILL.md frontmatter 유효성 | name, description 필드 누락 |
 | 6 | install.sh 존재 | 설치 스크립트 누락 |
 | 7 | package.json (의존성 선언 시) | skill 의존성이 있는데 package.json 없음 |
-| 8 | campforge-cli.sh 존재 | 파일 누락 |
+| 8 | (reserved) | — |
 | 9 | README.md 존재 | 플랫폼별 설치 가이드 누락 |
 | 10 | (reserved) | — |
 

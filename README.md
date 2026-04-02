@@ -168,7 +168,6 @@ camps/{domain}/
 ├── manifest.yaml              # Metadata, skill references, compatibility
 ├── package.json               # Skill dependencies (@campforge/* packages)
 ├── install.sh                 # Installer (skillpm + release tarballs)
-├── campforge-cli.sh           # One-shot install script (local dev)
 ├── identity/                  # Agent identity
 │   ├── SOUL.md
 │   ├── IDENTITY.md

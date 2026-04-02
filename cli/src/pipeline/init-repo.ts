@@ -15,7 +15,7 @@ Agent camp for ${d.name}.
 ## Install
 
 \`\`\`bash
-./campforge-cli.sh
+curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/${d.id}/install.sh | bash
 \`\`\`
 
 ## Skills

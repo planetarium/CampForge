@@ -7,7 +7,6 @@ import { generateIdentity } from "../pipeline/generate-identity.js";
 import { generateSkills } from "../pipeline/generate-skills.js";
 import { resolveDeps } from "../pipeline/resolve-deps.js";
 import { packageKnowledge } from "../pipeline/package-knowledge.js";
-import { generateAdapters } from "../pipeline/generate-adapters.js";
 import { generateTests } from "../pipeline/generate-tests.js";
 import { writeManifest } from "../pipeline/write-manifest.js";
 import { initRepo } from "../pipeline/init-repo.js";
@@ -18,10 +17,9 @@ export interface PipelineContext {
   language: string;
   outputDir: string;
   extras: string[];
-  adapters: string[];
 }
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 7;
 
 export const createCommand = new Command("create")
   .description("Create a new camp from a domain spec")
@@ -30,7 +28,6 @@ export const createCommand = new Command("create")
   .option("--language <lang>", "Language", "ko")
   .option("--output <dir>", "Output directory")
   .option("--extras <skills>", "Comma-separated elective skill IDs", "")
-  .option("--adapters <list>", "Comma-separated adapters", "claude-code,openclaw,generic")
   .action((opts) => {
     const specPath = resolve(opts.from);
     const domainSpec = loadDomainSpec(specPath);
@@ -43,7 +40,6 @@ export const createCommand = new Command("create")
       language: opts.language,
       outputDir,
       extras: opts.extras ? opts.extras.split(",").filter(Boolean) : [],
-      adapters: opts.adapters.split(",").filter(Boolean),
     };
 
     console.log(`\n=== CampForge: Creating camp "${domainId}" ===\n`);
@@ -62,18 +58,15 @@ export const createCommand = new Command("create")
     log.step(5, TOTAL_STEPS, "Packaging knowledge...");
     packageKnowledge(ctx);
 
-    log.step(6, TOTAL_STEPS, "Generating platform adapters...");
-    generateAdapters(ctx);
-
-    log.step(7, TOTAL_STEPS, "Generating tests...");
+    log.step(6, TOTAL_STEPS, "Generating tests...");
     generateTests(ctx);
 
-    log.step(8, TOTAL_STEPS, "Writing manifest & initializing repo...");
+    log.step(7, TOTAL_STEPS, "Writing manifest & initializing repo...");
     writeManifest(ctx);
     initRepo(ctx);
 
     log.success(`Camp created at: ${outputDir}`);
     console.log(`\n  Next: have your LLM fill in the skill SKILL.md files`);
-    console.log(`  Install: cd ${domainId} && ./campforge-cli.sh`);
+    console.log(`  Then: create install.sh (see camps/v8-admin/install.sh for reference)`);
     console.log(`  Validate: campforge validate ${outputDir}\n`);
   });

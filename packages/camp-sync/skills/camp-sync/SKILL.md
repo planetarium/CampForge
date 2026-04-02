@@ -26,8 +26,7 @@ domain-spec.yaml을 수정한 뒤 기존 캠프에 반영하고 싶을 때. 예:
 |---|---|
 | identity/ (SOUL, IDENTITY, AGENTS.md) | skills/*/SKILL.md (기존) |
 | knowledge/glossary.md | skills 하위 사용자 파일 (queries/*.gql 등) |
-| manifest.yaml, package.json | |
-| install.sh | |
+| manifest.yaml, package.json | install.sh (tarball URL 포함) |
 | tests/smoke-test.md | |
 
 ## Environment
@@ -65,7 +64,6 @@ cd $CAMPFORGE_CLI && ./node_modules/.bin/tsx bin/campforge.ts sync \
 - `--persona <level>` — junior | mid | senior | lead (기본: senior)
 - `--language <lang>` — ko | en (기본: ko)
 - `--dry-run` — 변경 사항만 보여주고 실제 쓰기 안 함
-- `--adapters <list>` — (deprecated, ignored)
 
 ### Step 3: 결과 확인
 

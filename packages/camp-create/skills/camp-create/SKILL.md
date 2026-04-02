@@ -112,7 +112,7 @@ mv $CAMPFORGE_CLI/campforge-{domain-id} <campforge-project>/camps/
 
 - 캠프 이름과 한 줄 설명
 - 스킬 목록
-- 플랫폼별 설치 방법 (Claude Code, Codex, OpenClaw)
+- 설치 방법 (`curl | bash`)
 - Prerequisites (필요한 도구)
 - 검증 명령어
 
@@ -162,7 +162,7 @@ curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/<c
 - `scaffold 생성 완료 — skills/에 TODO 3개`
 - `SKILL.md 채우기 완료`
 - `검증 통과`
-- `설치: cd <camp> && ./campforge-cli.sh`
+- `설치: curl -fsSL .../install.sh | bash`
 
 ## Stop Conditions
 
