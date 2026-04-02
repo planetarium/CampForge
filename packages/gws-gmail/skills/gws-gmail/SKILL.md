@@ -32,33 +32,33 @@ Verify: `gws --version && gws-auth --help`
 
 ### Authentication (gws-auth)
 
-`gws-auth`는 OAuth 인증 전용 CLI로, Client ID/Secret이 내장되어 있어 별도 GCP 설정이 필요 없다.
+`gws-auth` is a dedicated OAuth CLI with embedded Client ID/Secret — no manual GCP credentials setup required.
 
-**v0.4.0 필수**: Gmail 스코프는 Google이 device flow에서 차단하므로, authorization code flow (localhost redirect)를 지원하는 v0.4.0 이상이 필요하다. v0.3.0 이하에서는 `Invalid device flow scope` 에러가 발생한다.
+**v0.4.0 required**: Google blocks Gmail scopes from the device code flow. gws-auth v0.4.0+ uses the authorization code flow (localhost redirect) which supports all scopes. v0.3.0 and below will fail with `Invalid device flow scope`.
 
-#### 1. 로그인 상태 확인
+#### 1. Check login status
 
 ```bash
 gws-auth status 2>/dev/null && echo "AUTH OK"
 ```
 
-로그인되어 있지 않으면 **사용자에게** 아래 실행을 요청 (브라우저에서 Google OAuth 동의 1회 필요 — 에이전트가 직접 실행할 수 없음):
+If not logged in, **ask the user** to run the following (requires one-time Google OAuth consent in a browser — the agent cannot run this directly):
 
 ```bash
 gws-auth login --scope gmail.modify
 ```
 
-이미 로그인되어 있지만 gmail 스코프가 없으면 재로그인 요청 (기존 스코프도 함께 지정해야 유지됨):
+If already logged in but missing the gmail scope, request re-login (include existing scopes to retain them):
 
 ```bash
 gws-auth login --scope gmail.modify --scope spreadsheets --scope drive.file
 ```
 
-> **스코프 참고**: `gmail.modify`는 읽기+쓰기+라벨 관리를 포함한다. 읽기 전용이 필요하면 `gmail.readonly`, 발송만 필요하면 `gmail.send`를 사용.
+> **Scope reference**: `gmail.modify` includes read + write + label management. Use `gmail.readonly` for read-only access, or `gmail.send` for send-only.
 
-사용 가능한 스코프 확인: `gws-auth scopes`
+List available scopes: `gws-auth scopes`
 
-#### 2. 매 호출 전 토큰 + 프로젝트 주입
+#### 2. Export token and project before each call
 
 ```bash
 export GOOGLE_WORKSPACE_CLI_TOKEN=$(gws-auth token)
@@ -70,36 +70,36 @@ export GOOGLE_WORKSPACE_PROJECT_ID="${GOOGLE_WORKSPACE_PROJECT_ID}"
 ### Helper commands (recommended)
 
 ```bash
-# Triage — 읽지 않은 메일 요약
+# Triage — summarize unread inbox
 gws gmail +triage
 gws gmail +triage --max 10 --query 'from:boss@example.com'
 gws gmail +triage --format json --labels
 
-# Read — 메시지 본문 읽기
+# Read — extract message body
 gws gmail +read --id <MESSAGE_ID>
 gws gmail +read --id <MESSAGE_ID> --headers
 gws gmail +read --id <MESSAGE_ID> --html
 
-# Send — 메일 발송
+# Send — send an email
 gws gmail +send --to alice@example.com --subject 'Hello' --body 'Hi Alice!'
 gws gmail +send --to alice@example.com --subject 'Report' --body 'See attached' -a report.pdf
 gws gmail +send --to alice@example.com --subject 'Hello' --body '<b>Bold</b> text' --html
 gws gmail +send --to alice@example.com --subject 'Draft' --body 'Review this' --draft
 
-# Reply — 답장 (스레딩 자동)
+# Reply — reply with automatic threading
 gws gmail +reply --message-id <MESSAGE_ID> --body 'Thanks, got it!'
 gws gmail +reply --message-id <MESSAGE_ID> --body 'Looping in Carol' --cc carol@example.com
 gws gmail +reply --message-id <MESSAGE_ID> --body 'Draft reply' --draft
 
-# Reply-all — 전체 답장
+# Reply-all
 gws gmail +reply-all --message-id <MESSAGE_ID> --body 'Acknowledged!'
 
-# Forward — 전달 (원본 첨부 포함)
+# Forward — includes original attachments by default
 gws gmail +forward --message-id <MESSAGE_ID> --to dave@example.com
 gws gmail +forward --message-id <MESSAGE_ID> --to dave@example.com --body 'FYI see below'
 gws gmail +forward --message-id <MESSAGE_ID> --to dave@example.com --no-original-attachments
 
-# Watch — 새 메일 실시간 모니터링 (Pub/Sub 필요)
+# Watch — real-time email monitoring (requires Pub/Sub)
 gws gmail +watch --project <GCP_PROJECT_ID> --label-ids INBOX --once
 ```
 
@@ -107,14 +107,14 @@ gws gmail +watch --project <GCP_PROJECT_ID> --label-ids INBOX --once
 
 | Option | Description |
 |--------|-------------|
-| `--to` | 수신자 (comma-separated) |
-| `--cc` | CC 수신자 |
-| `--bcc` | BCC 수신자 |
-| `--from` | send-as 별칭 사용 시 발신자 주소 |
-| `-a, --attach` | 파일 첨부 (여러 번 지정 가능, 총 25MB 제한) |
-| `--html` | body를 HTML로 처리 |
-| `--draft` | 발송 대신 임시보관함에 저장 |
-| `--dry-run` | 요청 미리보기 (실제 발송 안 함) |
+| `--to` | Recipient(s), comma-separated |
+| `--cc` | CC recipient(s) |
+| `--bcc` | BCC recipient(s) |
+| `--from` | Sender address for send-as aliases |
+| `-a, --attach` | Attach a file (repeatable, 25MB total limit) |
+| `--html` | Treat body as HTML |
+| `--draft` | Save to drafts instead of sending |
+| `--dry-run` | Preview request without executing |
 
 ### Direct API commands
 
@@ -161,7 +161,7 @@ gws gmail users getProfile --params '{"userId": "me"}'
 
 ## IMPORTANT: Token Optimization
 
-**Combine independent gws calls into a single Bash call with `;`. 토큰은 먼저 한번만 export:**
+**Combine independent gws calls into a single Bash call with `;`. Export the token once at the top:**
 
 ```bash
 export GOOGLE_WORKSPACE_CLI_TOKEN=$(gws-auth token)
@@ -189,15 +189,15 @@ gws gmail +send --to test@example.com --subject 'Test' --body 'Test' --dry-run
 
 ### Triage and respond to inbox
 
-1. `gws gmail +triage` -> 읽지 않은 메일 목록 확인
-2. `gws gmail +read --id <ID> --headers` -> 관심 메일 본문 읽기
-3. `gws gmail +reply --message-id <ID> --body '...'` -> 답장 또는
-4. `gws gmail +forward --message-id <ID> --to someone@example.com` -> 전달
+1. `gws gmail +triage` -> list unread messages
+2. `gws gmail +read --id <ID> --headers` -> read message body
+3. `gws gmail +reply --message-id <ID> --body '...'` -> reply, or
+4. `gws gmail +forward --message-id <ID> --to someone@example.com` -> forward
 
 ### Search and read specific emails
 
-1. `gws gmail users messages list --params '{"userId": "me", "q": "from:alice subject:report"}'` -> 검색
-2. `gws gmail +read --id <ID> --headers` -> 본문 읽기
+1. `gws gmail users messages list --params '{"userId": "me", "q": "from:alice subject:report"}'` -> search
+2. `gws gmail +read --id <ID> --headers` -> read body
 
 ### Send email with attachments
 
@@ -205,22 +205,22 @@ gws gmail +send --to test@example.com --subject 'Test' --body 'Test' --dry-run
 
 ### Manage labels
 
-1. `gws gmail users labels list --params '{"userId": "me"}'` -> 라벨 목록
-2. `gws gmail users labels create ...` -> 라벨 생성
-3. `gws gmail users messages modify ...` -> 메시지에 라벨 적용
+1. `gws gmail users labels list --params '{"userId": "me"}'` -> list labels
+2. `gws gmail users labels create ...` -> create label
+3. `gws gmail users messages modify ...` -> apply label to message
 
 ### Draft and review before sending
 
-1. `gws gmail +send --to ... --subject ... --body ... --draft` -> 임시보관함에 저장
-2. `gws gmail users drafts list --params '{"userId": "me"}'` -> 임시보관 확인
-3. `gws gmail users drafts send --params '{"userId": "me"}' --json '{"id": "<DRAFT_ID>"}'` -> 발송
+1. `gws gmail +send --to ... --subject ... --body ... --draft` -> save to drafts
+2. `gws gmail users drafts list --params '{"userId": "me"}'` -> verify draft
+3. `gws gmail users drafts send --params '{"userId": "me"}' --json '{"id": "<DRAFT_ID>"}'` -> send draft
 
 ## Notes
 
-- `+triage`, `+read`, `+send`, `+reply`, `+reply-all`, `+forward`는 gws helper 커맨드 (간편 인터페이스)
-- `--dry-run` 플래그로 실제 실행 없이 요청 미리보기 가능
-- `--page-all` 플래그로 대량 결과 자동 페이지네이션 (NDJSON 출력)
-- `--draft` 플래그로 발송 대신 임시보관함에 저장 가능
-- Gmail 검색 쿼리는 Gmail 검색창과 동일한 문법 지원 (예: `from:`, `subject:`, `is:unread`, `has:attachment`)
-- 첨부파일 총 크기 제한: 25MB
-- `+watch`는 GCP Pub/Sub 설정이 필요 (일반 사용에서는 `+triage`로 충분)
+- `+triage`, `+read`, `+send`, `+reply`, `+reply-all`, `+forward` are gws helper commands (simplified interface)
+- `--dry-run` flag previews the HTTP request without executing
+- `--page-all` flag auto-paginates large result sets (NDJSON output)
+- `--draft` flag saves to drafts instead of sending
+- Gmail search query syntax matches the Gmail web search box (e.g., `from:`, `subject:`, `is:unread`, `has:attachment`)
+- Total attachment size limit: 25MB
+- `+watch` requires GCP Pub/Sub setup (for typical use, `+triage` is sufficient)
