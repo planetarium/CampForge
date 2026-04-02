@@ -24,7 +24,6 @@ A camp is agent-agnostic — each camp's `install.sh` handles installation via [
 |----------|--------|--------|
 | [v8-admin](./camps/v8-admin/) | V8 Platform Admin | v8-api, gql-ops, gws-sheets |
 | [9c-backoffice](./camps/9c-backoffice/) | Nine Chronicles Table Patch | 9c-backoffice, gql-ops |
-| [iap-manager](./camps/iap-manager/) | IAP Product Management | iap-product-query, iap-product-import, iap-receipt-query, iap-asset-import, iap-image-upload, gql-ops |
 | [campforge-guide](./camps/campforge-guide/) | CampForge Usage Guide | camp-create, camp-validate, camp-add-skill, camp-sync, camp-bench, campforge-interview |
 
 ---
@@ -63,12 +62,6 @@ export V8_SKILL_DIR="<path to v8-api skill directory>"  # for --queryFile paths
 export BO_GQL="https://planetarium-oag.fly.dev/9c-bo/graphql"
 export BO_API_KEY="<your API key>"
 export BO_SKILL_DIR="<path to 9c-backoffice skill directory>"  # for --queryFile paths
-```
-
-**iap-manager:**
-```bash
-export BO_GQL="https://planetarium-oag.fly.dev/9c-bo/graphql"
-export BO_API_KEY="<your API key>"
 ```
 
 ### Verify Installation
@@ -144,13 +137,11 @@ CampForge/
 │   ├── gws-sheets/            #   Shared: Google Sheets operations
 │   ├── v8-api/                #   V8 platform API
 │   ├── 9c-backoffice/         #   Nine Chronicles table patch
-│   ├── iap-*/                 #   IAP management (5 packages)
 │   ├── camp-*/                #   CampForge guide (5 packages)
 │   └── campforge-interview/   #   Camp creation interview
 ├── camps/                     # Camp definitions (no skill code)
 │   ├── v8-admin/
 │   ├── 9c-backoffice/
-│   ├── iap-manager/
 │   └── campforge-guide/
 ├── cli/                       # CampForge CLI
 ├── scripts/                   # Release & install tooling
@@ -195,11 +186,10 @@ packages/{skill-name}/
 
 | Package | Description | Used by |
 |---------|-------------|---------|
-| [`@campforge/gql-ops`](./packages/gql-ops/) | GraphQL operations — gq CLI, schema introspection, self-healing | v8-admin, 9c-backoffice, iap-manager |
+| [`@campforge/gql-ops`](./packages/gql-ops/) | GraphQL operations — gq CLI, schema introspection, self-healing | v8-admin, 9c-backoffice |
 | [`@campforge/gws-sheets`](./packages/gws-sheets/) | Google Sheets operations via gws CLI | v8-admin |
 | [`@campforge/v8-api`](./packages/v8-api/) | V8 platform API — users, credits, verses, comments | v8-admin |
 | [`@campforge/9c-backoffice`](./packages/9c-backoffice/) | Nine Chronicles table patch operations | 9c-backoffice |
-| `@campforge/iap-*` | IAP product/receipt/asset management (5 packages) | iap-manager |
 | `@campforge/camp-*` | CampForge guide skills (5 packages) | campforge-guide |
 | [`@campforge/campforge-interview`](./packages/campforge-interview/) | Interactive camp creation via guided interview | campforge-guide |
 

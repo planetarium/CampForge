@@ -18,7 +18,7 @@ Skills are resolved through [skillpm](https://skillpm.dev/), which operates on t
 - **Distribution**: `scripts/release-pack.sh` produces per-package tarballs attached to a GitHub Release. Nothing is published to the npm registry.
 - **Remote install**: Each camp's `install.sh` constructs a `package.json` with tarball URLs, then runs `npx skillpm install`.
 
-Why not npm publish: Some skills (v8-api, 9c-backoffice, iap-*) contain internal URLs and org-specific logic. Managing all packages the same way (tarballs) avoids split governance between "these go to npm, those don't."
+Why not npm publish: Some skills (v8-api, 9c-backoffice) contain internal URLs and org-specific logic. Managing all packages the same way (tarballs) avoids split governance between "these go to npm, those don't."
 
 ### One install.sh per camp, shared logic in scripts/
 
