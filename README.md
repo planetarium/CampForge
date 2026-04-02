@@ -13,7 +13,7 @@ Camp = Identity (who am I?) + Skills (what can I do?) + Knowledge (what do I kno
 | Layer | Contents | Example |
 |-------|----------|---------|
 | **Identity** | Personality, values, operating rules | "You are a V8 Platform Admin Agent. Accuracy first." |
-| **Skills** | Executable workflows ([AgentSkills](https://agentskills.io) format) | `v8-admin/SKILL.md` — user search, credit grant, comment management |
+| **Skills** | Executable workflows ([AgentSkills](https://agentskills.io) format) | `v8-api/SKILL.md` — user search, credit grant, comment management |
 | **Knowledge** | Domain glossary, decision trees | "Credit amounts are in USD. Collection index 0 = Multiplayer." |
 
 A camp is agent-agnostic — each camp's `install.sh` handles installation via [skillpm](https://skillpm.dev/) across Claude Code, OpenClaw, Codex, Gemini CLI, and others.
@@ -22,7 +22,7 @@ A camp is agent-agnostic — each camp's `install.sh` handles installation via [
 
 | Camp | Domain | Skills |
 |----------|--------|--------|
-| [v8-admin](./camps/v8-admin/) | V8 Platform Admin | v8-admin, gql-ops, gws-sheets |
+| [v8-admin](./camps/v8-admin/) | V8 Platform Admin | v8-api, gql-ops, gws-sheets |
 | [9c-backoffice](./camps/9c-backoffice/) | Nine Chronicles Table Patch | 9c-backoffice, gql-ops |
 | [iap-manager](./camps/iap-manager/) | IAP Product Management | iap-product-query, iap-product-import, iap-receipt-query, iap-asset-import, iap-image-upload, gql-ops |
 | [campforge-guide](./camps/campforge-guide/) | CampForge Usage Guide | camp-create, camp-validate, camp-add-skill, camp-sync, camp-bench, campforge-interview |
@@ -37,7 +37,7 @@ A camp is agent-agnostic — each camp's `install.sh` handles installation via [
 curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/v8-admin/install.sh | bash
 ```
 
-This uses [skillpm](https://skillpm.dev/) + GitHub Release tarballs to install skills into a `workspace/` subdirectory. Set `CAMPFORGE_VERSION` to pin a specific release, or `WORKSPACE` to choose the install directory.
+This uses [skillpm](https://skillpm.dev/) + GitHub Release tarballs to install skills into a `workspace/` subdirectory. Set `CAMP_VERSION` to pin a specific release, or `WORKSPACE` to choose the install directory.
 
 ### What Gets Installed
 
@@ -55,7 +55,7 @@ Each camp requires specific environment variables. The agent will ask for them o
 ```bash
 export V8_GQL="https://planetarium-oag.fly.dev/v8-admin-test/graphql"
 export V8_TOKEN="<your JWT>"
-export V8_SKILL_DIR="<path to v8-admin skill directory>"  # for --queryFile paths
+export V8_SKILL_DIR="<path to v8-api skill directory>"  # for --queryFile paths
 ```
 
 **9c-backoffice:**
@@ -142,7 +142,7 @@ CampForge/
 ├── packages/                  # All skill packages (resolved via skillpm)
 │   ├── gql-ops/               #   Shared: GraphQL operations
 │   ├── gws-sheets/            #   Shared: Google Sheets operations
-│   ├── v8-admin/              #   V8 platform admin
+│   ├── v8-api/                #   V8 platform API
 │   ├── 9c-backoffice/         #   Nine Chronicles table patch
 │   ├── iap-*/                 #   IAP management (5 packages)
 │   ├── camp-*/                #   CampForge guide (5 packages)
@@ -197,7 +197,7 @@ packages/{skill-name}/
 |---------|-------------|---------|
 | [`@campforge/gql-ops`](./packages/gql-ops/) | GraphQL operations — gq CLI, schema introspection, self-healing | v8-admin, 9c-backoffice, iap-manager |
 | [`@campforge/gws-sheets`](./packages/gws-sheets/) | Google Sheets operations via gws CLI | v8-admin |
-| [`@campforge/v8-admin`](./packages/v8-admin/) | V8 platform admin — users, credits, verses, comments | v8-admin |
+| [`@campforge/v8-api`](./packages/v8-api/) | V8 platform API — users, credits, verses, comments | v8-admin |
 | [`@campforge/9c-backoffice`](./packages/9c-backoffice/) | Nine Chronicles table patch operations | 9c-backoffice |
 | `@campforge/iap-*` | IAP product/receipt/asset management (5 packages) | iap-manager |
 | `@campforge/camp-*` | CampForge guide skills (5 packages) | campforge-guide |
@@ -205,15 +205,17 @@ packages/{skill-name}/
 
 ## Releasing
 
-```bash
-# 1. Pack all skill packages into tarballs
-bash scripts/release-pack.sh
+Each camp is released independently with its own tag (`{camp-name}-v{version}`):
 
-# 2. Create a GitHub Release with all tarballs
-gh release create v1.0.1 dist/tarballs/*.tgz dist/tarballs/install-common.sh
+```bash
+# 1. Pack tarballs for a specific camp
+bash scripts/release-pack.sh --camp v8-admin
+
+# 2. Create a per-camp GitHub Release
+gh release create v8-admin-v1.1.0 dist/tarballs/*.tgz dist/tarballs/install-common.sh
 ```
 
-Camps reference these tarballs in `install.sh` for installation without npm publish.
+Each camp's `install.sh` references tarballs from its own release tag. Set `CAMP_VERSION` to pin a version during install.
 
 ## Platform Support
 

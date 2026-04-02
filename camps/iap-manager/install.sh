@@ -3,8 +3,8 @@
 # Usage: curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/iap-manager/install.sh | bash
 set -euo pipefail
 
-VERSION="${CAMPFORGE_VERSION:-v1.0.1}"
-BASE="https://github.com/planetarium/CampForge/releases/download/$VERSION"
+CAMP_VERSION="${CAMP_VERSION:-v1.0.1}"
+BASE="https://github.com/planetarium/CampForge/releases/download/iap-manager-${CAMP_VERSION}"
 
 WS="${WORKSPACE:-workspace}"
 mkdir -p "$WS" && cd "$WS"

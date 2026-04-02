@@ -1,10 +1,10 @@
-# V8 Admin API — Smoke Test Playbook
+# V8 API — Smoke Test Playbook
 
 A playbook for agents to test all V8 Admin API features and report results.
 
 ## Prerequisites
 
-1. Load the `/v8-admin` skill. It contains call conventions, query files, and mutation examples. Also load the `gql-ops` dependency skill (needed for schema introspection, validation, and self-healing).
+1. Load the `/v8-api` skill. It contains call conventions, query files, and mutation examples. Also load the `gql-ops` dependency skill (needed for schema introspection, validation, and self-healing).
 2. Set environment variables (`V8_GQL`, `V8_TOKEN`, `V8_SKILL_DIR`). Ask the user for `V8_TOKEN`.
 
 ## How to run
@@ -20,7 +20,7 @@ Within each agent, run independent commands in parallel when possible. After all
 
 ## Error handling
 
-1. `Cannot query field "X"` — Schema change. Introspect: `gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --introspect > /tmp/v8-admin-schema.sdl`, then fix the `.gql` file.
+1. `Cannot query field "X"` — Schema change. Introspect: `gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --introspect > /tmp/v8-api-schema.sdl`, then fix the `.gql` file.
 2. `Could not invoke operation` — Backend error. Check `statusCode`, `message`, `responseBody` in extensions via curl:
    ```bash
    curl -s -X POST "$V8_GQL" \

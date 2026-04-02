@@ -4,7 +4,7 @@ V8 platform admin agent camp — users, credits, verses, comments, game payments
 
 ## Skills
 
-- **v8-admin** — V8 platform admin API operations via GraphQL
+- **v8-api** — V8 platform admin API operations via GraphQL
 
 ## Install
 

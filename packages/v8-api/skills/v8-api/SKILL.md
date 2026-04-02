@@ -1,5 +1,5 @@
 ---
-name: v8-admin
+name: v8-api
 description: >
   V8 platform admin API operations via GraphQL. Use when asked to manage users,
   grant or query credits, manage verses, game payments, coupons, analytics,
@@ -12,7 +12,7 @@ metadata:
 compatibility: Requires gq (graphqurl) CLI and a running GraphQL gateway
 ---
 
-# V8 Admin API Skill (GraphQL)
+# V8 API Skill (GraphQL)
 
 **Before proceeding, load the `gql-ops` skill dependency.**
 

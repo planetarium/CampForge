@@ -3,8 +3,8 @@
 # Usage: curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/9c-backoffice/install.sh | bash
 set -euo pipefail
 
-VERSION="${CAMPFORGE_VERSION:-v1.0.1}"
-BASE="https://github.com/planetarium/CampForge/releases/download/$VERSION"
+CAMP_VERSION="${CAMP_VERSION:-v1.0.1}"
+BASE="https://github.com/planetarium/CampForge/releases/download/9c-backoffice-${CAMP_VERSION}"
 
 WS="${WORKSPACE:-workspace}"
 mkdir -p "$WS" && cd "$WS"
