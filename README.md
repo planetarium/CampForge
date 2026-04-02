@@ -210,7 +210,7 @@ packages/{skill-name}/
 bash scripts/release-pack.sh
 
 # 2. Create a GitHub Release with all tarballs
-gh release create v1.0.0 dist/tarballs/*.tgz
+gh release create v1.0.1 dist/tarballs/*.tgz dist/tarballs/install-common.sh
 ```
 
 Camps reference these tarballs in `install.sh` for installation without npm publish.
