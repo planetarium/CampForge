@@ -195,14 +195,13 @@ packages/{skill-name}/
 
 ## Releasing
 
-Each camp is released independently with its own tag (`{camp-name}-v{version}`):
+Each camp is released independently with its own tag (`{camp-name}-v{version}`).
+Push a tag and CI automatically packs tarballs and creates the GitHub Release:
 
 ```bash
-# 1. Pack tarballs for a specific camp
-bash scripts/release-pack.sh --camp v8-admin
-
-# 2. Create a per-camp GitHub Release
-gh release create v8-admin-v1.1.0 dist/tarballs/*.tgz dist/tarballs/install-common.sh
+git tag v8-admin-v1.1.0
+git push origin v8-admin-v1.1.0
+# → CI runs release-pack.sh --camp v8-admin → gh release create
 ```
 
 Each camp's `install.sh` references tarballs from its own release tag. Set `CAMP_VERSION` to pin a version during install.
