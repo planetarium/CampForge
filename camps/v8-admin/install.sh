@@ -3,7 +3,7 @@
 # Usage: curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/v8-admin/install.sh | bash
 set -euo pipefail
 
-CAMP_VERSION="${CAMP_VERSION:-v1.1.0}"
+CAMP_VERSION="${CAMP_VERSION:-v1.2.0}"
 BASE="https://github.com/planetarium/CampForge/releases/download/v8-admin-${CAMP_VERSION}"
 
 WS="${WORKSPACE:-workspace}"
@@ -13,6 +13,7 @@ npm init -y --silent 2>/dev/null
 npm pkg set \
   "dependencies.@campforge/v8-api=$BASE/campforge-v8-api-1.0.0.tgz" \
   "dependencies.@campforge/gql-ops=$BASE/campforge-gql-ops-0.2.0.tgz" \
+  "dependencies.@campforge/gws-auth=$BASE/campforge-gws-auth-0.1.0.tgz" \
   "dependencies.@campforge/gws-sheets=$BASE/campforge-gws-sheets-0.1.0.tgz"
 
 npx skillpm install
