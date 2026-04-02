@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { loadDomainSpec } from "../pipeline/load-domain-spec.js";
 import { generateIdentity } from "../pipeline/generate-identity.js";
 import { packageKnowledge } from "../pipeline/package-knowledge.js";
+import { generateInstall } from "../pipeline/generate-install.js";
 import { generateTests } from "../pipeline/generate-tests.js";
 import { writeManifest } from "../pipeline/write-manifest.js";
 import { resolveDeps } from "../pipeline/resolve-deps.js";
@@ -100,10 +101,11 @@ export const syncCommand = new Command("sync")
     log.step(1, TOTAL_STEPS, "Syncing identity files...");
     generateIdentity(ctx);
 
-    // Step 2: Sync knowledge + deps
+    // Step 2: Sync knowledge + deps + install script
     log.step(2, TOTAL_STEPS, "Syncing knowledge & dependencies...");
     packageKnowledge(ctx);
     resolveDeps(ctx);
+    generateInstall(ctx);
 
     // Step 3: Sync tests
     log.step(3, TOTAL_STEPS, "Syncing tests...");

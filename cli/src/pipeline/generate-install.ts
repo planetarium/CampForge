@@ -14,12 +14,18 @@ export function generateInstall(ctx: PipelineContext): void {
   );
   const deps: Record<string, string> = pkgJson.dependencies || {};
 
-  // Build npm pkg set lines from dependencies
+  // Build npm pkg set lines — only @campforge/* deps get tarball URLs,
+  // others are left as semver for npm registry resolution.
   const pkgSetLines = Object.keys(deps)
     .map((name) => {
-      // @campforge/foo-bar ^1.0.0 → campforge-foo-bar-1.0.0.tgz
+      if (!name.startsWith("@campforge/")) {
+        return `  "dependencies.${name}=${deps[name]}"`;
+      }
       const bare = name.replace(/^@campforge\//, "");
-      const version = deps[name].replace(/^[\^~>=<]*/, "") || "1.0.0";
+      const version = deps[name].replace(/^[\^~>=<]*/, "");
+      if (!version || version === "latest") {
+        return `  "dependencies.${name}=${deps[name]}"`;
+      }
       const tarball = `campforge-${bare}-${version}.tgz`;
       return `  "dependencies.${name}=$BASE/${tarball}"`;
     })

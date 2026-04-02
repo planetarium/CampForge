@@ -14,9 +14,11 @@ install_gws() {
       aarch64) GWS_TARGET="aarch64-unknown-linux-musl" ;;
       *)       GWS_TARGET="" ;;
     esac
+    GWS_BIN_DIR="${GWS_BIN_DIR:-${HOME}/.local/bin}"
+    mkdir -p "$GWS_BIN_DIR"
     if [ -n "$GWS_TARGET" ] && [ -n "$GWS_VERSION" ]; then
-      curl -fsSL "https://github.com/googleworkspace/cli/releases/download/v${GWS_VERSION}/google-workspace-cli-${GWS_TARGET}.tar.gz" | tar xz --strip-components=0 -C /usr/local/bin ./gws && \
-        chmod +x /usr/local/bin/gws || echo "  [warn] gws musl binary install failed."
+      curl -fsSL "https://github.com/googleworkspace/cli/releases/download/v${GWS_VERSION}/google-workspace-cli-${GWS_TARGET}.tar.gz" | tar xz --strip-components=0 -C "$GWS_BIN_DIR" ./gws && \
+        chmod +x "$GWS_BIN_DIR/gws" || npm install -g @googleworkspace/cli 2>/dev/null || echo "  [warn] gws install failed."
     else
       npm install -g @googleworkspace/cli 2>/dev/null || echo "  [warn] gws install failed."
     fi
@@ -32,19 +34,3 @@ install_gws_auth() {
     echo "  [warn] gws-auth install failed. Install manually: npm i -g https://github.com/planetarium/gws-auth/releases/download/v0.3.0/anthropic-kr-gws-auth-0.1.0.tgz"
 }
 
-# Source install-common.sh from local repo or fetch remotely.
-# Usage (in each camp's install.sh):
-#   source_common
-#   install_gws
-source_common() {
-  local script_dir
-  script_dir="$(cd "$(dirname "${BASH_SOURCE[1]}")" && pwd)"
-  local local_common="$script_dir/../../scripts/install-common.sh"
-  if [ -f "$local_common" ]; then
-    # shellcheck disable=SC1090
-    source "$local_common"
-  else
-    local raw="https://raw.githubusercontent.com/planetarium/CampForge/main/scripts/install-common.sh"
-    eval "$(curl -fsSL "$raw")"
-  fi
-}

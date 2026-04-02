@@ -24,7 +24,11 @@ if [ -f "$COMMON" ]; then
   # shellcheck disable=SC1090
   source "$COMMON"
 else
-  eval "$(curl -fsSL "https://raw.githubusercontent.com/planetarium/CampForge/main/scripts/install-common.sh")"
+  TMP_COMMON="$(mktemp)"
+  curl -fsSL "https://raw.githubusercontent.com/planetarium/CampForge/${VERSION}/scripts/install-common.sh" -o "$TMP_COMMON"
+  # shellcheck disable=SC1090
+  source "$TMP_COMMON"
+  rm -f "$TMP_COMMON"
 fi
 install_gws
 install_gws_auth

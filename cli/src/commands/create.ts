@@ -71,5 +71,6 @@ export const createCommand = new Command("create")
 
     log.success(`Camp created at: ${outputDir}`);
     console.log(`\n  Next: have your LLM fill in the skill SKILL.md files`);
+    console.log(`  Install: cd ${outputDir} && ./install.sh`);
     console.log(`  Validate: campforge validate ${outputDir}\n`);
   });
