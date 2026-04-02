@@ -120,32 +120,13 @@ mv $CAMPFORGE_CLI/campforge-{domain-id} <campforge-project>/camps/
 
 `camp-validate` 스킬을 사용하여 생성 결과를 검증한다.
 
-### Step 8: install.sh 생성
+### Step 8: install.sh 확인
 
-`curl | bash`로 설치할 수 있도록 `install.sh`를 생성한다. v8-admin의 `install.sh`를 참고하여 해당 캠프의 의존성에 맞게 작성한다.
+CLI `create` 명령이 `install.sh`를 자동 생성한다. `package.json` dependencies에서 tarball URL을 만들어 넣는다.
 
-```bash
-#!/usr/bin/env bash
-# Installer for <camp-name> camp
-# Usage: curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/<camp-name>/install.sh | bash
-set -euo pipefail
-
-VERSION="${CAMPFORGE_VERSION:-v1.0.0}"
-BASE="https://github.com/planetarium/CampForge/releases/download/$VERSION"
-
-WS="${WORKSPACE:-workspace}"
-mkdir -p "$WS" && cd "$WS"
-
-npm init -y --silent 2>/dev/null
-npm pkg set \
-  "dependencies.@campforge/<skill>=$BASE/campforge-<skill>-<version>.tgz"
-
-npx skillpm install
-
-echo "<camp-name> camp installed"
-```
-
-외부 CLI 의존성이 있으면 `scripts/install-common.sh`의 공통 함수를 사용한다.
+생성된 `install.sh`를 확인하고, 필요하면 조정한다:
+- 외부 CLI 의존성이 있으면 `scripts/install-common.sh`의 공통 함수를 호출하도록 추가
+- `@campforge/*` 버전이 `latest`로 잡혔으면 실제 버전으로 수정
 
 ### Step 9: 설치 안내
 
