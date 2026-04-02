@@ -7,7 +7,7 @@
 install_gws() {
   echo ":: Installing gws..."
   if [ "$(uname -s)" = "Linux" ]; then
-    GWS_VERSION=$(curl -fsSL https://api.github.com/repos/googleworkspace/cli/releases/latest | grep '"tag_name"' | sed 's/.*"v\(.*\)".*/\1/')
+    GWS_VERSION=$(curl -fsSL https://api.github.com/repos/googleworkspace/cli/releases/latest 2>/dev/null | grep '"tag_name"' | sed 's/.*"v\(.*\)".*/\1/' || true)
     ARCH=$(uname -m)
     case "$ARCH" in
       x86_64)  GWS_TARGET="x86_64-unknown-linux-musl" ;;
