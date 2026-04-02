@@ -59,7 +59,7 @@ if [ -d "$TARGET_DIR/.claude/skills/gws-sheets" ]; then
       *)       GWS_TARGET="" ;;
     esac
     if [ -n "$GWS_TARGET" ] && [ -n "$GWS_VERSION" ]; then
-      curl -fsSL "https://github.com/googleworkspace/cli/releases/download/v${GWS_VERSION}/google-workspace-cli-${GWS_TARGET}.tar.gz" | tar xz -C /usr/local/bin gws && \
+      curl -fsSL "https://github.com/googleworkspace/cli/releases/download/v${GWS_VERSION}/google-workspace-cli-${GWS_TARGET}.tar.gz" | tar xz --strip-components=0 -C /usr/local/bin ./gws && \
         chmod +x /usr/local/bin/gws || echo "  [warn] gws musl binary install failed."
     else
       npm install -g @googleworkspace/cli 2>/dev/null || echo "  [warn] gws install failed."
