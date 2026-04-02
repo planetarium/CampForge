@@ -16,7 +16,7 @@ Camp = Identity (who am I?) + Skills (what can I do?) + Knowledge (what do I kno
 | **Skills** | Executable workflows ([AgentSkills](https://agentskills.io) format) | `v8-admin/SKILL.md` — user search, credit grant, comment management |
 | **Knowledge** | Domain glossary, decision trees | "Credit amounts are in USD. Collection index 0 = Multiplayer." |
 
-A camp is agent-agnostic — platform **adapters** handle installation across Claude Code, OpenClaw, Codex, Gemini CLI, and others.
+A camp is agent-agnostic — each camp's `install.sh` handles installation via [skillpm](https://skillpm.dev/) across Claude Code, OpenClaw, Codex, Gemini CLI, and others.
 
 ## Available Camps
 
@@ -33,24 +33,11 @@ A camp is agent-agnostic — platform **adapters** handle installation across Cl
 
 ### Install a Camp
 
-**Option A: Clone and install (local)**
-
 ```bash
-git clone https://github.com/planetarium/CampForge
-cd CampForge
-npm install                          # resolve workspaces
-cd camps/v8-admin
-./campforge-cli.sh                   # auto-detects platform
+curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/v8-admin/install.sh | bash
 ```
 
-**Option B: Remote install (no clone needed)**
-
-```bash
-mkdir workspace && cd workspace
-curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/v8-admin/install-remote.sh | bash
-```
-
-This uses [skillpm](https://skillpm.dev/) + GitHub Release tarballs to install skills without cloning the repo. Set `CAMPFORGE_VERSION` to pin a specific release.
+This uses [skillpm](https://skillpm.dev/) + GitHub Release tarballs to install skills into a `workspace/` subdirectory. Set `CAMPFORGE_VERSION` to pin a specific release, or `WORKSPACE` to choose the install directory.
 
 ### What Gets Installed
 
@@ -121,7 +108,7 @@ cd cli && npm install
   --language ko
 ```
 
-This generates a camp scaffold (identity, adapters, tests). Skills are created as separate packages in `packages/` and referenced from the camp's `package.json`.
+This generates a camp scaffold (identity, tests). Skills are created as separate packages in `packages/` and referenced from the camp's `package.json`.
 
 **Validate** a camp:
 
@@ -166,8 +153,9 @@ CampForge/
 │   ├── iap-manager/
 │   └── campforge-guide/
 ├── cli/                       # CampForge CLI
-├── scripts/                   # Release tooling
-│   └── release-pack.sh        #   Pack tarballs for GitHub Release
+├── scripts/                   # Release & install tooling
+│   ├── release-pack.sh        #   Pack tarballs for GitHub Release
+│   └── install-common.sh      #   Shared install functions (gws, etc.)
 └── package.json               # npm workspaces root
 ```
 
@@ -179,8 +167,7 @@ A camp contains no skill code — skills are pulled in via [skillpm](https://ski
 camps/{domain}/
 ├── manifest.yaml              # Metadata, skill references, compatibility
 ├── package.json               # Skill dependencies (@campforge/* packages)
-├── campforge-cli.sh           # One-shot install script
-├── install-remote.sh          # Remote install (skillpm + release tarballs)
+├── install.sh                 # Installer (skillpm + release tarballs)
 ├── identity/                  # Agent identity
 │   ├── SOUL.md
 │   ├── IDENTITY.md
@@ -188,10 +175,6 @@ camps/{domain}/
 ├── knowledge/                 # Domain knowledge
 │   ├── glossary.md
 │   └── decision-trees/
-├── adapters/                  # Platform-specific installers
-│   ├── claude-code/install.sh
-│   ├── openclaw/install.sh
-│   └── generic/install.sh
 └── tests/
     ├── smoke-test.md
     └── scenarios/
@@ -230,7 +213,7 @@ bash scripts/release-pack.sh
 gh release create v1.0.0 dist/tarballs/*.tgz
 ```
 
-Camps reference these tarballs in `install-remote.sh` for remote installation without npm publish.
+Camps reference these tarballs in `install.sh` for installation without npm publish.
 
 ## Platform Support
 

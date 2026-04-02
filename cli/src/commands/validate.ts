@@ -46,7 +46,7 @@ export const validateCommand = new Command("validate")
     });
 
     // 2. Required directories (skills/ no longer required — skills come from packages)
-    for (const d of ["identity", "adapters", "tests"]) {
+    for (const d of ["identity", "tests"]) {
       check(`${d}/ directory exists`, () => exists(join(abs, d)));
     }
 
@@ -83,16 +83,8 @@ export const validateCommand = new Command("validate")
       }
     }
 
-    // 5. At least one adapter with install.sh
-    check("At least one adapter with install.sh", () => {
-      for (const adapter of ["claude-code", "openclaw", "codex", "gemini-cli", "generic"]) {
-        if (exists(join(abs, "adapters", adapter, "install.sh"))) return true;
-      }
-      return false;
-    });
-
-    // 6. campforge-cli.sh
-    check("campforge-cli.sh exists", () => exists(join(abs, "campforge-cli.sh")));
+    // 5. install.sh exists
+    check("install.sh exists", () => exists(join(abs, "install.sh")));
 
     // Summary
     console.log(`\n${passed} passed, ${failed} failed\n`);

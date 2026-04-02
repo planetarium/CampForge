@@ -12,28 +12,14 @@ In-App Purchase management agent camp — products, receipts, assets, images.
 
 ## Install
 
-### Claude Code (local)
-
 ```bash
-./campforge-cli.sh
+curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/iap-manager/install.sh | bash
 ```
 
-### Codex
+Set a custom workspace:
 
 ```bash
-./campforge-cli.sh
-```
-
-### OpenClaw (remote)
-
-```bash
-curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/iap-manager/install-remote.sh | bash
-```
-
-Or set a custom workspace:
-
-```bash
-WORKSPACE=/path/to/workspace curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/iap-manager/install-remote.sh | bash
+WORKSPACE=/path/to/workspace curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/iap-manager/install.sh | bash
 ```
 
 ## Prerequisites

@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { loadDomainSpec } from "../pipeline/load-domain-spec.js";
 import { generateIdentity } from "../pipeline/generate-identity.js";
 import { packageKnowledge } from "../pipeline/package-knowledge.js";
-import { generateAdapters } from "../pipeline/generate-adapters.js";
+import { generateInstall } from "../pipeline/generate-install.js";
 import { generateTests } from "../pipeline/generate-tests.js";
 import { writeManifest } from "../pipeline/write-manifest.js";
 import { resolveDeps } from "../pipeline/resolve-deps.js";
@@ -25,7 +25,6 @@ export const syncCommand = new Command("sync")
   .option("--persona <level>", "Persona level", "senior")
   .option("--language <lang>", "Language", "ko")
   .option("--dry-run", "Show what would change without writing files")
-  .option("--adapters <list>", "Comma-separated adapters", "claude-code,openclaw,generic")
   .action((opts) => {
     const campDir = resolve(opts.camp);
     const specPath = resolve(opts.from);
@@ -49,7 +48,6 @@ export const syncCommand = new Command("sync")
       language: opts.language,
       outputDir: campDir,
       extras: [],
-      adapters: opts.adapters.split(",").filter(Boolean),
     };
 
     // Load existing manifest to compare skills
@@ -65,8 +63,7 @@ export const syncCommand = new Command("sync")
       console.log("Would overwrite:");
       console.log("  identity/SOUL.md, IDENTITY.md, AGENTS.md");
       console.log("  knowledge/glossary.md");
-      console.log("  manifest.yaml, package.json");
-      console.log("  adapters/*/install.sh");
+      console.log("  manifest.yaml, package.json, install.sh");
       console.log("  tests/smoke-test.md");
 
       // Check for new skills
@@ -104,14 +101,14 @@ export const syncCommand = new Command("sync")
     log.step(1, TOTAL_STEPS, "Syncing identity files...");
     generateIdentity(ctx);
 
-    // Step 2: Sync knowledge + deps
+    // Step 2: Sync knowledge + deps + install script
     log.step(2, TOTAL_STEPS, "Syncing knowledge & dependencies...");
     packageKnowledge(ctx);
     resolveDeps(ctx);
+    generateInstall(ctx);
 
-    // Step 3: Sync adapters + tests
-    log.step(3, TOTAL_STEPS, "Syncing adapters & tests...");
-    generateAdapters(ctx);
+    // Step 3: Sync tests
+    log.step(3, TOTAL_STEPS, "Syncing tests...");
     generateTests(ctx);
 
     // Step 4: Scaffold new skills only

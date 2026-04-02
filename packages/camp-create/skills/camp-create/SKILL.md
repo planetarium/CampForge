@@ -89,8 +89,6 @@ cd $CAMPFORGE_CLI && ./node_modules/.bin/tsx bin/campforge.ts create \
 - `--language <lang>` — ko | en (기본: ko)
 - `--output <dir>` — 출력 디렉토리 (기본: `campforge-{domain-id}`)
 - `--extras <skills>` — 쉼표 구분 elective skill ID
-- `--adapters <list>` — 쉼표 구분 어댑터 (기본: claude-code,openclaw,generic)
-
 ### Step 4: camps/ 디렉토리로 이동
 
 생성된 캠프를 `camps/` 디렉토리로 옮긴다:
@@ -114,7 +112,7 @@ mv $CAMPFORGE_CLI/campforge-{domain-id} <campforge-project>/camps/
 
 - 캠프 이름과 한 줄 설명
 - 스킬 목록
-- 플랫폼별 설치 방법 (Claude Code, Codex, OpenClaw)
+- 설치 방법 (`curl | bash`)
 - Prerequisites (필요한 도구)
 - 검증 명령어
 
@@ -122,38 +120,21 @@ mv $CAMPFORGE_CLI/campforge-{domain-id} <campforge-project>/camps/
 
 `camp-validate` 스킬을 사용하여 생성 결과를 검증한다.
 
-### Step 8: install-remote.sh 생성
+### Step 8: install.sh 확인
 
-원격 에이전트(예: OpenClaw on Docker)에서 curl 한 줄로 스킬을 설치할 수 있도록 `install-remote.sh`를 생성한다.
+CLI `create` 명령이 `install.sh`를 자동 생성한다. `package.json` dependencies에서 tarball URL을 만들어 넣는다.
 
-```bash
-#!/usr/bin/env bash
-# Remote installer for <camp-name> skill (run on OpenClaw or any agent workspace)
-# Usage: curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/<camp-name>/install-remote.sh | bash
-set -euo pipefail
-
-BASE="https://raw.githubusercontent.com/planetarium/CampForge/main"
-WS="${WORKSPACE:-workspace}"
-
-# 의존성 설치 (gql-ops 등)
-# 각 스킬의 SKILL.md 및 하위 파일(queries/, references/ 등) 설치
-```
-
-v8-admin의 `install-remote.sh`를 참고하여 해당 캠프의 스킬 파일 구조에 맞게 작성한다.
+생성된 `install.sh`를 확인하고, 필요하면 조정한다:
+- 외부 CLI 의존성이 있으면 `scripts/install-common.sh`의 공통 함수를 호출하도록 추가
+- `@campforge/*` 버전이 `latest`로 잡혔으면 실제 버전으로 수정
 
 ### Step 9: 설치 안내
 
-검증 통과 후, 생성된 캠프를 에이전트에 설치하는 방법을 안내한다:
+검증 통과 후, 생성된 캠프를 설치하는 방법을 안내한다:
 
 ```bash
-# 로컬 설치
-cd <camp-directory> && ./campforge-cli.sh
-
-# 원격 설치 (OpenClaw 등)
-curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/<camp-name>/install-remote.sh | bash
+curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/<camp-name>/install.sh | bash
 ```
-
-이 스크립트가 현재 환경을 감지하여 적절한 어댑터(Claude Code, OpenClaw 등)를 자동 실행한다.
 
 ## Output Format
 
@@ -162,7 +143,7 @@ curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/<cam
 - `scaffold 생성 완료 — skills/에 TODO 3개`
 - `SKILL.md 채우기 완료`
 - `검증 통과`
-- `설치: cd <camp> && ./campforge-cli.sh`
+- `설치: curl -fsSL .../install.sh | bash`
 
 ## Stop Conditions
 
