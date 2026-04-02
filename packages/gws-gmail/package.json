@@ -1,0 +1,14 @@
+{
+  "name": "@campforge/gws-gmail",
+  "version": "0.1.0",
+  "description": "Gmail operations skill for CampForge camps",
+  "keywords": ["agent-skill", "gmail", "gws", "campforge"],
+  "license": "Apache-2.0",
+  "author": "swen",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/planetarium/CampForge",
+    "directory": "packages/gws-gmail"
+  },
+  "files": ["skills/"]
+}
