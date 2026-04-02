@@ -18,7 +18,7 @@ npm pkg set \
 
 npx skillpm install
 
-# Install gws + gws-auth (required by gws-sheets skill)
+# Source shared install helpers
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 COMMON="$SCRIPT_DIR/../../scripts/install-common.sh"
 if [ -f "$COMMON" ]; then
@@ -31,6 +31,10 @@ else
   source "$TMP_COMMON"
   rm -f "$TMP_COMMON"
 fi
+
+install_camp_files "$BASE/camp-v8-admin.tgz"
+
+# Install gws + gws-auth (required by gws-sheets skill)
 install_gws
 install_gws_auth
 

@@ -27,6 +27,14 @@ install_gws() {
   fi
 }
 
+# Install camp identity/knowledge/manifest/tests files from a tarball URL.
+# Usage: install_camp_files <tarball-url>
+install_camp_files() {
+  local url="$1"
+  echo ":: Installing camp files..."
+  curl -fsSL "$url" | tar xz
+}
+
 # Install gws-auth plugin.
 install_gws_auth() {
   echo ":: Installing gws-auth..."
