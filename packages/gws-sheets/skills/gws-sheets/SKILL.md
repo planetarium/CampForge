@@ -9,12 +9,12 @@ license: Apache-2.0
 metadata:
   author: swen
   version: "0.1"
-compatibility: Requires @campforge/gws-auth skill.
+compatibility: Requires @campforge/gws-auth skill package (^0.1.0).
 ---
 
 # Google Sheets Skill (gws CLI)
 
-Authentication, installation, and token setup are handled by the **gws-auth** skill. The default scopes (`spreadsheets`, `drive.file`) are sufficient for all Sheets operations.
+Authentication, installation, and token setup are handled by the **gws-auth** skill. The default scopes (`spreadsheets`, `drive.file`) are sufficient for core Sheets read/write operations and for accessing spreadsheets the app creates or opens. Drive-wide operations such as listing/searching files or managing sharing/permissions for arbitrary files (e.g., `gws drive files list`, `gws drive permissions create`) may require additional Drive scopes (`drive.readonly` or `drive`), which can be configured via **gws-auth**.
 
 ## Environment variables
 
