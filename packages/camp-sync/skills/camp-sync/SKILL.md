@@ -27,7 +27,7 @@ domain-spec.yaml을 수정한 뒤 기존 캠프에 반영하고 싶을 때. 예:
 | identity/ (SOUL, IDENTITY, AGENTS.md) | skills/*/SKILL.md (기존) |
 | knowledge/glossary.md | skills 하위 사용자 파일 (queries/*.gql 등) |
 | manifest.yaml, package.json | |
-| adapters/*/install.sh | |
+| install.sh | |
 | tests/smoke-test.md | |
 
 ## Environment
@@ -65,7 +65,7 @@ cd $CAMPFORGE_CLI && ./node_modules/.bin/tsx bin/campforge.ts sync \
 - `--persona <level>` — junior | mid | senior | lead (기본: senior)
 - `--language <lang>` — ko | en (기본: ko)
 - `--dry-run` — 변경 사항만 보여주고 실제 쓰기 안 함
-- `--adapters <list>` — 쉼표 구분 어댑터 (기본: claude-code,openclaw,generic)
+- `--adapters <list>` — (deprecated, ignored)
 
 ### Step 3: 결과 확인
 
@@ -89,7 +89,7 @@ sync 결과에서 확인할 것:
 
 [1/5] Syncing identity files...
 [2/5] Syncing knowledge & dependencies...
-[3/5] Syncing adapters & tests...
+[3/5] Syncing install scripts & tests...
 [4/5] Checking skills...
   my-skill: exists — skipped
   new-skill: new — scaffolded

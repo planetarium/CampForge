@@ -8,30 +8,14 @@ Nine Chronicles backoffice agent camp — table patches, blockchain transactions
 
 ## Install
 
-### Claude Code (local)
-
 ```bash
-./campforge-cli.sh
+curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/9c-backoffice/install.sh | bash
 ```
 
-### Codex
+Set a custom workspace:
 
 ```bash
-./campforge-cli.sh
-```
-
-> Codex support is partial — heartbeat not supported.
-
-### OpenClaw (remote)
-
-```bash
-curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/9c-backoffice/install-remote.sh | bash
-```
-
-Or set a custom workspace:
-
-```bash
-WORKSPACE=/path/to/workspace curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/9c-backoffice/install-remote.sh | bash
+WORKSPACE=/path/to/workspace curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/9c-backoffice/install.sh | bash
 ```
 
 ## Prerequisites

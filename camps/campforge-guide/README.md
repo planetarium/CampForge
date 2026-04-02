@@ -12,28 +12,14 @@ CampForge usage guide agent camp — camp creation, validation, skill management
 
 ## Install
 
-### Claude Code (local)
-
 ```bash
-./campforge-cli.sh
+curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/campforge-guide/install.sh | bash
 ```
 
-### Codex
+Set a custom workspace:
 
 ```bash
-./campforge-cli.sh
-```
-
-### OpenClaw (remote)
-
-```bash
-curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/campforge-guide/install-remote.sh | bash
-```
-
-Or set a custom workspace:
-
-```bash
-WORKSPACE=/path/to/workspace curl -sL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/campforge-guide/install-remote.sh | bash
+WORKSPACE=/path/to/workspace curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/campforge-guide/install.sh | bash
 ```
 
 ## Prerequisites
