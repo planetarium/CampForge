@@ -7,6 +7,7 @@ import { generateIdentity } from "../pipeline/generate-identity.js";
 import { generateSkills } from "../pipeline/generate-skills.js";
 import { resolveDeps } from "../pipeline/resolve-deps.js";
 import { packageKnowledge } from "../pipeline/package-knowledge.js";
+import { generateInstall } from "../pipeline/generate-install.js";
 import { generateTests } from "../pipeline/generate-tests.js";
 import { writeManifest } from "../pipeline/write-manifest.js";
 import { initRepo } from "../pipeline/init-repo.js";
@@ -19,7 +20,7 @@ export interface PipelineContext {
   extras: string[];
 }
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 8;
 
 export const createCommand = new Command("create")
   .description("Create a new camp from a domain spec")
@@ -58,15 +59,17 @@ export const createCommand = new Command("create")
     log.step(5, TOTAL_STEPS, "Packaging knowledge...");
     packageKnowledge(ctx);
 
-    log.step(6, TOTAL_STEPS, "Generating tests...");
+    log.step(6, TOTAL_STEPS, "Generating install script...");
+    generateInstall(ctx);
+
+    log.step(7, TOTAL_STEPS, "Generating tests...");
     generateTests(ctx);
 
-    log.step(7, TOTAL_STEPS, "Writing manifest & initializing repo...");
+    log.step(8, TOTAL_STEPS, "Writing manifest & initializing repo...");
     writeManifest(ctx);
     initRepo(ctx);
 
     log.success(`Camp created at: ${outputDir}`);
     console.log(`\n  Next: have your LLM fill in the skill SKILL.md files`);
-    console.log(`  Then: create install.sh (see camps/v8-admin/install.sh for reference)`);
     console.log(`  Validate: campforge validate ${outputDir}\n`);
   });
