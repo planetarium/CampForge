@@ -90,7 +90,7 @@ Full list: `gws-auth scopes`
 **Combine independent gws calls into a single Bash call with `;`. Export the token once at the top:**
 
 ```bash
-export GOOGLE_WORKSPACE_CLI_TOKEN=$(gws-auth token)
+export GOOGLE_WORKSPACE_CLI_TOKEN="$(gws-auth token)"
 echo "=== Step 1 ===" ; gws <service> <command1> 2>&1
 echo "=== Step 2 ===" ; gws <service> <command2> 2>&1
 ```
