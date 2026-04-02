@@ -9,61 +9,12 @@ license: Apache-2.0
 metadata:
   author: swen
   version: "0.1"
-compatibility: Requires gws (@googleworkspace/cli) ≥0.22.3 and gws-auth (github:planetarium/gws-auth) ≥0.4.0
+compatibility: Requires @campforge/gws-auth skill. Gmail scopes require gws-auth ≥0.4.0 (authorization code flow).
 ---
 
 # Gmail Skill (gws CLI)
 
-## Environment variables
-
-```bash
-echo $GOOGLE_WORKSPACE_PROJECT_ID  # GCP project ID for API quota (required)
-```
-
-If `$GOOGLE_WORKSPACE_PROJECT_ID` is not set, ask user. This MUST be the GCP project that owns the gws-auth OAuth Client ID. Using a different project causes `403 serviceusage.services.use` permission errors on write operations (send, reply, forward). Read operations (triage, read) may work without it, but writes will fail.
-
-### Installation
-
-```bash
-npm install -g @googleworkspace/cli https://github.com/planetarium/gws-auth/releases/download/v0.4.0/anthropic-kr-gws-auth-0.1.0.tgz
-```
-
-Verify: `gws --version && gws-auth --help`
-
-### Authentication (gws-auth)
-
-`gws-auth` is a dedicated OAuth CLI with embedded Client ID/Secret — no manual GCP credentials setup required.
-
-**v0.4.0 required**: Google blocks Gmail scopes from the device code flow. gws-auth v0.4.0+ uses the authorization code flow (localhost redirect) which supports all scopes. v0.3.0 and below will fail with `Invalid device flow scope`.
-
-#### 1. Check login status
-
-```bash
-gws-auth status 2>/dev/null && echo "AUTH OK"
-```
-
-If not logged in, **ask the user** to run the following (requires one-time Google OAuth consent in a browser — the agent cannot run this directly):
-
-```bash
-gws-auth login --scope gmail.modify
-```
-
-If already logged in but missing the gmail scope, request re-login (include existing scopes to retain them):
-
-```bash
-gws-auth login --scope gmail.modify --scope spreadsheets --scope drive.file
-```
-
-> **Scope reference**: `gmail.modify` includes read + write + label management. Use `gmail.readonly` for read-only access, or `gmail.send` for send-only.
-
-List available scopes: `gws-auth scopes`
-
-#### 2. Export token and project before each call
-
-```bash
-export GOOGLE_WORKSPACE_CLI_TOKEN=$(gws-auth token)
-export GOOGLE_WORKSPACE_PROJECT_ID="${GOOGLE_WORKSPACE_PROJECT_ID}"
-```
+Authentication, installation, and token setup are handled by the **gws-auth** skill. Ensure `gws-auth login` has been run with a Gmail scope (e.g., `--scope gmail.modify`).
 
 ## How to call
 
@@ -157,32 +108,6 @@ gws gmail users drafts list --params '{"userId": "me"}'
 
 # Get profile
 gws gmail users getProfile --params '{"userId": "me"}'
-```
-
-## IMPORTANT: Token Optimization
-
-**Combine independent gws calls into a single Bash call with `;`. Export the token once at the top:**
-
-```bash
-export GOOGLE_WORKSPACE_CLI_TOKEN=$(gws-auth token)
-echo "=== Inbox ===" ; gws gmail +triage --max 5 2>&1
-echo "=== Profile ===" ; gws gmail users getProfile --params '{"userId": "me"}' 2>&1
-```
-
-## Discover commands
-
-```bash
-# List all gmail subcommands
-gws gmail --help
-
-# List message operations
-gws gmail users messages --help
-
-# Inspect method signature
-gws schema gmail.users.messages.list
-
-# Dry-run (preview request without executing)
-gws gmail +send --to test@example.com --subject 'Test' --body 'Test' --dry-run
 ```
 
 ## Common Workflows

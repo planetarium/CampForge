@@ -10,5 +10,8 @@
     "url": "https://github.com/planetarium/CampForge",
     "directory": "packages/gws-sheets"
   },
-  "files": ["skills/"]
+  "files": ["skills/"],
+  "dependencies": {
+    "@campforge/gws-auth": "^0.1.0"
+  }
 }

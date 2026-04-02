@@ -1,0 +1,14 @@
+{
+  "name": "@campforge/gws-auth",
+  "version": "0.1.0",
+  "description": "Google Workspace authentication skill for CampForge camps (shared by gws-sheets, gws-gmail, etc.)",
+  "keywords": ["agent-skill", "google-workspace", "gws", "oauth", "campforge"],
+  "license": "Apache-2.0",
+  "author": "swen",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/planetarium/CampForge",
+    "directory": "packages/gws-auth"
+  },
+  "files": ["skills/"]
+}
