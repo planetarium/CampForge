@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { writeFile } from "../utils/fs.js";
 import { chmodSync } from "node:fs";
 import type { PipelineContext } from "../commands/create.js";
+import { log } from "../utils/logger.js";
 
 const SAFE_ID = /^[a-z0-9][a-z0-9-]*$/;
 
@@ -30,7 +31,7 @@ export function generateInstall(ctx: PipelineContext): void {
       const bare = name.replace(/^@campforge\//, "");
       const version = deps[name].replace(/^[\^~>=<]*/, "");
       if (!version || version === "latest") {
-        console.warn(`  [warn] ${name} has version "${deps[name]}" — tarball URL cannot be generated. Pin a version in package.json.`);
+        log.warn(`${name} has version "${deps[name]}" — tarball URL cannot be generated. Pin a version in package.json.`);
         return `  "dependencies.${name}=${deps[name]}"`;
       }
       const tarball = `campforge-${bare}-${version}.tgz`;
