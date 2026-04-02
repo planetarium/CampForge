@@ -63,7 +63,7 @@ export const syncCommand = new Command("sync")
       console.log("Would overwrite:");
       console.log("  identity/SOUL.md, IDENTITY.md, AGENTS.md");
       console.log("  knowledge/glossary.md");
-      console.log("  manifest.yaml, package.json");
+      console.log("  manifest.yaml, package.json, install.sh");
       console.log("  tests/smoke-test.md");
 
       // Check for new skills

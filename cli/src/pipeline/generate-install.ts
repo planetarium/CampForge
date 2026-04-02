@@ -4,9 +4,15 @@ import { writeFile } from "../utils/fs.js";
 import { chmodSync } from "node:fs";
 import type { PipelineContext } from "../commands/create.js";
 
+const SAFE_ID = /^[a-z0-9][a-z0-9-]*$/;
+
 export function generateInstall(ctx: PipelineContext): void {
   const { domainSpec, outputDir } = ctx;
   const domainId = domainSpec.domain.id;
+
+  if (!SAFE_ID.test(domainId)) {
+    throw new Error(`Domain ID "${domainId}" contains unsafe characters. Use kebab-case (a-z, 0-9, hyphens).`);
+  }
 
   // Read the package.json that resolveDeps already wrote
   const pkgJson = JSON.parse(
