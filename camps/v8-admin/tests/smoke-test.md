@@ -7,7 +7,7 @@ description: V8 Admin 부트캠프 설치 후 셀프 테스트
 
 ## Prerequisites
 
-- v8-admin skill과 gql-ops skill이 로드되어 있어야 함
+- v8-api skill과 gql-ops skill이 로드되어 있어야 함
 - 환경 변수 설정: `V8_GQL`, `V8_TOKEN`, `V8_SKILL_DIR`
 - (gws-sheets 테스트 시) gws CLI 설치 및 인증 완료, `GWS_SPREADSHEET_ID` 설정
 

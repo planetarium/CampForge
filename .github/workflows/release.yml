@@ -1,8 +1,8 @@
-name: Release skill packages
+name: Release camp
 
 on:
   push:
-    tags: ['v*']
+    tags: ['*-v*']  # e.g. v8-admin-v1.1.0, 9c-backoffice-v1.0.1
 
 permissions:
   contents: write
@@ -16,10 +16,30 @@ jobs:
         with:
           node-version: 20
 
-      - run: npm install --ignore-scripts
-      - run: bash scripts/release-pack.sh
+      - name: Parse camp name from tag
+        id: parse
+        run: |
+          TAG="${{ github.ref_name }}"
+          # tag format: {camp-name}-v{version} → extract camp name (everything before last -v)
+          CAMP="${TAG%-v*}"
+          VERSION="${TAG##*-}"
+          echo "camp=$CAMP" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Camp: $CAMP, Version: $VERSION"
 
-      - name: Create GitHub Release with tarballs
-        run: gh release create ${{ github.ref_name }} dist/tarballs/*.tgz --generate-notes --clobber
+      - name: Validate camp exists
+        run: |
+          if [ ! -d "camps/${{ steps.parse.outputs.camp }}" ]; then
+            echo "::error::Camp '${{ steps.parse.outputs.camp }}' not found in camps/"
+            exit 1
+          fi
+
+      - run: npm install --ignore-scripts
+
+      - name: Pack tarballs for camp
+        run: bash scripts/release-pack.sh --camp ${{ steps.parse.outputs.camp }}
+
+      - name: Create GitHub Release
+        run: gh release create ${{ github.ref_name }} dist/tarballs/*.tgz dist/tarballs/install-common.sh --generate-notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

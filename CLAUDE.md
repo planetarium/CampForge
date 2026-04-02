@@ -6,7 +6,7 @@
 
 Camps contain no skill code. A camp declares identity (who the agent is), knowledge (what it knows), and which skills to compose — nothing more. All skills live in `packages/` as independent packages, referenced via `package.json` dependencies.
 
-Why: Skills have their own dependency graphs (e.g. v8-admin depends on gql-ops). The same skill can be shared across multiple camps. Embedding skills inside camps makes dependency management and recomposition impossible.
+Why: Skills have their own dependency graphs (e.g. v8-api depends on gql-ops). The same skill can be shared across multiple camps. Embedding skills inside camps makes dependency management and recomposition impossible.
 
 ### skillpm resolves dependencies; install.sh drives installation
 
@@ -18,7 +18,7 @@ Skills are resolved through [skillpm](https://skillpm.dev/), which operates on t
 - **Distribution**: `scripts/release-pack.sh` produces per-package tarballs attached to a GitHub Release. Nothing is published to the npm registry.
 - **Remote install**: Each camp's `install.sh` constructs a `package.json` with tarball URLs, then runs `npx skillpm install`.
 
-Why not npm publish: Some skills (v8-admin, 9c-backoffice, iap-*) contain internal URLs and org-specific logic. Managing all packages the same way (tarballs) avoids split governance between "these go to npm, those don't."
+Why not npm publish: Some skills (v8-api, 9c-backoffice) contain internal URLs and org-specific logic. Managing all packages the same way (tarballs) avoids split governance between "these go to npm, those don't."
 
 ### One install.sh per camp, shared logic in scripts/
 

@@ -3,15 +3,15 @@
 # Usage: curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/v8-admin/install.sh | bash
 set -euo pipefail
 
-VERSION="${CAMPFORGE_VERSION:-v1.0.1}"
-BASE="https://github.com/planetarium/CampForge/releases/download/$VERSION"
+CAMP_VERSION="${CAMP_VERSION:-v1.1.0}"
+BASE="https://github.com/planetarium/CampForge/releases/download/v8-admin-${CAMP_VERSION}"
 
 WS="${WORKSPACE:-workspace}"
 mkdir -p "$WS" && cd "$WS"
 
 npm init -y --silent 2>/dev/null
 npm pkg set \
-  "dependencies.@campforge/v8-admin=$BASE/campforge-v8-admin-1.0.0.tgz" \
+  "dependencies.@campforge/v8-api=$BASE/campforge-v8-api-1.0.0.tgz" \
   "dependencies.@campforge/gql-ops=$BASE/campforge-gql-ops-0.2.0.tgz" \
   "dependencies.@campforge/gws-sheets=$BASE/campforge-gws-sheets-0.1.0.tgz"
 

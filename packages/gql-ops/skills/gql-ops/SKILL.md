@@ -4,7 +4,7 @@ description: >
   Common GraphQL operations with gq (graphqurl) CLI. Provides schema
   introspection, query file validation, self-healing on API changes, and
   query authoring guidance. Activated by domain-specific GQL skills
-  (v8-admin, 9c-backoffice, etc.) — not intended for direct use.
+  (v8-api, 9c-backoffice, etc.) — not intended for direct use.
 license: Apache-2.0
 metadata:
   author: swen
@@ -29,7 +29,7 @@ Shared knowledge for any skill that talks to a GraphQL API via `gq`.
 Use the endpoint URL and auth header env vars defined by the calling skill:
 
 ```bash
-# v8-admin example
+# v8-api example
 gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --queryFile "$V8_SKILL_DIR/queries/<name>.gql" -j '<variables>' -l
 
 # 9c-backoffice example
@@ -51,8 +51,8 @@ are active.
 for type/field names in the SDL file. Do not attempt to parse it as JSON.
 
 ```bash
-# v8-admin
-gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --introspect > /tmp/v8-admin-schema.sdl
+# v8-api
+gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --introspect > /tmp/v8-api-schema.sdl
 
 # 9c-backoffice
 gq $BO_GQL -H "X-API-Key: $BO_API_KEY" --introspect > /tmp/9c-backoffice-schema.sdl

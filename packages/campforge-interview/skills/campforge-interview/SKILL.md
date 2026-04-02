@@ -25,7 +25,7 @@ Collect answers, generate a `domain-spec.yaml`, then run `campforge create`.
 Ask these in order. Skip if user already provided in initial request.
 
 1. **Domain ID**
-   > "부트캠프의 ID를 정해주세요 (예: devops-sre, arena-ops, iap-manager)"
+   > "부트캠프의 ID를 정해주세요 (예: devops-sre, arena-ops, v8-admin)"
 
    Rules: lowercase, kebab-case, no spaces.
 
