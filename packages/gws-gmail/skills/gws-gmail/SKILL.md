@@ -9,7 +9,7 @@ license: Apache-2.0
 metadata:
   author: swen
   version: "0.1"
-compatibility: Requires @campforge/gws-auth skill. Gmail scopes require gws-auth ≥0.4.0 (authorization code flow).
+compatibility: Requires @campforge/gws-auth skill (^0.1.0). Gmail scopes require the gws-auth CLI (github:planetarium/gws-auth) ≥0.4.0 for authorization code flow.
 ---
 
 # Gmail Skill (gws CLI)

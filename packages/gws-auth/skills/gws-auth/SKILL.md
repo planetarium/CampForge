@@ -28,6 +28,8 @@ If `$GOOGLE_WORKSPACE_PROJECT_ID` is not set, ask user. This MUST be the GCP pro
 npm install -g @googleworkspace/cli https://github.com/planetarium/gws-auth/releases/download/v0.4.0/anthropic-kr-gws-auth-0.1.0.tgz
 ```
 
+> **Note**: The tarball is named `0.1.0` (npm package version) while the GitHub release tag is `v0.4.0` (CLI release version). This is expected — the npm package version and the release tag are versioned independently.
+
 Verify: `gws --version && gws-auth --help`
 
 ## Authentication (gws-auth)
