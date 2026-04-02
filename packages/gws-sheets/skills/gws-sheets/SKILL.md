@@ -14,7 +14,7 @@ compatibility: Requires @campforge/gws-auth skill package (^0.1.0).
 
 # Google Sheets Skill (gws CLI)
 
-Authentication, installation, and token setup are handled by the **gws-auth** skill. The default scopes (`spreadsheets`, `drive.file`) are sufficient for core Sheets read/write operations and for accessing spreadsheets the app creates or opens. Drive-wide operations such as listing/searching files or managing sharing/permissions for arbitrary files (e.g., `gws drive files list`, `gws drive permissions create`) may require additional Drive scopes (`drive.readonly` or `drive`), which can be configured via **gws-auth**.
+Authentication, installation, and token setup are handled by the **gws-auth** skill. Before proceeding, load/activate the `@campforge/gws-auth` skill dependency. If not already authenticated, the **user** must run `gws-auth login` themselves — the agent cannot perform this interactive browser OAuth step. The default scopes (`spreadsheets`, `drive.file`) are sufficient for core Sheets read/write operations and for accessing spreadsheets the app creates or opens. Drive-wide operations such as listing/searching files or managing sharing/permissions for arbitrary files (e.g., `gws drive files list`, `gws drive permissions create`) may require additional Drive scopes (`drive.readonly` or `drive`), which can be configured via **gws-auth**.
 
 ## Environment variables
 

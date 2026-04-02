@@ -14,7 +14,7 @@ compatibility: Requires @campforge/gws-auth skill (^0.1.0). Gmail scopes require
 
 # Gmail Skill (gws CLI)
 
-Authentication, installation, and token setup are handled by the **gws-auth** skill. Ensure `gws-auth login` has been run with a Gmail scope (e.g., `--scope gmail.modify`).
+Authentication, installation, and token setup are handled by the **gws-auth** skill. Before proceeding, load/activate the `@campforge/gws-auth` skill dependency. If not already authenticated, the **user** must run `gws-auth login --scope gmail.modify` themselves — the agent cannot perform this interactive browser OAuth step.
 
 ## How to call
 
