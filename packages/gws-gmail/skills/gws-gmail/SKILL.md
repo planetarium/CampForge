@@ -51,7 +51,8 @@ gws gmail +forward --message-id <MESSAGE_ID> --to dave@example.com --body 'FYI s
 gws gmail +forward --message-id <MESSAGE_ID> --to dave@example.com --no-original-attachments
 
 # Watch — real-time email monitoring (requires Pub/Sub)
-gws gmail +watch --project <GCP_PROJECT_ID> --label-ids INBOX --once
+# Typically, --project should match $GOOGLE_WORKSPACE_PROJECT_ID (the OAuth client's project).
+gws gmail +watch --project "$GOOGLE_WORKSPACE_PROJECT_ID" --label-ids INBOX --once
 ```
 
 ### Common options for send/reply/forward

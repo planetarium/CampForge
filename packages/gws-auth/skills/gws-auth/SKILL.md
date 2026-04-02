@@ -63,8 +63,8 @@ When re-logging in, include all desired scopes (existing scopes are not automati
 ### 2. Export token and project before each call
 
 ```bash
-export GOOGLE_WORKSPACE_CLI_TOKEN=$(gws-auth token)
-export GOOGLE_WORKSPACE_PROJECT_ID="${GOOGLE_WORKSPACE_PROJECT_ID}"
+export GOOGLE_WORKSPACE_CLI_TOKEN="$(gws-auth token)"
+export GOOGLE_WORKSPACE_PROJECT_ID
 ```
 
 ### Available scopes
