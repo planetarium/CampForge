@@ -6,7 +6,7 @@ set -euo pipefail
 VERSION="${CAMPFORGE_VERSION:-v1.0.0}"
 BASE="https://github.com/planetarium/CampForge/releases/download/$VERSION"
 
-WS="${WORKSPACE:-.}"
+WS="${WORKSPACE:-workspace}"
 mkdir -p "$WS" && cd "$WS"
 
 npm init -y --silent 2>/dev/null

@@ -37,7 +37,7 @@ A camp is agent-agnostic — each camp's `install.sh` handles installation via [
 curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/v8-admin/install.sh | bash
 ```
 
-This uses [skillpm](https://skillpm.dev/) + GitHub Release tarballs to install skills. Set `CAMPFORGE_VERSION` to pin a specific release, or `WORKSPACE` to choose the install directory.
+This uses [skillpm](https://skillpm.dev/) + GitHub Release tarballs to install skills into a `workspace/` subdirectory. Set `CAMPFORGE_VERSION` to pin a specific release, or `WORKSPACE` to choose the install directory.
 
 ### What Gets Installed
 
