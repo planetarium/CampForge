@@ -28,11 +28,34 @@ install_gws() {
 }
 
 # Install camp identity/knowledge/manifest/tests files from a tarball URL.
+# Extracts into a temporary directory and copies only expected entries.
 # Usage: install_camp_files <tarball-url>
 install_camp_files() {
   local url="$1"
+  local tmp_tar extract_dir source_dir copied=0
+
   echo ":: Installing camp files..."
-  curl -fsSL "$url" | tar xz
+
+  tmp_tar="$(mktemp)"
+  extract_dir="$(mktemp -d)"
+  trap 'rm -f "$tmp_tar"; rm -rf "$extract_dir"' RETURN
+
+  curl -fsSL "$url" -o "$tmp_tar"
+  tar xzf "$tmp_tar" -C "$extract_dir" --no-same-owner --no-same-permissions
+
+  source_dir="$extract_dir"
+  for entry in identity knowledge tests manifest.yaml; do
+    if [ -e "$source_dir/$entry" ]; then
+      rm -rf "./$entry"
+      cp -R "$source_dir/$entry" "./$entry"
+      copied=1
+    fi
+  done
+
+  if [ "$copied" -ne 1 ]; then
+    echo "  [warn] No expected camp files found in archive." >&2
+    return 1
+  fi
 }
 
 # Install gws-auth plugin.

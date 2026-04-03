@@ -9,9 +9,8 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-CAMPS=("${@:-v8-admin 9c-backoffice campforge-guide}")
-# If no args, expand the default string into array
-if [ $# -eq 0 ]; then
+CAMPS=("$@")
+if [ ${#CAMPS[@]} -eq 0 ]; then
   CAMPS=(v8-admin 9c-backoffice campforge-guide)
 fi
 
@@ -63,7 +62,7 @@ for CAMP in "${CAMPS[@]}"; do
     -v "$DIST:/srv" \
     node:20 bash -c '
       # Start a file server in background
-      npx --yes serve /srv -p 8080 --no-clipboard -s 2>/dev/null &
+      python3 -m http.server 8080 --directory /srv 2>/dev/null &
       SERVER_PID=$!
       # Wait for server to be ready
       for i in $(seq 1 10); do
