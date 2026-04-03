@@ -1,0 +1,30 @@
+services:
+  test-openclaw:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      # Mount packed tarballs + modified install.sh from host
+      - ${DIST_DIR:-.}/dist:/srv
+    environment:
+      - WORKSPACE=/home/tester/workspace
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        set -euo pipefail
+
+        # 1. Start local file server for tarballs
+        python3 -m http.server 8080 --directory /srv 2>/dev/null &
+        for i in $$(seq 1 10); do
+          curl -sf http://localhost:8080/ >/dev/null 2>&1 && break
+          sleep 0.5
+        done
+
+        # 2. Run camp installer
+        bash /srv/install.sh 2>&1
+
+        # 3. Verify openclaw recognizes the installed skills
+        echo ""
+        echo "=== OpenClaw skill recognition ==="
+        cd "$$WORKSPACE"
+        openclaw skills list 2>&1 || true
