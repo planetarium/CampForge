@@ -32,25 +32,29 @@ install_gws() {
 # Usage: install_camp_files <tarball-url>
 install_camp_files() {
   local url="$1"
-  local tmp_tar extract_dir source_dir copied=0
+  local tmp_tar extract_dir copied=0
+  local allowed_entries="identity knowledge tests manifest.yaml"
 
   echo ":: Installing camp files..."
 
   tmp_tar="$(mktemp)"
   extract_dir="$(mktemp -d)"
-  trap 'rm -f "$tmp_tar"; rm -rf "$extract_dir"' RETURN
 
   curl -fsSL "$url" -o "$tmp_tar"
-  tar xzf "$tmp_tar" -C "$extract_dir" --no-same-owner --no-same-permissions
+  # Extract only allowed top-level entries to prevent path traversal
+  tar xzf "$tmp_tar" -C "$extract_dir" --no-same-owner --no-same-permissions \
+    $allowed_entries 2>/dev/null || true
 
-  source_dir="$extract_dir"
-  for entry in identity knowledge tests manifest.yaml; do
-    if [ -e "$source_dir/$entry" ]; then
+  for entry in $allowed_entries; do
+    if [ -e "$extract_dir/$entry" ]; then
       rm -rf "./$entry"
-      cp -R "$source_dir/$entry" "./$entry"
+      cp -R "$extract_dir/$entry" "./$entry"
       copied=1
     fi
   done
+
+  rm -f "$tmp_tar"
+  rm -rf "$extract_dir"
 
   if [ "$copied" -ne 1 ]; then
     echo "  [warn] No expected camp files found in archive." >&2

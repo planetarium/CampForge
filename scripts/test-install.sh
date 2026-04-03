@@ -30,7 +30,13 @@ for CAMP in "${CAMPS[@]}"; do
   DIST="$REPO_ROOT/dist/test-$CAMP"
   rm -rf "$DIST"
   mkdir -p "$DIST"
-  bash "$REPO_ROOT/scripts/release-pack.sh" --camp "$CAMP" "$DIST" > /dev/null 2>&1
+  PACK_LOG="$DIST/release-pack.log"
+  if ! bash "$REPO_ROOT/scripts/release-pack.sh" --camp "$CAMP" "$DIST" > "$PACK_LOG" 2>&1; then
+    echo "  [error] release-pack.sh failed for $CAMP"
+    cat "$PACK_LOG"
+    exit 1
+  fi
+  rm -f "$PACK_LOG"
 
   # 2. Build a test install script: replace BASE with local server URL
   #    and skip post-install binaries (gws/gws-auth) that aren't relevant to this test
