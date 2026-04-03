@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+# E2E test: verify camp installers include identity/knowledge files.
+#
+# Usage:
+#   ./scripts/test-install.sh              # Test all camps
+#   ./scripts/test-install.sh v8-admin     # Test a specific camp
+#
+# Requires: docker
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+CAMPS=("$@")
+if [ ${#CAMPS[@]} -eq 0 ]; then
+  CAMPS=(v8-admin 9c-backoffice campforge-guide)
+fi
+
+PASS=0
+FAIL=0
+
+for CAMP in "${CAMPS[@]}"; do
+  echo ""
+  echo "========================================="
+  echo "  Testing camp: $CAMP"
+  echo "========================================="
+
+  CAMP_DIR="$REPO_ROOT/camps/$CAMP"
+  [ -f "$CAMP_DIR/install.sh" ] || { echo "  [skip] no install.sh"; continue; }
+
+  # 1. Pack tarballs (use repo-local path for Docker mount compatibility on macOS)
+  DIST="$REPO_ROOT/dist/test-$CAMP"
+  rm -rf "$DIST"
+  mkdir -p "$DIST"
+  PACK_LOG="$DIST/release-pack.log"
+  if ! bash "$REPO_ROOT/scripts/release-pack.sh" --camp "$CAMP" "$DIST" > "$PACK_LOG" 2>&1; then
+    echo "  [error] release-pack.sh failed for $CAMP"
+    cat "$PACK_LOG"
+    exit 1
+  fi
+  rm -f "$PACK_LOG"
+
+  # 2. Build a test install script: replace BASE with local server URL
+  #    and skip post-install binaries (gws/gws-auth) that aren't relevant to this test
+  sed \
+    -e 's|^BASE=.*|BASE="http://localhost:8080"|' \
+    -e 's|^install_gws$|# skip: install_gws|' \
+    -e 's|^install_gws_auth$|# skip: install_gws_auth|' \
+    "$CAMP_DIR/install.sh" > "$DIST/install.sh"
+
+  # 3. Collect expected files
+  #    a) Camp files from the source camp directory
+  EXPECTED_CAMP=()
+  for f in identity/SOUL.md identity/IDENTITY.md identity/AGENTS.md knowledge/glossary.md manifest.yaml; do
+    [ -f "$CAMP_DIR/$f" ] && EXPECTED_CAMP+=("$f")
+  done
+  #    b) Skill SKILL.md files from camp dependencies
+  EXPECTED_SKILLS=()
+  SKILL_NAMES=$(node -e "
+    const pkg = require('$CAMP_DIR/package.json');
+    Object.keys(pkg.dependencies || {})
+      .filter(d => d.startsWith('@campforge/'))
+      .forEach(d => console.log(d.slice('@campforge/'.length)));
+  ")
+  for skill in $SKILL_NAMES; do
+    EXPECTED_SKILLS+=("$skill")
+  done
+
+  # 4. Run in Docker
+  echo "  Running installer in Docker..."
+  RESULT=$(docker run --rm \
+    -v "$DIST:/srv" \
+    node:20 bash -c '
+      set -euo pipefail
+      # Start a file server in background
+      python3 -m http.server 8080 --directory /srv 2>/dev/null &
+      SERVER_PID=$!
+      # Wait for server to be ready
+      SERVER_READY=false
+      for i in $(seq 1 10); do
+        if curl -sf http://localhost:8080/ >/dev/null 2>&1; then
+          SERVER_READY=true
+          break
+        fi
+        sleep 0.5
+      done
+      if [ "$SERVER_READY" != "true" ]; then
+        echo "[error] HTTP server failed to start" >&2
+        exit 1
+      fi
+      # Run the camp installer
+      cd /tmp
+      bash /srv/install.sh 2>&1
+      # Output installed files for verification
+      echo "---INSTALLED_FILES---"
+      find workspace -type f \( -name "*.md" -o -name "*.yaml" \) 2>/dev/null | sort
+      echo "---SKILL_FILES---"
+      find workspace -path "*/skills/*/SKILL.md" -type f 2>/dev/null | sort
+      kill $SERVER_PID 2>/dev/null
+    ' 2>&1)
+  DOCKER_EXIT=$?
+
+  if [ "$DOCKER_EXIT" -ne 0 ]; then
+    echo "  [error] Docker installer exited with code $DOCKER_EXIT"
+    echo "$RESULT" | tail -20
+    FAIL=$((FAIL + 1))
+    rm -rf "$DIST"
+    continue
+  fi
+
+  # 5. Verify expected files
+  echo "  Verifying camp files..."
+  CAMP_PASS=true
+  for f in "${EXPECTED_CAMP[@]}"; do
+    if echo "$RESULT" | grep -q "workspace/$f"; then
+      echo "    ✓ $f"
+    else
+      echo "    ✗ $f  MISSING"
+      CAMP_PASS=false
+    fi
+  done
+
+  echo "  Verifying skill files..."
+  for skill in "${EXPECTED_SKILLS[@]}"; do
+    if echo "$RESULT" | grep -q "skills/$skill/SKILL.md"; then
+      echo "    ✓ $skill/SKILL.md"
+    else
+      echo "    ✗ $skill/SKILL.md  MISSING"
+      CAMP_PASS=false
+    fi
+  done
+
+  if $CAMP_PASS; then
+    echo "  => PASS"
+    PASS=$((PASS + 1))
+  else
+    echo "  => FAIL"
+    echo "  --- Docker output ---"
+    echo "$RESULT" | tail -30
+    echo "  ---------------------"
+    FAIL=$((FAIL + 1))
+  fi
+
+  rm -rf "$DIST"
+done
+
+echo ""
+echo "========================================="
+echo "  Results: $PASS passed, $FAIL failed"
+echo "========================================="
+[ "$FAIL" -eq 0 ]

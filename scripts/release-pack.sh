@@ -62,6 +62,22 @@ else
   done
 fi
 
+# Pack camp identity/knowledge tarball when --camp is specified
+if [ -n "$CAMP" ]; then
+  CAMP_FILES=()
+  for pattern in identity knowledge tests manifest.yaml; do
+    target="$CAMP_DIR/$pattern"
+    [ -e "$target" ] && CAMP_FILES+=("$pattern")
+  done
+  if [ ${#CAMP_FILES[@]} -gt 0 ]; then
+    CAMP_TGZ="camp-${CAMP}.tgz"
+    tar -czf "$OUT/$CAMP_TGZ" -C "$CAMP_DIR" "${CAMP_FILES[@]}"
+    echo "  camp files -> $CAMP_TGZ (${CAMP_FILES[*]})"
+  else
+    echo "  [skip] no camp files (identity/knowledge/manifest.yaml/tests) found"
+  fi
+fi
+
 # Include shared install helper so camp installers can fetch it from the same release
 cp "$REPO_ROOT/scripts/install-common.sh" "$OUT/install-common.sh"
 echo "  install-common.sh -> $OUT/install-common.sh"
