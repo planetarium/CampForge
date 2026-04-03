@@ -194,9 +194,13 @@ _adapter_openclaw() {
     agents_skills_abs="$(cd .agents/skills && pwd)"
     echo ""
     echo "  [action-required] To let OpenClaw discover installed skills,"
-    echo "  add the following to ~/.openclaw/openclaw.json:"
+    echo "  update ~/.openclaw/openclaw.json so skills.load.extraDirs includes:"
     echo ""
-    echo "    {\"skills\":{\"load\":{\"extraDirs\":[\"$agents_skills_abs\"]}}}"
+    echo "    $agents_skills_abs"
+    echo ""
+    echo "  If ~/.openclaw/openclaw.json does not exist yet, create it."
+    echo "  If it already exists, merge/add this path under skills.load.extraDirs"
+    echo "  and do not replace your whole existing OpenClaw configuration."
     echo ""
   fi
 

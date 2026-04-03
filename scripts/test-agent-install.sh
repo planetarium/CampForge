@@ -59,7 +59,7 @@ case "$PLATFORM" in
     DOCKER_BUILD_DIR="$REPO_ROOT/scripts/test-openclaw"
     DOCKER_IMAGE="test-openclaw-test-openclaw"
     WORKSPACE_PATH="/home/node"
-    ENV_FLAGS=(--env "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY")
+    ENV_FLAGS=(--env ANTHROPIC_API_KEY)
     AGENT_CMD="openclaw agent --local --session-id test-install --json --message"
     ;;
   claude-code)
@@ -67,7 +67,7 @@ case "$PLATFORM" in
     DOCKER_BUILD_DIR="$REPO_ROOT/scripts/test-claude-code"
     DOCKER_IMAGE="test-claude-code"
     WORKSPACE_PATH="/home/tester"
-    ENV_FLAGS=(--env "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY")
+    ENV_FLAGS=(--env ANTHROPIC_API_KEY)
     AGENT_CMD="claude -p --dangerously-skip-permissions --output-format json"
     ;;
   codex)
@@ -76,7 +76,8 @@ case "$PLATFORM" in
     DOCKER_BUILD_DIR="$REPO_ROOT/scripts/test-codex"
     DOCKER_IMAGE="test-codex"
     WORKSPACE_PATH="/home/tester"
-    ENV_FLAGS=(--env "CODEX_API_KEY=$CODEX_KEY")
+    export CODEX_API_KEY="$CODEX_KEY"
+    ENV_FLAGS=(--env CODEX_API_KEY)
     AGENT_CMD="codex exec --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check --json"
     ;;
   *)
