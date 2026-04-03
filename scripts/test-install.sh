@@ -60,7 +60,7 @@ run_installer() {
       echo "---ADAPTER_STAGING---"
       cat workspace/.campforge-context*.md 2>/dev/null || echo "(not found)"
       echo "---ADAPTER_END---"
-      kill $SERVER_PID 2>/dev/null
+      kill $SERVER_PID 2>/dev/null || true
     ' 2>&1
 }
 
@@ -245,7 +245,7 @@ for CAMP in "${CAMPS[@]}"; do
           done
           # Check size <= 32KiB
           SIZE_LINE=$(echo "$RESULT" | sed -n '/---ADAPTER_AGENTS_MD_SIZE---/,/---ADAPTER_IDENTITY_AGENTS_MD---/p' | tr -d '[:space:]' | grep -oE '[0-9]+' | head -1)
-          if [ -n "$SIZE_LINE" ] && [ "$SIZE_LINE" -le 32000 ]; then
+          if [ -n "$SIZE_LINE" ] && [ "$SIZE_LINE" -le 32768 ]; then
             echo "      ✓ AGENTS.md size ${SIZE_LINE}B <= 32KiB"
           elif [ -n "$SIZE_LINE" ]; then
             echo "      ✗ AGENTS.md size ${SIZE_LINE}B exceeds 32KiB"
@@ -276,7 +276,7 @@ for CAMP in "${CAMPS[@]}"; do
   # Test conflict cases (existing files in workspace)
   # -------------------------------------------------------
   if $HAS_CONTEXT; then
-    for CONFLICT_CASE in claude-code codex; do
+    for CONFLICT_CASE in claude-code openclaw codex; do
       echo ""
       echo "  --- Conflict: $CONFLICT_CASE (existing file) ---"
       CONFLICT_PASS=true
@@ -284,6 +284,9 @@ for CAMP in "${CAMPS[@]}"; do
       case "$CONFLICT_CASE" in
         claude-code)
           PRESEED='mkdir -p workspace/.claude && echo "# My existing config" > workspace/.claude/CLAUDE.md'
+          ;;
+        openclaw)
+          PRESEED='mkdir -p workspace && echo "# My existing soul" > workspace/SOUL.md && echo "# My existing agents" > workspace/AGENTS.md'
           ;;
         codex)
           PRESEED='mkdir -p workspace && echo "# My existing agents" > workspace/AGENTS.md'
@@ -321,6 +324,28 @@ for CAMP in "${CAMPS[@]}"; do
             echo "      ✓ .campforge-context.md created with camp context"
           fi
           # action-required message should be in output
+          if echo "$RESULT" | grep -q "action-required"; then
+            echo "      ✓ Merge instruction printed"
+          else
+            echo "      ✗ No merge instruction in output"
+            CONFLICT_PASS=false
+          fi
+          ;;
+        openclaw)
+          # Existing root files should be preserved
+          ROOT_AGENTS=$(echo "$RESULT" | sed -n '/---ADAPTER_AGENTS_MD---/,/---ADAPTER_AGENTS_MD_SIZE---/p')
+          if echo "$ROOT_AGENTS" | grep -q "My existing agents"; then
+            echo "      ✓ Existing AGENTS.md preserved"
+          else
+            echo "      ✗ Existing AGENTS.md was overwritten"
+            CONFLICT_PASS=false
+          fi
+          if echo "$STAGING" | grep -q "(not found)"; then
+            echo "      ✗ .campforge-context.md not created"
+            CONFLICT_PASS=false
+          else
+            echo "      ✓ .campforge-context.md created with camp context"
+          fi
           if echo "$RESULT" | grep -q "action-required"; then
             echo "      ✓ Merge instruction printed"
           else

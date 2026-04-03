@@ -247,7 +247,7 @@ _adapter_openclaw() {
 # Respects Codex's 32 KiB default limit for project docs.
 # If AGENTS.md already exists, write to a staging file instead.
 _adapter_codex() {
-  local max_bytes="${CODEX_PROJECT_DOC_MAX_BYTES:-32000}"
+  local max_bytes="${CODEX_PROJECT_DOC_MAX_BYTES:-32768}"
 
   local content
   content=$(
