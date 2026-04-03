@@ -65,19 +65,22 @@ for CAMP in "${CAMPS[@]}"; do
   echo "  Running installer + OpenClaw skill check in Docker..."
   RESULT=$(DIST_DIR="$DIST" docker compose -f "$COMPOSE_DIR/docker-compose.yml" \
     run --rm -T \
-    -e WORKSPACE=/home/tester/workspace \
+    -e WORKSPACE=/home/node/workspace \
     -v "$DIST:/srv:ro" \
     test-openclaw 2>&1) || true
   DOCKER_EXIT=$?
 
   # 5. Verify: check openclaw skills list output for each expected skill
+  #    Look for "✓ ready" lines containing the skill name (strict check)
   echo "  Verifying OpenClaw skill recognition..."
   CAMP_PASS=true
 
-  # Also check that skills/ symlinks exist (fallback if openclaw skills list unavailable)
   for skill in $EXPECTED_SKILLS; do
-    if echo "$RESULT" | grep -qi "$skill"; then
-      echo "    ✓ $skill"
+    if echo "$RESULT" | grep -q "✓ ready" && echo "$RESULT" | grep "✓ ready" | grep -qi "$skill"; then
+      echo "    ✓ $skill (ready)"
+    elif echo "$RESULT" | grep -qi "$skill"; then
+      echo "    △ $skill (listed but not ready)"
+      CAMP_PASS=false
     else
       echo "    ✗ $skill  NOT RECOGNIZED"
       CAMP_PASS=false

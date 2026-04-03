@@ -183,10 +183,51 @@ _adapter_claude_code() {
 
 # OpenClaw: auto-loads SOUL.md, IDENTITY.md, AGENTS.md from workspace root.
 # identity/ files must be copied to root. Knowledge is appended to AGENTS.md.
+# Skills in .agents/skills/ are registered via skills.load.extraDirs in openclaw.json.
 # If root files already exist, stage camp content for manual merge.
 _adapter_openclaw() {
   local has_conflict=false
   local staging_content=""
+
+  # Register .agents/skills/ as an extraDirs entry so OpenClaw discovers camp skills.
+  # OpenClaw's native .agents/skills/ scan requires workspace registration;
+  # extraDirs works without setup.
+  if [ -d .agents/skills ]; then
+    local agents_skills_abs
+    agents_skills_abs="$(cd .agents/skills && pwd)"
+    local oc_config="$HOME/.openclaw/openclaw.json"
+    mkdir -p "$HOME/.openclaw"
+    if [ -f "$oc_config" ]; then
+      # Merge extraDirs entry if not already present
+      if ! grep -q "$agents_skills_abs" "$oc_config" 2>/dev/null; then
+        if command -v node >/dev/null 2>&1; then
+          node -e "
+            const fs = require('fs');
+            const cfg = JSON.parse(fs.readFileSync('$oc_config', 'utf8'));
+            if (!cfg.skills) cfg.skills = {};
+            if (!cfg.skills.load) cfg.skills.load = {};
+            if (!cfg.skills.load.extraDirs) cfg.skills.load.extraDirs = [];
+            if (!cfg.skills.load.extraDirs.includes('$agents_skills_abs')) {
+              cfg.skills.load.extraDirs.push('$agents_skills_abs');
+            }
+            fs.writeFileSync('$oc_config', JSON.stringify(cfg, null, 2) + '\n');
+          "
+          echo "  Added $agents_skills_abs to openclaw.json extraDirs"
+        fi
+      fi
+    else
+      cat > "$oc_config" <<OCEOF
+{
+  "skills": {
+    "load": {
+      "extraDirs": ["$agents_skills_abs"]
+    }
+  }
+}
+OCEOF
+      echo "  Created openclaw.json with extraDirs -> $agents_skills_abs"
+    fi
+  fi
 
   # Copy identity files to workspace root (OpenClaw reads from root, not identity/)
   for f in SOUL.md IDENTITY.md; do

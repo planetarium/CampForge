@@ -7,7 +7,7 @@ services:
       # Mount packed tarballs + modified install.sh from host
       - ${DIST_DIR:-.}/dist:/srv
     environment:
-      - WORKSPACE=/home/tester/workspace
+      - WORKSPACE=/home/node/workspace
     entrypoint: ["bash", "-c"]
     command:
       - |
