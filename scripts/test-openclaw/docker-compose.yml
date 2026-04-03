@@ -42,4 +42,7 @@ services:
         # 4. Verify openclaw recognizes the installed skills
         echo ""
         echo "=== OpenClaw skill recognition ==="
-        openclaw skills list 2>&1 || true
+        if ! openclaw skills list 2>&1; then
+          echo "Error: 'openclaw skills list' failed" >&2
+          exit 1
+        fi

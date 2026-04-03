@@ -29,6 +29,7 @@ CAMP_DIR="$REPO_ROOT/camps/$CAMP"
 # --- Pack tarballs ---
 DIST="$REPO_ROOT/dist/test-agent-$PLATFORM-$CAMP"
 rm -rf "$DIST" && mkdir -p "$DIST"
+trap 'rm -rf "$DIST"' EXIT
 echo "Packing tarballs for $CAMP..."
 PACK_LOG="$(mktemp)"
 if ! bash "$REPO_ROOT/scripts/release-pack.sh" --camp "$CAMP" "$DIST" >"$PACK_LOG" 2>&1; then
@@ -118,6 +119,3 @@ docker run --rm \
   -w "$WORKSPACE_PATH" \
   "$DOCKER_IMAGE" \
   bash -c "$AGENT_CMD $(printf '%q' "$INSTALL_PROMPT")" 2>&1
-
-# --- Cleanup ---
-rm -rf "$DIST"
