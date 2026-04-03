@@ -23,8 +23,14 @@ services:
         # 2. Run camp installer
         bash /srv/install.sh 2>&1
 
-        # 3. Verify openclaw recognizes the installed skills
+        # 3. Configure OpenClaw to discover .agents/skills/ (test-only)
+        cd "$$WORKSPACE"
+        mkdir -p $$HOME/.openclaw
+        cat > $$HOME/.openclaw/openclaw.json <<CONF
+        {"skills":{"load":{"extraDirs":["$$WORKSPACE/.agents/skills"]}}}
+        CONF
+
+        # 4. Verify openclaw recognizes the installed skills
         echo ""
         echo "=== OpenClaw skill recognition ==="
-        cd "$$WORKSPACE"
         openclaw skills list 2>&1 || true
