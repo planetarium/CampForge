@@ -101,12 +101,13 @@ detect_platform() {
     return
   fi
 
-  if [ -d ".claude" ] || command -v claude >/dev/null 2>&1; then
-    echo "claude-code"
-  elif command -v openclaw >/dev/null 2>&1 || [ -n "${OPENCLAW_WORKSPACE:-}" ]; then
+  # Check openclaw/codex first — a .claude/ directory may exist from prior installs
+  if command -v openclaw >/dev/null 2>&1 || [ -n "${OPENCLAW_WORKSPACE:-}" ]; then
     echo "openclaw"
   elif command -v codex >/dev/null 2>&1 || [ -n "${CODEX_HOME:-}" ]; then
     echo "codex"
+  elif command -v claude >/dev/null 2>&1 || [ -f ".claude/CLAUDE.md" ]; then
+    echo "claude-code"
   else
     echo "claude-code"
   fi

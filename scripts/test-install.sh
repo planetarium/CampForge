@@ -94,14 +94,9 @@ for CAMP in "${CAMPS[@]}"; do
     "$CAMP_DIR/install.sh" > "$DIST/install.sh"
 
   # 3. Collect expected files
-  HAS_CONTEXT=false
   EXPECTED_CAMP=()
   for f in identity/SOUL.md identity/IDENTITY.md identity/AGENTS.md knowledge/glossary.md manifest.yaml; do
     [ -f "$CAMP_DIR/$f" ] && EXPECTED_CAMP+=("$f")
-  done
-  # HAS_CONTEXT is true if any identity/ or knowledge/ files exist
-  for f in "${EXPECTED_CAMP[@]}"; do
-    case "$f" in identity/*|knowledge/*) HAS_CONTEXT=true; break ;; esac
   done
 
   EXPECTED_SKILLS=()
@@ -124,6 +119,12 @@ for CAMP in "${CAMPS[@]}"; do
   for f in "$CAMP_DIR"/knowledge/*.md "$CAMP_DIR"/knowledge/decision-trees/*.md; do
     [ -f "$f" ] && KNOWLEDGE_FILES+=("${f#"$CAMP_DIR/"}")
   done
+
+  # HAS_CONTEXT: true if any identity or knowledge files exist
+  HAS_CONTEXT=false
+  if [ ${#IDENTITY_FILES[@]} -gt 0 ] || [ ${#KNOWLEDGE_FILES[@]} -gt 0 ]; then
+    HAS_CONTEXT=true
+  fi
 
   # -------------------------------------------------------
   # Test each platform (clean install)
@@ -204,19 +205,21 @@ for CAMP in "${CAMPS[@]}"; do
             PLATFORM_PASS=false
           fi
         done
-        # Root AGENTS.md should exist with knowledge appended
-        ROOT_AGENTS=$(echo "$RESULT" | sed -n '/---ADAPTER_AGENTS_MD---/,/---ADAPTER_AGENTS_MD_SIZE---/p')
-        if echo "$ROOT_AGENTS" | grep -q "(not found)"; then
-          echo "      ✗ Root AGENTS.md not created"
-          PLATFORM_PASS=false
-        else
-          echo "      ✓ Root AGENTS.md created"
-          if [ ${#KNOWLEDGE_FILES[@]} -gt 0 ]; then
-            if echo "$ROOT_AGENTS" | grep -q "# Knowledge Reference"; then
-              echo "      ✓ Knowledge included in AGENTS.md"
-            else
-              echo "      ✗ Knowledge NOT included in AGENTS.md"
-              PLATFORM_PASS=false
+        # Root AGENTS.md is only created when identity/AGENTS.md or knowledge exists
+        if [ -f "$CAMP_DIR/identity/AGENTS.md" ] || [ ${#KNOWLEDGE_FILES[@]} -gt 0 ]; then
+          ROOT_AGENTS=$(echo "$RESULT" | sed -n '/---ADAPTER_AGENTS_MD---/,/---ADAPTER_AGENTS_MD_SIZE---/p')
+          if echo "$ROOT_AGENTS" | grep -q "(not found)"; then
+            echo "      ✗ Root AGENTS.md not created"
+            PLATFORM_PASS=false
+          else
+            echo "      ✓ Root AGENTS.md created"
+            if [ ${#KNOWLEDGE_FILES[@]} -gt 0 ]; then
+              if echo "$ROOT_AGENTS" | grep -q "# Knowledge Reference"; then
+                echo "      ✓ Knowledge included in AGENTS.md"
+              else
+                echo "      ✗ Knowledge NOT included in AGENTS.md"
+                PLATFORM_PASS=false
+              fi
             fi
           fi
         fi
