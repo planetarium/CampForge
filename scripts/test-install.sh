@@ -18,9 +18,10 @@ PASS=0
 FAIL=0
 
 # Run installer in Docker with the given platform and return output.
-# Usage: run_installer <dist-dir> <platform>
+# Usage: run_installer <dist-dir> <platform> [preseed-script]
+# preseed-script: optional bash commands run before the installer (e.g. to create existing files)
 run_installer() {
-  local dist="$1" platform="$2"
+  local dist="$1" platform="$2" preseed="${3:-}"
   docker run --rm \
     -v "$dist:/srv" \
     -e "CAMPFORGE_PLATFORM=$platform" \
@@ -41,6 +42,8 @@ run_installer() {
         exit 1
       fi
       cd /tmp
+      # Pre-seed existing files if requested
+      '"$preseed"'
       bash /srv/install.sh 2>&1
       echo "---INSTALLED_FILES---"
       find workspace -type f \( -name "*.md" -o -name "*.yaml" \) 2>/dev/null | sort
@@ -54,6 +57,8 @@ run_installer() {
       wc -c < workspace/AGENTS.md 2>/dev/null || echo "0"
       echo "---ADAPTER_IDENTITY_AGENTS_MD---"
       cat workspace/identity/AGENTS.md 2>/dev/null || echo "(not found)"
+      echo "---ADAPTER_STAGING---"
+      cat workspace/.campforge-context.md 2>/dev/null || echo "(not found)"
       echo "---ADAPTER_END---"
       kill $SERVER_PID 2>/dev/null
     ' 2>&1
@@ -118,7 +123,7 @@ for CAMP in "${CAMPS[@]}"; do
   done
 
   # -------------------------------------------------------
-  # Test each platform
+  # Test each platform (clean install)
   # -------------------------------------------------------
   for PLATFORM in claude-code openclaw codex; do
     echo ""
@@ -247,6 +252,97 @@ for CAMP in "${CAMPS[@]}"; do
       FAIL=$((FAIL + 1))
     fi
   done
+
+  # -------------------------------------------------------
+  # Test conflict cases (existing files in workspace)
+  # -------------------------------------------------------
+  if $HAS_IDENTITY; then
+    for CONFLICT_CASE in claude-code codex; do
+      echo ""
+      echo "  --- Conflict: $CONFLICT_CASE (existing file) ---"
+      CONFLICT_PASS=true
+
+      case "$CONFLICT_CASE" in
+        claude-code)
+          PRESEED='mkdir -p workspace/.claude && echo "# My existing config" > workspace/.claude/CLAUDE.md'
+          ;;
+        codex)
+          PRESEED='mkdir -p workspace && echo "# My existing agents" > workspace/AGENTS.md'
+          ;;
+      esac
+
+      RESULT=$(run_installer "$DIST" "$CONFLICT_CASE" "$PRESEED")
+      DOCKER_EXIT=$?
+
+      if [ "$DOCKER_EXIT" -ne 0 ]; then
+        echo "    [error] Docker installer exited with code $DOCKER_EXIT"
+        echo "$RESULT" | tail -20
+        FAIL=$((FAIL + 1))
+        continue
+      fi
+
+      STAGING=$(echo "$RESULT" | sed -n '/---ADAPTER_STAGING---/,/---ADAPTER_END---/p')
+
+      echo "    Verifying conflict handling..."
+      case "$CONFLICT_CASE" in
+        claude-code)
+          # Existing .claude/CLAUDE.md should be preserved
+          CLAUDE_MD=$(echo "$RESULT" | sed -n '/---ADAPTER_CLAUDE_MD---/,/---ADAPTER_AGENTS_MD---/p')
+          if echo "$CLAUDE_MD" | grep -q "My existing config"; then
+            echo "      ✓ Existing .claude/CLAUDE.md preserved"
+          else
+            echo "      ✗ Existing .claude/CLAUDE.md was overwritten"
+            CONFLICT_PASS=false
+          fi
+          # Camp context should be in staging file
+          if echo "$STAGING" | grep -q "(not found)"; then
+            echo "      ✗ .campforge-context.md not created"
+            CONFLICT_PASS=false
+          else
+            echo "      ✓ .campforge-context.md created with camp context"
+          fi
+          # action-required message should be in output
+          if echo "$RESULT" | grep -q "action-required"; then
+            echo "      ✓ Merge instruction printed"
+          else
+            echo "      ✗ No merge instruction in output"
+            CONFLICT_PASS=false
+          fi
+          ;;
+        codex)
+          # Existing AGENTS.md should be preserved
+          ROOT_AGENTS=$(echo "$RESULT" | sed -n '/---ADAPTER_AGENTS_MD---/,/---ADAPTER_AGENTS_MD_SIZE---/p')
+          if echo "$ROOT_AGENTS" | grep -q "My existing agents"; then
+            echo "      ✓ Existing AGENTS.md preserved"
+          else
+            echo "      ✗ Existing AGENTS.md was overwritten"
+            CONFLICT_PASS=false
+          fi
+          # Camp context should be in staging file
+          if echo "$STAGING" | grep -q "(not found)"; then
+            echo "      ✗ .campforge-context.md not created"
+            CONFLICT_PASS=false
+          else
+            echo "      ✓ .campforge-context.md created with camp context"
+          fi
+          if echo "$RESULT" | grep -q "action-required"; then
+            echo "      ✓ Merge instruction printed"
+          else
+            echo "      ✗ No merge instruction in output"
+            CONFLICT_PASS=false
+          fi
+          ;;
+      esac
+
+      if $CONFLICT_PASS; then
+        echo "    => PASS"
+        PASS=$((PASS + 1))
+      else
+        echo "    => FAIL"
+        FAIL=$((FAIL + 1))
+      fi
+    done
+  fi
 
   rm -rf "$DIST"
 done

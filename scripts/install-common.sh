@@ -148,17 +148,24 @@ generate_adapters() {
   esac
 }
 
-# Claude Code: generate .claude/CLAUDE.md with @ references
+# Claude Code: generate .claude/CLAUDE.md with @ references.
+# If .claude/CLAUDE.md already exists, write to a staging file instead.
 _adapter_claude_code() {
+  local content
+  content=$(printf "# Camp Context\n\n"; for f in "$@"; do printf "@%s\n" "$f"; done)
+
   mkdir -p .claude
-  {
-    echo "# Camp Context"
+  if [ -f .claude/CLAUDE.md ]; then
+    echo "$content" > .campforge-context.md
     echo ""
-    for f in "$@"; do
-      echo "@${f}"
-    done
-  } > .claude/CLAUDE.md
-  echo "  Created .claude/CLAUDE.md with ${#} @ references"
+    echo "  [action-required] Existing .claude/CLAUDE.md found."
+    echo "  Camp context has been written to .campforge-context.md"
+    echo "  Please merge the @ references from .campforge-context.md into .claude/CLAUDE.md,"
+    echo "  then delete .campforge-context.md."
+  else
+    echo "$content" > .claude/CLAUDE.md
+    echo "  Created .claude/CLAUDE.md with ${#} @ references"
+  fi
 }
 
 # OpenClaw: identity files are already in the right place (workspace root).
@@ -169,33 +176,35 @@ _adapter_openclaw() {
     return
   fi
 
-  local appended=0
+  local knowledge_content=""
   for f in knowledge/*.md knowledge/decision-trees/*.md; do
     if [ -f "$f" ]; then
-      if [ $appended -eq 0 ]; then
-        echo "" >> identity/AGENTS.md
-        echo "---" >> identity/AGENTS.md
-        echo "# Knowledge Reference" >> identity/AGENTS.md
-        echo "" >> identity/AGENTS.md
-        appended=1
-      fi
-      cat "$f" >> identity/AGENTS.md
-      echo "" >> identity/AGENTS.md
+      knowledge_content+="$(cat "$f")"$'\n\n'
     fi
   done
 
-  if [ $appended -gt 0 ]; then
-    echo "  Appended knowledge to identity/AGENTS.md"
-  fi
+  [ -z "$knowledge_content" ] && return
+
+  # identity/AGENTS.md is always freshly extracted by install_camp_files,
+  # so appending here is safe.
+  {
+    echo ""
+    echo "---"
+    echo "# Knowledge Reference"
+    echo ""
+    echo "$knowledge_content"
+  } >> identity/AGENTS.md
+  echo "  Appended knowledge to identity/AGENTS.md"
 }
 
 # Codex: concatenate identity + knowledge into a root AGENTS.md.
 # Respects Codex's 32 KiB default limit for project docs.
+# If AGENTS.md already exists, write to a staging file instead.
 _adapter_codex() {
   local max_bytes="${CODEX_PROJECT_DOC_MAX_BYTES:-32000}"
 
-  {
-    # Identity files first
+  local content
+  content=$(
     for f in identity/SOUL.md identity/IDENTITY.md identity/AGENTS.md; do
       if [ -f "$f" ]; then
         cat "$f"
@@ -204,24 +213,32 @@ _adapter_codex() {
         echo ""
       fi
     done
-
-    # Knowledge files
     for f in knowledge/*.md knowledge/decision-trees/*.md; do
       if [ -f "$f" ]; then
         cat "$f"
         echo ""
       fi
     done
-  } > AGENTS.md
+  )
 
-  # Truncate if over limit
-  local size
-  size=$(wc -c < AGENTS.md)
-  if [ "$size" -gt "$max_bytes" ]; then
-    echo "  [warn] AGENTS.md (${size}B) exceeds ${max_bytes}B limit, truncating."
-    head -c "$max_bytes" AGENTS.md > AGENTS.md.tmp && mv AGENTS.md.tmp AGENTS.md
+  if [ -f AGENTS.md ]; then
+    echo "$content" > .campforge-context.md
+    echo ""
+    echo "  [action-required] Existing AGENTS.md found."
+    echo "  Camp context has been written to .campforge-context.md"
+    echo "  Please merge the content from .campforge-context.md into AGENTS.md"
+    echo "  (keep total size under ${max_bytes}B for Codex),"
+    echo "  then delete .campforge-context.md."
+  else
+    echo "$content" > AGENTS.md
+    # Truncate if over limit
+    local size
+    size=$(wc -c < AGENTS.md)
+    if [ "$size" -gt "$max_bytes" ]; then
+      echo "  [warn] AGENTS.md (${size}B) exceeds ${max_bytes}B limit, truncating."
+      head -c "$max_bytes" AGENTS.md > AGENTS.md.tmp && mv AGENTS.md.tmp AGENTS.md
+    fi
+    echo "  Created AGENTS.md ($(wc -c < AGENTS.md)B)"
   fi
-
-  echo "  Created AGENTS.md ($(wc -c < AGENTS.md)B)"
 }
 
