@@ -41,10 +41,20 @@ for CAMP in "${CAMPS[@]}"; do
     -e 's|^install_gws_auth$|# skip: install_gws_auth|' \
     "$CAMP_DIR/install.sh" > "$DIST/install.sh"
 
-  # 3. Collect expected camp files from the source camp directory
-  EXPECTED=()
+  # 3. Collect expected files
+  #    a) Camp files from the source camp directory
+  EXPECTED_CAMP=()
   for f in identity/SOUL.md identity/IDENTITY.md identity/AGENTS.md knowledge/glossary.md manifest.yaml; do
-    [ -f "$CAMP_DIR/$f" ] && EXPECTED+=("$f")
+    [ -f "$CAMP_DIR/$f" ] && EXPECTED_CAMP+=("$f")
+  done
+  #    b) Skill SKILL.md files from camp dependencies
+  EXPECTED_SKILLS=()
+  SKILL_NAMES=$(node -e "
+    const pkg = require('$CAMP_DIR/package.json');
+    Object.keys(pkg.dependencies || {}).forEach(d => console.log(d.replace('@campforge/', '')));
+  ")
+  for skill in $SKILL_NAMES; do
+    EXPECTED_SKILLS+=("$skill")
   done
 
   # 4. Run in Docker
@@ -66,17 +76,29 @@ for CAMP in "${CAMPS[@]}"; do
       # Output installed files for verification
       echo "---INSTALLED_FILES---"
       find workspace -type f \( -name "*.md" -o -name "*.yaml" \) 2>/dev/null | sort
+      echo "---SKILL_FILES---"
+      find workspace -path "*/skills/*/SKILL.md" -type f 2>/dev/null | sort
       kill $SERVER_PID 2>/dev/null
     ' 2>&1) || true
 
   # 5. Verify expected files
-  echo "  Verifying installed files..."
+  echo "  Verifying camp files..."
   CAMP_PASS=true
-  for f in "${EXPECTED[@]}"; do
+  for f in "${EXPECTED_CAMP[@]}"; do
     if echo "$RESULT" | grep -q "workspace/$f"; then
       echo "    ✓ $f"
     else
       echo "    ✗ $f  MISSING"
+      CAMP_PASS=false
+    fi
+  done
+
+  echo "  Verifying skill files..."
+  for skill in "${EXPECTED_SKILLS[@]}"; do
+    if echo "$RESULT" | grep -q "skills/$skill/SKILL.md"; then
+      echo "    ✓ $skill/SKILL.md"
+    else
+      echo "    ✗ $skill/SKILL.md  MISSING"
       CAMP_PASS=false
     fi
   done
