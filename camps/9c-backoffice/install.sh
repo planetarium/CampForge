@@ -31,5 +31,6 @@ else
 fi
 
 install_camp_files "$BASE/camp-9c-backoffice.tgz"
+generate_adapters
 
 echo "9c-backoffice camp installed"

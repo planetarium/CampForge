@@ -89,3 +89,139 @@ install_gws_auth() {
     echo "  [warn] gws-auth install failed. Install manually: npm i -g https://github.com/planetarium/gws-auth/releases/download/v0.3.0/anthropic-kr-gws-auth-0.1.0.tgz"
 }
 
+# ---------------------------------------------------------------------------
+# Platform adapter: wire identity/knowledge files into the agent's context.
+# ---------------------------------------------------------------------------
+
+# Detect the current agent platform.
+# Override with CAMPFORGE_PLATFORM env var.
+detect_platform() {
+  if [ -n "${CAMPFORGE_PLATFORM:-}" ]; then
+    echo "$CAMPFORGE_PLATFORM"
+    return
+  fi
+
+  if [ -d ".claude" ] || command -v claude >/dev/null 2>&1; then
+    echo "claude-code"
+  elif command -v openclaw >/dev/null 2>&1 || [ -n "${OPENCLAW_WORKSPACE:-}" ]; then
+    echo "openclaw"
+  elif command -v codex >/dev/null 2>&1 || [ -n "${CODEX_HOME:-}" ]; then
+    echo "codex"
+  else
+    echo "claude-code"
+  fi
+}
+
+# Generate platform-specific adapter files so that identity/ and knowledge/
+# files are wired into the agent's context.
+#
+# Must be called from the workspace root after install_camp_files.
+generate_adapters() {
+  local platform
+  platform="$(detect_platform)"
+
+  # Collect identity and knowledge file paths
+  local files=()
+  for f in identity/*.md; do [ -f "$f" ] && files+=("$f"); done
+  for f in knowledge/*.md; do [ -f "$f" ] && files+=("$f"); done
+  for f in knowledge/decision-trees/*.md; do [ -f "$f" ] && files+=("$f"); done
+
+  if [ ${#files[@]} -eq 0 ]; then
+    return
+  fi
+
+  echo ":: Generating ${platform} adapter..."
+
+  case "$platform" in
+    claude-code)
+      _adapter_claude_code "${files[@]}"
+      ;;
+    openclaw)
+      _adapter_openclaw
+      ;;
+    codex)
+      _adapter_codex
+      ;;
+    *)
+      echo "  [warn] Unknown platform '${platform}', skipping adapter generation."
+      ;;
+  esac
+}
+
+# Claude Code: generate .claude/CLAUDE.md with @ references
+_adapter_claude_code() {
+  mkdir -p .claude
+  {
+    echo "# Camp Context"
+    echo ""
+    for f in "$@"; do
+      echo "@${f}"
+    done
+  } > .claude/CLAUDE.md
+  echo "  Created .claude/CLAUDE.md with ${#} @ references"
+}
+
+# OpenClaw: identity files are already in the right place (workspace root).
+# Knowledge files need to be appended to AGENTS.md since OpenClaw only
+# auto-loads a fixed set of top-level markdown files.
+_adapter_openclaw() {
+  if [ ! -f identity/AGENTS.md ]; then
+    return
+  fi
+
+  local appended=0
+  for f in knowledge/*.md knowledge/decision-trees/*.md; do
+    if [ -f "$f" ]; then
+      if [ $appended -eq 0 ]; then
+        echo "" >> identity/AGENTS.md
+        echo "---" >> identity/AGENTS.md
+        echo "# Knowledge Reference" >> identity/AGENTS.md
+        echo "" >> identity/AGENTS.md
+        appended=1
+      fi
+      cat "$f" >> identity/AGENTS.md
+      echo "" >> identity/AGENTS.md
+    fi
+  done
+
+  if [ $appended -gt 0 ]; then
+    echo "  Appended knowledge to identity/AGENTS.md"
+  fi
+}
+
+# Codex: concatenate identity + knowledge into a root AGENTS.md.
+# Respects Codex's 32 KiB default limit for project docs.
+_adapter_codex() {
+  local max_bytes="${CODEX_PROJECT_DOC_MAX_BYTES:-32000}"
+
+  {
+    # Identity files first
+    for f in identity/SOUL.md identity/IDENTITY.md identity/AGENTS.md; do
+      if [ -f "$f" ]; then
+        cat "$f"
+        echo ""
+        echo "---"
+        echo ""
+      fi
+    done
+
+    # Knowledge files
+    for f in knowledge/*.md knowledge/decision-trees/*.md; do
+      if [ -f "$f" ]; then
+        cat "$f"
+        echo ""
+      fi
+    done
+  } > AGENTS.md
+
+  # Truncate if over limit
+  local size
+  size=$(wc -c < AGENTS.md)
+  if [ "$size" -gt "$max_bytes" ]; then
+    echo "  [warn] AGENTS.md (${size}B) exceeds ${max_bytes}B limit, truncating."
+    head -c "$max_bytes" AGENTS.md > AGENTS.md.tmp && mv AGENTS.md.tmp AGENTS.md
+  fi
+
+  echo "  Created AGENTS.md ($(wc -c < AGENTS.md)B)"
+}
+

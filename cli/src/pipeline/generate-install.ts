@@ -56,6 +56,23 @@ ${pkgSetLines}
 
 npx skillpm install
 
+# Source shared install helpers
+SCRIPT_DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]:-\$0}")" && pwd)"
+COMMON="\$SCRIPT_DIR/../../scripts/install-common.sh"
+if [ -f "\$COMMON" ]; then
+  # shellcheck disable=SC1090
+  source "\$COMMON"
+else
+  TMP_COMMON="\$(mktemp)"
+  curl -fsSL "\$BASE/install-common.sh" -o "\$TMP_COMMON"
+  # shellcheck disable=SC1090
+  source "\$TMP_COMMON"
+  rm -f "\$TMP_COMMON"
+fi
+
+install_camp_files "\$BASE/camp-${domainId}.tgz"
+generate_adapters
+
 echo "${domainId} camp installed"
 `;
 

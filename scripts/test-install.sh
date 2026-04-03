@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# E2E test: verify camp installers include identity/knowledge files.
+# E2E test: verify camp installers produce correct files and platform adapters.
 #
 # Usage:
 #   ./scripts/test-install.sh              # Test all camps
@@ -45,6 +45,15 @@ for CAMP in "${CAMPS[@]}"; do
     -e 's|^install_gws$|# skip: install_gws|' \
     -e 's|^install_gws_auth$|# skip: install_gws_auth|' \
     "$CAMP_DIR/install.sh" > "$DIST/install.sh"
+
+  # Collect expected adapter references for claude-code platform
+  EXPECTED_REFS=()
+  for f in identity/SOUL.md identity/IDENTITY.md identity/AGENTS.md; do
+    [ -f "$CAMP_DIR/$f" ] && EXPECTED_REFS+=("@${f}")
+  done
+  for f in "$CAMP_DIR"/knowledge/*.md "$CAMP_DIR"/knowledge/decision-trees/*.md; do
+    [ -f "$f" ] && EXPECTED_REFS+=("@${f#"$CAMP_DIR/"}")
+  done
 
   # 3. Collect expected files
   #    a) Camp files from the source camp directory
@@ -94,6 +103,9 @@ for CAMP in "${CAMPS[@]}"; do
       find workspace -type f \( -name "*.md" -o -name "*.yaml" \) 2>/dev/null | sort
       echo "---SKILL_FILES---"
       find workspace -path "*/skills/*/SKILL.md" -type f 2>/dev/null | sort
+      echo "---ADAPTER_CLAUDE_CODE---"
+      cat workspace/.claude/CLAUDE.md 2>/dev/null || echo "(not found)"
+      echo "---ADAPTER_END---"
       kill $SERVER_PID 2>/dev/null
     ' 2>&1)
   DOCKER_EXIT=$?
@@ -127,6 +139,26 @@ for CAMP in "${CAMPS[@]}"; do
       CAMP_PASS=false
     fi
   done
+
+  echo "  Verifying claude-code adapter..."
+  ADAPTER_CONTENT=$(echo "$RESULT" | sed -n '/---ADAPTER_CLAUDE_CODE---/,/---ADAPTER_END---/p')
+  if echo "$ADAPTER_CONTENT" | grep -q "(not found)"; then
+    if [ ${#EXPECTED_REFS[@]} -gt 0 ]; then
+      echo "    ✗ .claude/CLAUDE.md  MISSING (expected adapter for ${#EXPECTED_REFS[@]} files)"
+      CAMP_PASS=false
+    else
+      echo "    - .claude/CLAUDE.md  (no identity/knowledge files, skipped)"
+    fi
+  else
+    for ref in "${EXPECTED_REFS[@]}"; do
+      if echo "$ADAPTER_CONTENT" | grep -qF "$ref"; then
+        echo "    ✓ $ref"
+      else
+        echo "    ✗ $ref  MISSING in .claude/CLAUDE.md"
+        CAMP_PASS=false
+      fi
+    done
+  fi
 
   if $CAMP_PASS; then
     echo "  => PASS"

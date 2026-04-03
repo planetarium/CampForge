@@ -33,6 +33,7 @@ else
 fi
 
 install_camp_files "$BASE/camp-v8-admin.tgz"
+generate_adapters
 
 # Install gws + gws-auth (required by gws-sheets skill)
 install_gws

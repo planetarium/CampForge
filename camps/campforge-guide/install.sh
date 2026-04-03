@@ -35,5 +35,6 @@ else
 fi
 
 install_camp_files "$BASE/camp-campforge-guide.tgz"
+generate_adapters
 
 echo "campforge-guide camp installed"
