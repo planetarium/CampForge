@@ -201,8 +201,12 @@ _adapter_openclaw() {
     fi
   done
 
-  if [ -n "$knowledge_content" ] && [ -n "$agents_content" ]; then
-    agents_content+=$'\n\n---\n# Knowledge Reference\n\n'"$knowledge_content"
+  if [ -n "$knowledge_content" ]; then
+    if [ -n "$agents_content" ]; then
+      agents_content+=$'\n\n---\n# Knowledge Reference\n\n'"$knowledge_content"
+    else
+      agents_content=$'# Knowledge Reference\n\n'"$knowledge_content"
+    fi
   fi
 
   if [ -n "$agents_content" ]; then
@@ -260,12 +264,23 @@ _adapter_codex() {
     echo "  then delete .campforge-context.md."
   else
     echo "$content" > AGENTS.md
-    # Truncate if over limit
+    # Truncate safely on line boundaries if over limit (preserves UTF-8)
     local size
     size=$(wc -c < AGENTS.md)
     if [ "$size" -gt "$max_bytes" ]; then
-      echo "  [warn] AGENTS.md (${size}B) exceeds ${max_bytes}B limit, truncating."
-      head -c "$max_bytes" AGENTS.md > AGENTS.md.tmp && mv AGENTS.md.tmp AGENTS.md
+      echo "  [warn] AGENTS.md (${size}B) exceeds ${max_bytes}B limit, truncating on line boundaries."
+      : > AGENTS.md.tmp
+      local truncated_size=0 line line_bytes
+      while IFS= read -r line || [ -n "$line" ]; do
+        line_bytes=$(printf '%s\n' "$line" | wc -c)
+        if [ $((truncated_size + line_bytes)) -le "$max_bytes" ]; then
+          printf '%s\n' "$line" >> AGENTS.md.tmp
+          truncated_size=$((truncated_size + line_bytes))
+        else
+          break
+        fi
+      done < AGENTS.md
+      mv AGENTS.md.tmp AGENTS.md
     fi
     echo "  Created AGENTS.md ($(wc -c < AGENTS.md)B)"
   fi
