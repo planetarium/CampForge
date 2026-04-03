@@ -53,9 +53,11 @@ install_camp_files() {
       exit 1
     fi
 
-    # Extract only allowed top-level entries
-    tar xzf "$tmp_tar" -C "$extract_dir" --no-same-owner --no-same-permissions \
-      $allowed_entries 2>/dev/null || true
+    # Extract only allowed top-level entries (ignore missing ones individually)
+    for entry in $allowed_entries; do
+      tar xzf "$tmp_tar" -C "$extract_dir" --no-same-owner --no-same-permissions \
+        "$entry" 2>/dev/null || true
+    done
 
     for entry in $allowed_entries; do
       [ -e "$extract_dir/$entry" ] || continue

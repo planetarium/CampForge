@@ -95,7 +95,16 @@ for CAMP in "${CAMPS[@]}"; do
       echo "---SKILL_FILES---"
       find workspace -path "*/skills/*/SKILL.md" -type f 2>/dev/null | sort
       kill $SERVER_PID 2>/dev/null
-    ' 2>&1) || true
+    ' 2>&1)
+  DOCKER_EXIT=$?
+
+  if [ "$DOCKER_EXIT" -ne 0 ]; then
+    echo "  [error] Docker installer exited with code $DOCKER_EXIT"
+    echo "$RESULT" | tail -20
+    FAIL=$((FAIL + 1))
+    rm -rf "$DIST"
+    continue
+  fi
 
   # 5. Verify expected files
   echo "  Verifying camp files..."
