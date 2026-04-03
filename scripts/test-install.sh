@@ -58,7 +58,7 @@ run_installer() {
       echo "---ADAPTER_IDENTITY_AGENTS_MD---"
       cat workspace/identity/AGENTS.md 2>/dev/null || echo "(not found)"
       echo "---ADAPTER_STAGING---"
-      cat workspace/.campforge-context.md 2>/dev/null || echo "(not found)"
+      cat workspace/.campforge-context*.md 2>/dev/null || echo "(not found)"
       echo "---ADAPTER_END---"
       kill $SERVER_PID 2>/dev/null
     ' 2>&1
@@ -169,7 +169,7 @@ for CAMP in "${CAMPS[@]}"; do
 
     # Platform-specific adapter verification
     if ! $HAS_CONTEXT; then
-      echo "    - No identity files, adapter skipped"
+      echo "    - No context files, adapter skipped"
       if $PLATFORM_PASS; then PASS=$((PASS + 1)); else FAIL=$((FAIL + 1)); fi
       continue
     fi

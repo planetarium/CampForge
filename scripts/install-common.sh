@@ -149,6 +149,18 @@ generate_adapters() {
   esac
 }
 
+# Write content to a unique staging file (.campforge-context*.md).
+# Avoids overwriting previous staging files from prior installs.
+# Sets STAGING_FILE variable for callers.
+_write_staging() {
+  local content="$1"
+  STAGING_FILE=".campforge-context.md"
+  if [ -e "$STAGING_FILE" ]; then
+    STAGING_FILE=".campforge-context-$(date +%Y%m%d%H%M%S).md"
+  fi
+  echo "$content" > "$STAGING_FILE"
+}
+
 # Claude Code: generate .claude/CLAUDE.md with @ references.
 # If .claude/CLAUDE.md already exists, write to a staging file instead.
 _adapter_claude_code() {
@@ -157,12 +169,12 @@ _adapter_claude_code() {
 
   mkdir -p .claude
   if [ -f .claude/CLAUDE.md ]; then
-    echo "$content" > .campforge-context.md
+    _write_staging "$content"
     echo ""
     echo "  [action-required] Existing .claude/CLAUDE.md found."
-    echo "  Camp context has been written to .campforge-context.md"
-    echo "  Please merge the @ references from .campforge-context.md into .claude/CLAUDE.md,"
-    echo "  then delete .campforge-context.md."
+    echo "  Camp context has been written to $STAGING_FILE"
+    echo "  Please merge the @ references from $STAGING_FILE into .claude/CLAUDE.md,"
+    echo "  then delete $STAGING_FILE."
   else
     echo "$content" > .claude/CLAUDE.md
     echo "  Created .claude/CLAUDE.md with $# @ references"
@@ -222,12 +234,12 @@ _adapter_openclaw() {
   fi
 
   if $has_conflict; then
-    echo "$staging_content" > .campforge-context.md
+    _write_staging "$staging_content"
     echo ""
     echo "  [action-required] Existing OpenClaw root files found."
-    echo "  Camp context has been written to .campforge-context.md"
+    echo "  Camp context has been written to $STAGING_FILE"
     echo "  Please merge the content into your existing root files,"
-    echo "  then delete .campforge-context.md."
+    echo "  then delete $STAGING_FILE."
   fi
 }
 
@@ -256,13 +268,13 @@ _adapter_codex() {
   )
 
   if [ -f AGENTS.md ]; then
-    echo "$content" > .campforge-context.md
+    _write_staging "$content"
     echo ""
     echo "  [action-required] Existing AGENTS.md found."
-    echo "  Camp context has been written to .campforge-context.md"
-    echo "  Please merge the content from .campforge-context.md into AGENTS.md"
+    echo "  Camp context has been written to $STAGING_FILE"
+    echo "  Please merge the content from $STAGING_FILE into AGENTS.md"
     echo "  (keep total size under ${max_bytes}B for Codex),"
-    echo "  then delete .campforge-context.md."
+    echo "  then delete $STAGING_FILE."
   else
     echo "$content" > AGENTS.md
     # Truncate safely on line boundaries if over limit (preserves UTF-8)
