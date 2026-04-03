@@ -70,7 +70,7 @@ case "$PLATFORM" in
     DOCKER_IMAGE="test-codex"
     WORKSPACE_PATH="/home/tester"
     ENV_FLAGS="-e CODEX_API_KEY=$CODEX_KEY"
-    AGENT_CMD="codex exec --full-auto --skip-git-repo-check --sandbox danger-full-access --json"
+    AGENT_CMD="codex exec --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check --json"
     ;;
   *)
     echo "[error] Unknown platform: $PLATFORM (use openclaw, claude-code, or codex)"
