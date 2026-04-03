@@ -64,13 +64,13 @@ case "$PLATFORM" in
     AGENT_CMD="claude -p --dangerously-skip-permissions --output-format json"
     ;;
   codex)
-    local codex_key="${CODEX_API_KEY:-${OPENAI_API_KEY:-}}"
-    [ -n "$codex_key" ] || { echo "[error] OPENAI_API_KEY or CODEX_API_KEY required"; exit 1; }
+    CODEX_KEY="${CODEX_API_KEY:-${OPENAI_API_KEY:-}}"
+    [ -n "$CODEX_KEY" ] || { echo "[error] OPENAI_API_KEY or CODEX_API_KEY required"; exit 1; }
     DOCKER_BUILD_DIR="$REPO_ROOT/scripts/test-codex"
     DOCKER_IMAGE="test-codex"
     WORKSPACE_PATH="/home/tester"
-    ENV_FLAGS="-e CODEX_API_KEY=$codex_key"
-    AGENT_CMD="codex exec --full-auto --json"
+    ENV_FLAGS="-e CODEX_API_KEY=$CODEX_KEY"
+    AGENT_CMD="codex exec --full-auto --skip-git-repo-check --sandbox danger-full-access --json"
     ;;
   *)
     echo "[error] Unknown platform: $PLATFORM (use openclaw, claude-code, or codex)"
@@ -90,8 +90,15 @@ echo "========================================="
 echo "  Telling the agent to install $CAMP..."
 echo ""
 
+DOCKER_EXTRA_FLAGS=""
+if [ "$PLATFORM" = "codex" ]; then
+  # Codex bwrap sandbox needs full privileges inside Docker
+  DOCKER_EXTRA_FLAGS="--privileged"
+fi
+
 docker run --rm \
   $ENV_FLAGS \
+  $DOCKER_EXTRA_FLAGS \
   -v "$DIST:/srv:ro" \
   -w "$WORKSPACE_PATH" \
   "$DOCKER_IMAGE" \
