@@ -130,8 +130,8 @@ for CAMP in "${CAMPS[@]}"; do
     echo "  --- Platform: $PLATFORM ---"
     PLATFORM_PASS=true
 
-    RESULT=$(run_installer "$DIST" "$PLATFORM")
-    DOCKER_EXIT=$?
+    DOCKER_EXIT=0
+    RESULT=$(run_installer "$DIST" "$PLATFORM") || DOCKER_EXIT=$?
 
     if [ "$DOCKER_EXIT" -ne 0 ]; then
       echo "    [error] Docker installer exited with code $DOCKER_EXIT"
@@ -190,24 +190,31 @@ for CAMP in "${CAMPS[@]}"; do
         ;;
 
       openclaw)
-        AGENTS_CONTENT=$(echo "$RESULT" | sed -n '/---ADAPTER_IDENTITY_AGENTS_MD---/,/---ADAPTER_END---/p')
-        if [ ${#KNOWLEDGE_FILES[@]} -gt 0 ]; then
-          if echo "$AGENTS_CONTENT" | grep -q "# Knowledge Reference"; then
-            echo "      ✓ Knowledge appended to identity/AGENTS.md"
+        # OpenClaw reads from workspace root — verify identity files were copied
+        INSTALLED=$(echo "$RESULT" | sed -n '/---INSTALLED_FILES---/,/---SKILL_FILES---/p')
+        for f in SOUL.md IDENTITY.md; do
+          if echo "$INSTALLED" | grep -q "workspace/$f"; then
+            echo "      ✓ $f at workspace root"
           else
-            echo "      ✗ Knowledge NOT appended to identity/AGENTS.md"
+            echo "      ✗ $f NOT at workspace root"
             PLATFORM_PASS=false
           fi
-        else
-          echo "      - No knowledge files to append"
-        fi
-        # Verify root AGENTS.md was NOT created (openclaw doesn't need it)
+        done
+        # Root AGENTS.md should exist with knowledge appended
         ROOT_AGENTS=$(echo "$RESULT" | sed -n '/---ADAPTER_AGENTS_MD---/,/---ADAPTER_AGENTS_MD_SIZE---/p')
         if echo "$ROOT_AGENTS" | grep -q "(not found)"; then
-          echo "      ✓ No root AGENTS.md (correct for openclaw)"
-        else
-          echo "      ✗ Unexpected root AGENTS.md created"
+          echo "      ✗ Root AGENTS.md not created"
           PLATFORM_PASS=false
+        else
+          echo "      ✓ Root AGENTS.md created"
+          if [ ${#KNOWLEDGE_FILES[@]} -gt 0 ]; then
+            if echo "$ROOT_AGENTS" | grep -q "# Knowledge Reference"; then
+              echo "      ✓ Knowledge included in AGENTS.md"
+            else
+              echo "      ✗ Knowledge NOT included in AGENTS.md"
+              PLATFORM_PASS=false
+            fi
+          fi
         fi
         ;;
 
@@ -217,12 +224,17 @@ for CAMP in "${CAMPS[@]}"; do
           echo "      ✗ Root AGENTS.md not created"
           PLATFORM_PASS=false
         else
-          # Check identity content is included
+          # Check identity content is included by looking for first heading of each file
           for f in "${IDENTITY_FILES[@]}"; do
-            base=$(basename "$f" .md)
-            # Just check that content from identity files made it in
-            # (use first heading or known marker from the file)
-            echo "      ✓ $f content included"
+            first_heading=$(head -20 "$CAMP_DIR/$f" | grep -m1 '^#' | head -1 || true)
+            if [ -n "$first_heading" ] && echo "$ROOT_AGENTS" | grep -qF "$first_heading"; then
+              echo "      ✓ $f content included"
+            elif [ -n "$first_heading" ]; then
+              echo "      ✗ $f content missing from root AGENTS.md"
+              PLATFORM_PASS=false
+            else
+              echo "      - $f (no heading to verify)"
+            fi
           done
           # Check size <= 32KiB
           SIZE_LINE=$(echo "$RESULT" | sed -n '/---ADAPTER_AGENTS_MD_SIZE---/,/---ADAPTER_IDENTITY_AGENTS_MD---/p' | grep -E '^[0-9]+' | head -1 | tr -d '[:space:]')
@@ -271,8 +283,8 @@ for CAMP in "${CAMPS[@]}"; do
           ;;
       esac
 
-      RESULT=$(run_installer "$DIST" "$CONFLICT_CASE" "$PRESEED")
-      DOCKER_EXIT=$?
+      DOCKER_EXIT=0
+      RESULT=$(run_installer "$DIST" "$CONFLICT_CASE" "$PRESEED") || DOCKER_EXIT=$?
 
       if [ "$DOCKER_EXIT" -ne 0 ]; then
         echo "    [error] Docker installer exited with code $DOCKER_EXIT"

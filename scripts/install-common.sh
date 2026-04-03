@@ -164,16 +164,35 @@ _adapter_claude_code() {
     echo "  then delete .campforge-context.md."
   else
     echo "$content" > .claude/CLAUDE.md
-    echo "  Created .claude/CLAUDE.md with ${#} @ references"
+    echo "  Created .claude/CLAUDE.md with $# @ references"
   fi
 }
 
-# OpenClaw: identity files are already in the right place (workspace root).
-# Knowledge files need to be appended to AGENTS.md since OpenClaw only
-# auto-loads a fixed set of top-level markdown files.
+# OpenClaw: auto-loads SOUL.md, IDENTITY.md, AGENTS.md from workspace root.
+# identity/ files must be copied to root. Knowledge is appended to AGENTS.md.
+# If root files already exist, stage camp content for manual merge.
 _adapter_openclaw() {
-  if [ ! -f identity/AGENTS.md ]; then
-    return
+  local has_conflict=false
+  local staging_content=""
+
+  # Copy identity files to workspace root (OpenClaw reads from root, not identity/)
+  for f in SOUL.md IDENTITY.md; do
+    [ -f "identity/$f" ] || continue
+    if [ -f "$f" ]; then
+      has_conflict=true
+      staging_content+="# === $f ===""
+"
+      staging_content+="$(cat "identity/$f")"$'\n\n'
+    else
+      cp "identity/$f" "$f"
+      echo "  Copied identity/$f -> $f"
+    fi
+  done
+
+  # AGENTS.md gets identity + knowledge merged
+  local agents_content=""
+  if [ -f identity/AGENTS.md ]; then
+    agents_content="$(cat identity/AGENTS.md)"
   fi
 
   local knowledge_content=""
@@ -183,18 +202,30 @@ _adapter_openclaw() {
     fi
   done
 
-  [ -z "$knowledge_content" ] && return
+  if [ -n "$knowledge_content" ] && [ -n "$agents_content" ]; then
+    agents_content+=$'\n\n---\n# Knowledge Reference\n\n'"$knowledge_content"
+  fi
 
-  # identity/AGENTS.md is always freshly extracted by install_camp_files,
-  # so appending here is safe.
-  {
+  if [ -n "$agents_content" ]; then
+    if [ -f AGENTS.md ]; then
+      has_conflict=true
+      staging_content+="# === AGENTS.md ===""
+"
+      staging_content+="$agents_content"$'\n'
+    else
+      echo "$agents_content" > AGENTS.md
+      echo "  Created AGENTS.md with identity + knowledge"
+    fi
+  fi
+
+  if $has_conflict; then
+    echo "$staging_content" > .campforge-context.md
     echo ""
-    echo "---"
-    echo "# Knowledge Reference"
-    echo ""
-    echo "$knowledge_content"
-  } >> identity/AGENTS.md
-  echo "  Appended knowledge to identity/AGENTS.md"
+    echo "  [action-required] Existing OpenClaw root files found."
+    echo "  Camp context has been written to .campforge-context.md"
+    echo "  Please merge the content into your existing root files,"
+    echo "  then delete .campforge-context.md."
+  fi
 }
 
 # Codex: concatenate identity + knowledge into a root AGENTS.md.
