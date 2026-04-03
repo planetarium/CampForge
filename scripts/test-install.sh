@@ -94,12 +94,15 @@ for CAMP in "${CAMPS[@]}"; do
     "$CAMP_DIR/install.sh" > "$DIST/install.sh"
 
   # 3. Collect expected files
-  HAS_IDENTITY=false
+  HAS_CONTEXT=false
   EXPECTED_CAMP=()
   for f in identity/SOUL.md identity/IDENTITY.md identity/AGENTS.md knowledge/glossary.md manifest.yaml; do
     [ -f "$CAMP_DIR/$f" ] && EXPECTED_CAMP+=("$f")
   done
-  [ -f "$CAMP_DIR/identity/SOUL.md" ] && HAS_IDENTITY=true
+  # HAS_CONTEXT is true if any identity/ or knowledge/ files exist
+  for f in "${EXPECTED_CAMP[@]}"; do
+    case "$f" in identity/*|knowledge/*) HAS_CONTEXT=true; break ;; esac
+  done
 
   EXPECTED_SKILLS=()
   SKILL_NAMES=$(node -e "
@@ -164,7 +167,7 @@ for CAMP in "${CAMPS[@]}"; do
     fi
 
     # Platform-specific adapter verification
-    if ! $HAS_IDENTITY; then
+    if ! $HAS_CONTEXT; then
       echo "    - No identity files, adapter skipped"
       if $PLATFORM_PASS; then PASS=$((PASS + 1)); else FAIL=$((FAIL + 1)); fi
       continue
@@ -193,6 +196,7 @@ for CAMP in "${CAMPS[@]}"; do
         # OpenClaw reads from workspace root — verify identity files were copied
         INSTALLED=$(echo "$RESULT" | sed -n '/---INSTALLED_FILES---/,/---SKILL_FILES---/p')
         for f in SOUL.md IDENTITY.md; do
+          [ -f "$CAMP_DIR/identity/$f" ] || continue
           if echo "$INSTALLED" | grep -q "workspace/$f"; then
             echo "      ✓ $f at workspace root"
           else
@@ -268,7 +272,7 @@ for CAMP in "${CAMPS[@]}"; do
   # -------------------------------------------------------
   # Test conflict cases (existing files in workspace)
   # -------------------------------------------------------
-  if $HAS_IDENTITY; then
+  if $HAS_CONTEXT; then
     for CONFLICT_CASE in claude-code codex; do
       echo ""
       echo "  --- Conflict: $CONFLICT_CASE (existing file) ---"
