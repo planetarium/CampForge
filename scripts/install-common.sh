@@ -89,3 +89,213 @@ install_gws_auth() {
     echo "  [warn] gws-auth install failed. Install manually: npm i -g https://github.com/planetarium/gws-auth/releases/download/v0.3.0/anthropic-kr-gws-auth-0.1.0.tgz"
 }
 
+# ---------------------------------------------------------------------------
+# Platform adapter: wire identity/knowledge files into the agent's context.
+# ---------------------------------------------------------------------------
+
+# Detect the current agent platform.
+# Override with CAMPFORGE_PLATFORM env var.
+detect_platform() {
+  if [ -n "${CAMPFORGE_PLATFORM:-}" ]; then
+    echo "$CAMPFORGE_PLATFORM"
+    return
+  fi
+
+  # Check openclaw/codex first — a .claude/ directory may exist from prior installs
+  if command -v openclaw >/dev/null 2>&1 || [ -n "${OPENCLAW_WORKSPACE:-}" ]; then
+    echo "openclaw"
+  elif command -v codex >/dev/null 2>&1 || [ -n "${CODEX_HOME:-}" ]; then
+    echo "codex"
+  elif command -v claude >/dev/null 2>&1 || [ -f ".claude/CLAUDE.md" ]; then
+    echo "claude-code"
+  else
+    echo "claude-code"
+  fi
+}
+
+# Generate platform-specific adapter files so that identity/ and knowledge/
+# files are wired into the agent's context.
+#
+# Must be called from the workspace root after install_camp_files.
+generate_adapters() {
+  local platform
+  platform="$(detect_platform)"
+
+  # Collect identity and knowledge file paths
+  local files=()
+  for f in identity/*.md; do [ -f "$f" ] && files+=("$f"); done
+  for f in knowledge/*.md; do [ -f "$f" ] && files+=("$f"); done
+  for f in knowledge/decision-trees/*.md; do [ -f "$f" ] && files+=("$f"); done
+
+  if [ ${#files[@]} -eq 0 ]; then
+    return
+  fi
+
+  echo ":: Generating ${platform} adapter..."
+
+  case "$platform" in
+    claude-code)
+      _adapter_claude_code "${files[@]}"
+      ;;
+    openclaw)
+      _adapter_openclaw
+      ;;
+    codex)
+      _adapter_codex
+      ;;
+    *)
+      echo "  [warn] Unknown platform '${platform}', skipping adapter generation."
+      ;;
+  esac
+}
+
+# Write content to a unique staging file (.campforge-context*.md).
+# Avoids overwriting previous staging files from prior installs.
+# Sets STAGING_FILE variable for callers.
+_write_staging() {
+  local content="$1"
+  STAGING_FILE=".campforge-context.md"
+  if [ -e "$STAGING_FILE" ]; then
+    STAGING_FILE="$(mktemp ".campforge-context-XXXXXX.md")"
+  fi
+  printf '%s\n' "$content" > "$STAGING_FILE"
+}
+
+# Claude Code: generate .claude/CLAUDE.md with @ references.
+# If .claude/CLAUDE.md already exists, write to a staging file instead.
+_adapter_claude_code() {
+  local content
+  content=$(printf "# Camp Context\n\n"; for f in "$@"; do printf "@%s\n" "$f"; done)
+
+  mkdir -p .claude
+  if [ -f .claude/CLAUDE.md ]; then
+    _write_staging "$content"
+    echo ""
+    echo "  [action-required] Existing .claude/CLAUDE.md found."
+    echo "  Camp context has been written to $STAGING_FILE"
+    echo "  Please merge the @ references from $STAGING_FILE into .claude/CLAUDE.md,"
+    echo "  then delete $STAGING_FILE."
+  else
+    printf '%s\n' "$content" > .claude/CLAUDE.md
+    echo "  Created .claude/CLAUDE.md with $# @ references"
+  fi
+}
+
+# OpenClaw: auto-loads SOUL.md, IDENTITY.md, AGENTS.md from workspace root.
+# identity/ files must be copied to root. Knowledge is appended to AGENTS.md.
+# If root files already exist, stage camp content for manual merge.
+_adapter_openclaw() {
+  local has_conflict=false
+  local staging_content=""
+
+  # Copy identity files to workspace root (OpenClaw reads from root, not identity/)
+  for f in SOUL.md IDENTITY.md; do
+    [ -f "identity/$f" ] || continue
+    if [ -f "$f" ]; then
+      has_conflict=true
+      staging_content+=$'# === '"$f"$' ===\n'
+      staging_content+="$(cat "identity/$f")"$'\n\n'
+    else
+      cp "identity/$f" "$f"
+      echo "  Copied identity/$f -> $f"
+    fi
+  done
+
+  # AGENTS.md gets identity + knowledge merged
+  local agents_content=""
+  if [ -f identity/AGENTS.md ]; then
+    agents_content="$(cat identity/AGENTS.md)"
+  fi
+
+  local knowledge_content=""
+  for f in knowledge/*.md knowledge/decision-trees/*.md; do
+    if [ -f "$f" ]; then
+      knowledge_content+="$(cat "$f")"$'\n\n'
+    fi
+  done
+
+  if [ -n "$knowledge_content" ]; then
+    if [ -n "$agents_content" ]; then
+      agents_content+=$'\n\n---\n# Knowledge Reference\n\n'"$knowledge_content"
+    else
+      agents_content=$'# Knowledge Reference\n\n'"$knowledge_content"
+    fi
+  fi
+
+  if [ -n "$agents_content" ]; then
+    if [ -f AGENTS.md ]; then
+      has_conflict=true
+      staging_content+=$'# === AGENTS.md ===\n'
+      staging_content+="$agents_content"$'\n'
+    else
+      printf '%s\n' "$agents_content" > AGENTS.md
+      echo "  Created AGENTS.md with identity + knowledge"
+    fi
+  fi
+
+  if $has_conflict; then
+    _write_staging "$staging_content"
+    echo ""
+    echo "  [action-required] Existing OpenClaw root files found."
+    echo "  Camp context has been written to $STAGING_FILE"
+    echo "  Please merge the content into your existing root files,"
+    echo "  then delete $STAGING_FILE."
+  fi
+}
+
+# Codex: concatenate identity + knowledge into a root AGENTS.md.
+# Respects Codex's 32 KiB default limit for project docs.
+# If AGENTS.md already exists, write to a staging file instead.
+_adapter_codex() {
+  local max_bytes="${CODEX_PROJECT_DOC_MAX_BYTES:-32768}"
+
+  local content
+  content=$(
+    for f in identity/SOUL.md identity/IDENTITY.md identity/AGENTS.md; do
+      if [ -f "$f" ]; then
+        cat "$f"
+        echo ""
+        echo "---"
+        echo ""
+      fi
+    done
+    for f in knowledge/*.md knowledge/decision-trees/*.md; do
+      if [ -f "$f" ]; then
+        cat "$f"
+        echo ""
+      fi
+    done
+  )
+
+  if [ -f AGENTS.md ]; then
+    _write_staging "$content"
+    echo ""
+    echo "  [action-required] Existing AGENTS.md found."
+    echo "  Camp context has been written to $STAGING_FILE"
+    echo "  Please merge the content from $STAGING_FILE into AGENTS.md"
+    echo "  (keep total size under ${max_bytes}B for Codex),"
+    echo "  then delete $STAGING_FILE."
+  else
+    printf '%s\n' "$content" > AGENTS.md
+    # Truncate safely on line boundaries if over limit (preserves UTF-8)
+    local size
+    size=$(wc -c < AGENTS.md)
+    if [ "$size" -gt "$max_bytes" ]; then
+      echo "  [warn] AGENTS.md (${size}B) exceeds ${max_bytes}B limit, truncating on line boundaries."
+      : > AGENTS.md.tmp
+      local truncated_size=0 line line_bytes
+      while IFS= read -r line || [ -n "$line" ]; do
+        line_bytes=$(printf '%s\n' "$line" | wc -c)
+        if [ $((truncated_size + line_bytes)) -le "$max_bytes" ]; then
+          printf '%s\n' "$line" >> AGENTS.md.tmp
+          truncated_size=$((truncated_size + line_bytes))
+        else
+          break
+        fi
+      done < AGENTS.md
+      mv AGENTS.md.tmp AGENTS.md
+    fi
+    echo "  Created AGENTS.md ($(wc -c < AGENTS.md)B)"
+  fi
+}
+
