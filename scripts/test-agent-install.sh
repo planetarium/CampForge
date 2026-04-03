@@ -30,14 +30,21 @@ CAMP_DIR="$REPO_ROOT/camps/$CAMP"
 DIST="$REPO_ROOT/dist/test-agent-$PLATFORM-$CAMP"
 rm -rf "$DIST" && mkdir -p "$DIST"
 echo "Packing tarballs for $CAMP..."
-bash "$REPO_ROOT/scripts/release-pack.sh" --camp "$CAMP" "$DIST" > /dev/null 2>&1
+PACK_LOG="$(mktemp)"
+if ! bash "$REPO_ROOT/scripts/release-pack.sh" --camp "$CAMP" "$DIST" >"$PACK_LOG" 2>&1; then
+  echo "[error] release-pack.sh failed; output follows:"
+  cat "$PACK_LOG"
+  rm -f "$PACK_LOG"
+  exit 1
+fi
+rm -f "$PACK_LOG"
 sed -e 's|^BASE=.*|BASE="http://localhost:8080"|' "$CAMP_DIR/install.sh" > "$DIST/install.sh"
 
 # --- Platform-specific config ---
 DOCKER_IMAGE=""
 DOCKER_BUILD_DIR=""
 AGENT_CMD=""
-ENV_FLAGS=""
+ENV_FLAGS=()
 WORKSPACE_PATH=""
 
 INSTALL_PROMPT="다음 작업을 순서대로 수행해줘:
@@ -52,7 +59,7 @@ case "$PLATFORM" in
     DOCKER_BUILD_DIR="$REPO_ROOT/scripts/test-openclaw"
     DOCKER_IMAGE="test-openclaw-test-openclaw"
     WORKSPACE_PATH="/home/node"
-    ENV_FLAGS="-e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY"
+    ENV_FLAGS=(--env "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY")
     AGENT_CMD="openclaw agent --local --session-id test-install --json --message"
     ;;
   claude-code)
@@ -60,7 +67,7 @@ case "$PLATFORM" in
     DOCKER_BUILD_DIR="$REPO_ROOT/scripts/test-claude-code"
     DOCKER_IMAGE="test-claude-code"
     WORKSPACE_PATH="/home/tester"
-    ENV_FLAGS="-e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY"
+    ENV_FLAGS=(--env "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY")
     AGENT_CMD="claude -p --dangerously-skip-permissions --output-format json"
     ;;
   codex)
@@ -69,7 +76,7 @@ case "$PLATFORM" in
     DOCKER_BUILD_DIR="$REPO_ROOT/scripts/test-codex"
     DOCKER_IMAGE="test-codex"
     WORKSPACE_PATH="/home/tester"
-    ENV_FLAGS="-e CODEX_API_KEY=$CODEX_KEY"
+    ENV_FLAGS=(--env "CODEX_API_KEY=$CODEX_KEY")
     AGENT_CMD="codex exec --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check --json"
     ;;
   *)
@@ -90,15 +97,22 @@ echo "========================================="
 echo "  Telling the agent to install $CAMP..."
 echo ""
 
-DOCKER_EXTRA_FLAGS=""
+DOCKER_EXTRA_FLAGS=()
 if [ "$PLATFORM" = "codex" ]; then
   # Codex bwrap sandbox needs full privileges inside Docker
-  DOCKER_EXTRA_FLAGS="--privileged"
+  if [ "${ALLOW_PRIVILEGED:-0}" = "1" ]; then
+    echo "[warning] Running Codex container with --privileged because ALLOW_PRIVILEGED=1"
+    DOCKER_EXTRA_FLAGS=(--privileged)
+  else
+    echo "[error] Codex requires Docker --privileged for bwrap sandbox."
+    echo "[error] Re-run with ALLOW_PRIVILEGED=1 only in a trusted environment."
+    exit 1
+  fi
 fi
 
 docker run --rm \
-  $ENV_FLAGS \
-  $DOCKER_EXTRA_FLAGS \
+  "${ENV_FLAGS[@]}" \
+  "${DOCKER_EXTRA_FLAGS[@]}" \
   -v "$DIST:/srv:ro" \
   -w "$WORKSPACE_PATH" \
   "$DOCKER_IMAGE" \

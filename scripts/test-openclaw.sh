@@ -60,6 +60,12 @@ for CAMP in "${CAMPS[@]}"; do
       .filter(d => d.startsWith('@campforge/'))
       .forEach(d => console.log(d.slice('@campforge/'.length)));
   ")
+  if [ -z "$EXPECTED_SKILLS" ]; then
+    echo "  [error] no expected @campforge/* skills found for $CAMP; cannot verify OpenClaw discovery"
+    FAIL=$((FAIL + 1))
+    rm -rf "$DIST"
+    continue
+  fi
 
   # 4. Run in Docker with OpenClaw
   echo "  Running installer + OpenClaw skill check in Docker..."
@@ -71,6 +77,16 @@ for CAMP in "${CAMPS[@]}"; do
     :
   else
     DOCKER_EXIT=$?
+  fi
+
+  if [ "$DOCKER_EXIT" -ne 0 ]; then
+    echo "  [error] Docker/OpenClaw test failed for $CAMP (exit code: $DOCKER_EXIT)"
+    echo "  --- Docker output (last 40 lines) ---"
+    echo "$RESULT" | tail -40
+    echo "  ---------------------"
+    FAIL=$((FAIL + 1))
+    rm -rf "$DIST"
+    continue
   fi
 
   # 5. Verify: check openclaw skills list output for each expected skill
