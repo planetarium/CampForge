@@ -156,9 +156,9 @@ _write_staging() {
   local content="$1"
   STAGING_FILE=".campforge-context.md"
   if [ -e "$STAGING_FILE" ]; then
-    STAGING_FILE=".campforge-context-$(date +%Y%m%d%H%M%S).md"
+    STAGING_FILE="$(mktemp ".campforge-context-XXXXXX.md")"
   fi
-  echo "$content" > "$STAGING_FILE"
+  printf '%s\n' "$content" > "$STAGING_FILE"
 }
 
 # Claude Code: generate .claude/CLAUDE.md with @ references.
@@ -176,7 +176,7 @@ _adapter_claude_code() {
     echo "  Please merge the @ references from $STAGING_FILE into .claude/CLAUDE.md,"
     echo "  then delete $STAGING_FILE."
   else
-    echo "$content" > .claude/CLAUDE.md
+    printf '%s\n' "$content" > .claude/CLAUDE.md
     echo "  Created .claude/CLAUDE.md with $# @ references"
   fi
 }
@@ -228,7 +228,7 @@ _adapter_openclaw() {
       staging_content+=$'# === AGENTS.md ===\n'
       staging_content+="$agents_content"$'\n'
     else
-      echo "$agents_content" > AGENTS.md
+      printf '%s\n' "$agents_content" > AGENTS.md
       echo "  Created AGENTS.md with identity + knowledge"
     fi
   fi
@@ -276,7 +276,7 @@ _adapter_codex() {
     echo "  (keep total size under ${max_bytes}B for Codex),"
     echo "  then delete $STAGING_FILE."
   else
-    echo "$content" > AGENTS.md
+    printf '%s\n' "$content" > AGENTS.md
     # Truncate safely on line boundaries if over limit (preserves UTF-8)
     local size
     size=$(wc -c < AGENTS.md)
