@@ -180,8 +180,7 @@ _adapter_openclaw() {
     [ -f "identity/$f" ] || continue
     if [ -f "$f" ]; then
       has_conflict=true
-      staging_content+="# === $f ===""
-"
+      staging_content+=$'# === '"$f"$' ===\n'
       staging_content+="$(cat "identity/$f")"$'\n\n'
     else
       cp "identity/$f" "$f"
@@ -209,8 +208,7 @@ _adapter_openclaw() {
   if [ -n "$agents_content" ]; then
     if [ -f AGENTS.md ]; then
       has_conflict=true
-      staging_content+="# === AGENTS.md ===""
-"
+      staging_content+=$'# === AGENTS.md ===\n'
       staging_content+="$agents_content"$'\n'
     else
       echo "$agents_content" > AGENTS.md
