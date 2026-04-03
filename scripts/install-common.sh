@@ -59,10 +59,14 @@ install_camp_files() {
 
     for entry in $allowed_entries; do
       [ -e "$extract_dir/$entry" ] || continue
-      # Reject symlinks
-      if [ -L "$extract_dir/$entry" ]; then
-        echo "  [warn] Skipping symlink: $entry" >&2
-        continue
+      # Reject symlinks and hardlinks anywhere under the entry
+      if find "$extract_dir/$entry" -type l -print -quit | grep -q .; then
+        echo "  [error] Archive contains symlinks under: $entry" >&2
+        exit 1
+      fi
+      if find "$extract_dir/$entry" ! -type d -links +1 -print -quit 2>/dev/null | grep -q .; then
+        echo "  [error] Archive contains hardlinks under: $entry" >&2
+        exit 1
       fi
       rm -rf "./$entry"
       cp -R "$extract_dir/$entry" "./$entry"
@@ -70,7 +74,7 @@ install_camp_files() {
     done
 
     if [ "$copied" -ne 1 ]; then
-      echo "  [warn] No expected camp files found in archive." >&2
+      echo "  [error] No expected camp files found in archive: $url" >&2
       exit 1
     fi
   )

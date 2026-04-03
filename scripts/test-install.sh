@@ -69,14 +69,23 @@ for CAMP in "${CAMPS[@]}"; do
   RESULT=$(docker run --rm \
     -v "$DIST:/srv" \
     node:20 bash -c '
+      set -euo pipefail
       # Start a file server in background
       python3 -m http.server 8080 --directory /srv 2>/dev/null &
       SERVER_PID=$!
       # Wait for server to be ready
+      SERVER_READY=false
       for i in $(seq 1 10); do
-        curl -sf http://localhost:8080/ >/dev/null 2>&1 && break
+        if curl -sf http://localhost:8080/ >/dev/null 2>&1; then
+          SERVER_READY=true
+          break
+        fi
         sleep 0.5
       done
+      if [ "$SERVER_READY" != "true" ]; then
+        echo "[error] HTTP server failed to start" >&2
+        exit 1
+      fi
       # Run the camp installer
       cd /tmp
       bash /srv/install.sh 2>&1
