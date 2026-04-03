@@ -16,5 +16,6 @@ ENV NPM_CONFIG_PREFIX=/home/tester/.npm-global
 ENV PATH=/home/tester/.npm-global/bin:/home/tester/.local/bin:$PATH
 WORKDIR /home/tester
 
-# Install Claude Code CLI
-RUN npm install -g @anthropic-ai/claude-code@latest
+# Install Claude Code CLI (pinned for reproducible builds)
+ARG CLAUDE_CODE_VERSION=2.1.91
+RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}

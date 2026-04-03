@@ -1,4 +1,4 @@
-FROM ghcr.io/openclaw/openclaw:latest
+FROM ghcr.io/openclaw/openclaw:latest@sha256:0b2170d5ec3a487a6313ed0556d377c5c5c80a0f806043daa2e685a4bedd45e3
 
 # Configure npm global prefix for non-root user so `npm install -g` works
 # (install_gws, install_gws_auth use npm install -g)

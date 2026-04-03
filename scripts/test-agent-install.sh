@@ -80,7 +80,7 @@ esac
 
 # --- Build image ---
 echo "Building $PLATFORM test image..."
-docker build -q -t "$DOCKER_IMAGE" "$DOCKER_BUILD_DIR" > /dev/null 2>&1
+docker build -q -t "$DOCKER_IMAGE" "$DOCKER_BUILD_DIR" > /dev/null
 
 # --- Run agent ---
 echo ""
