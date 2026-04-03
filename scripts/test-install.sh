@@ -56,7 +56,9 @@ for CAMP in "${CAMPS[@]}"; do
   EXPECTED_SKILLS=()
   SKILL_NAMES=$(node -e "
     const pkg = require('$CAMP_DIR/package.json');
-    Object.keys(pkg.dependencies || {}).forEach(d => console.log(d.replace('@campforge/', '')));
+    Object.keys(pkg.dependencies || {})
+      .filter(d => d.startsWith('@campforge/'))
+      .forEach(d => console.log(d.slice('@campforge/'.length)));
   ")
   for skill in $SKILL_NAMES; do
     EXPECTED_SKILLS+=("$skill")
