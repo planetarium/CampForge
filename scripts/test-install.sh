@@ -244,7 +244,7 @@ for CAMP in "${CAMPS[@]}"; do
             fi
           done
           # Check size <= 32KiB
-          SIZE_LINE=$(echo "$RESULT" | sed -n '/---ADAPTER_AGENTS_MD_SIZE---/,/---ADAPTER_IDENTITY_AGENTS_MD---/p' | grep -E '^[0-9]+' | head -1 | tr -d '[:space:]')
+          SIZE_LINE=$(echo "$RESULT" | sed -n '/---ADAPTER_AGENTS_MD_SIZE---/,/---ADAPTER_IDENTITY_AGENTS_MD---/p' | tr -d '[:space:]' | grep -oE '[0-9]+' | head -1)
           if [ -n "$SIZE_LINE" ] && [ "$SIZE_LINE" -le 32000 ]; then
             echo "      ✓ AGENTS.md size ${SIZE_LINE}B <= 32KiB"
           elif [ -n "$SIZE_LINE" ]; then
