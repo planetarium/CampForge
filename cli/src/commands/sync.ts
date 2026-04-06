@@ -14,7 +14,8 @@ import type { PipelineContext } from "./create.js";
 import type { SkillSpec } from "../schema/domain-spec.js";
 import * as yaml from "js-yaml";
 import { ManifestSchema } from "../schema/manifest.js";
-import { writeScaffold } from "../pipeline/generate-skills.js";
+import { scaffoldPackage } from "../pipeline/generate-skills.js";
+import { findRepoRoot } from "../utils/repo.js";
 
 const TOTAL_STEPS = 5;
 
@@ -48,6 +49,7 @@ export const syncCommand = new Command("sync")
       language: opts.language,
       outputDir: campDir,
       extras: [],
+      mode: "sync",
     };
 
     // Load existing manifest to compare skills
@@ -71,17 +73,20 @@ export const syncCommand = new Command("sync")
         ...domainSpec.domain.curriculum.core,
         ...(domainSpec.domain.curriculum.elective || []),
       ];
+      const dryRunRepoRoot = findRepoRoot(campDir);
       const newSkills = specSkills.filter(
-        (s) => !exists(join(campDir, "skills", s.skill_id, "SKILL.md"))
+        (s) => (s.source === "generate" || s.source === "fork") &&
+          !exists(join(dryRunRepoRoot, "packages", s.skill_id, "package.json"))
       );
+      const toScoped = (id: string) => id.startsWith("@") ? id : `@campforge/${id}`;
       const removedSkills = oldSkills.filter(
-        (id) => !specSkills.some((s) => s.skill_id === id)
+        (id) => !specSkills.some((s) => toScoped(s.skill_id) === toScoped(id))
       );
 
       if (newSkills.length > 0) {
         console.log("\nWould scaffold new skills:");
         for (const s of newSkills) {
-          console.log(`  + skills/${s.skill_id}/SKILL.md`);
+          console.log(`  + packages/${s.skill_id}/skills/${s.skill_id}/SKILL.md`);
         }
       }
       if (removedSkills.length > 0) {
@@ -92,7 +97,7 @@ export const syncCommand = new Command("sync")
       }
 
       console.log("\nWould NOT touch:");
-      console.log("  skills/*/SKILL.md (existing)");
+      console.log("  packages/*/skills/*/SKILL.md (existing)");
       console.log("\nRun without --dry-run to apply.\n");
       return;
     }
@@ -118,23 +123,27 @@ export const syncCommand = new Command("sync")
       ...(domainSpec.domain.curriculum.elective || []),
     ];
 
+    const repoRoot = findRepoRoot(campDir);
     let newCount = 0;
     let skippedCount = 0;
     for (const skill of specSkills) {
-      const skillMd = join(campDir, "skills", skill.skill_id, "SKILL.md");
-      if (exists(skillMd)) {
+      const pkgJson = join(repoRoot, "packages", skill.skill_id, "package.json");
+      if (exists(pkgJson)) {
         log.info(`  ${skill.skill_id}: exists — skipped`);
         skippedCount++;
       } else if (skill.source === "generate" || skill.source === "fork") {
-        writeScaffold(skill, join(campDir, "skills", skill.skill_id));
-        log.info(`  ${skill.skill_id}: new — scaffolded`);
-        newCount++;
+        if (scaffoldPackage(skill, repoRoot)) {
+          newCount++;
+        } else {
+          skippedCount++;
+        }
       }
     }
 
     // Warn about skills in camp but not in domain-spec
+    const toScoped = (id: string) => id.startsWith("@") ? id : `@campforge/${id}`;
     const removedSkills = oldSkills.filter(
-      (id) => !specSkills.some((s) => s.skill_id === id)
+      (id) => !specSkills.some((s) => toScoped(s.skill_id) === toScoped(id))
     );
     for (const id of removedSkills) {
       log.warn(`  ${id}: in camp but not in domain-spec — remove manually if unneeded`);

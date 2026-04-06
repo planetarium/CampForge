@@ -1,11 +1,13 @@
 import { join } from "node:path";
-import { writeFile } from "../utils/fs.js";
+import { writeFile, exists } from "../utils/fs.js";
 import { log } from "../utils/logger.js";
+import { findRepoRoot } from "../utils/repo.js";
 import type { PipelineContext } from "../commands/create.js";
 import type { SkillSpec } from "../schema/domain-spec.js";
 
 export function generateSkills(ctx: PipelineContext): void {
   const { domainSpec, outputDir, extras } = ctx;
+  const repoRoot = findRepoRoot(outputDir);
   const allSkills = [
     ...domainSpec.domain.curriculum.core,
     ...(domainSpec.domain.curriculum.elective || []).filter(
@@ -14,24 +16,62 @@ export function generateSkills(ctx: PipelineContext): void {
   ];
 
   for (const skill of allSkills) {
-    const skillDir = join(outputDir, "skills", skill.skill_id);
-
     switch (skill.source) {
-      case "generate":
-        writeScaffold(skill, skillDir);
-        log.info(`  ${skill.skill_id}: scaffolded (fill in with LLM)`);
+      case "generate": {
+        scaffoldPackage(skill, repoRoot);
         break;
+      }
       case "reference":
         log.info(`  ${skill.skill_id}: reference → package.json`);
         break;
-      case "fork":
-        if (skill.ref) {
-          log.info(`  ${skill.skill_id}: fork from ${skill.ref}`);
-          writeScaffold(skill, skillDir);
+      case "fork": {
+        if (!skill.ref) {
+          throw new Error(`Skill "${skill.skill_id}" has source "fork" but no "ref". Provide a ref or use source "generate".`);
         }
+        log.info(`  ${skill.skill_id}: fork from ${skill.ref}`);
+        scaffoldPackage(skill, repoRoot);
         break;
+      }
     }
   }
+}
+
+const SAFE_SKILL_ID = /^[a-z0-9][a-z0-9-]*$/;
+
+/**
+ * Scaffold a skill as an independent package under packages/.
+ * Returns true if scaffolded, false if skipped (already exists).
+ */
+export function scaffoldPackage(skill: SkillSpec, repoRoot: string): boolean {
+  if (!SAFE_SKILL_ID.test(skill.skill_id)) {
+    throw new Error(`Skill ID "${skill.skill_id}" is invalid. Use kebab-case (a-z, 0-9, hyphens only).`);
+  }
+  const pkgDir = join(repoRoot, "packages", skill.skill_id);
+  const pkgJsonPath = join(pkgDir, "package.json");
+
+  if (exists(pkgJsonPath)) {
+    log.warn(`  ${skill.skill_id}: packages/${skill.skill_id}/package.json already exists — skipping`);
+    return false;
+  }
+
+  const skillDir = join(pkgDir, "skills", skill.skill_id);
+  writeScaffold(skill, skillDir);
+  writePackageJson(skill, pkgDir);
+  log.info(`  ${skill.skill_id}: scaffolded in packages/ (fill in with LLM)`);
+  return true;
+}
+
+function writePackageJson(skill: SkillSpec, pkgDir: string): void {
+  const desc = skill.spec?.description || `${skill.skill_id} skill`;
+  const pkg = {
+    name: `@campforge/${skill.skill_id}`,
+    version: "0.1.0",
+    description: desc,
+    keywords: ["agent-skill", ...skill.skill_id.split("-"), "campforge"],
+    license: "Apache-2.0",
+    files: ["skills/"],
+  };
+  writeFile(join(pkgDir, "package.json"), JSON.stringify(pkg, null, 2) + "\n");
 }
 
 export function writeScaffold(skill: SkillSpec, skillDir: string): void {
