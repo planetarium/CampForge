@@ -90,14 +90,15 @@ for CAMP in "${CAMPS[@]}"; do
   fi
 
   # 5. Verify: check openclaw skills list output for each expected skill
-  #    Look for "✓ ready" lines containing the skill name (strict check)
+  #    Extract only the "openclaw skills list" section to avoid matching install logs
   echo "  Verifying OpenClaw skill recognition..."
   CAMP_PASS=true
+  SKILLS_OUTPUT=$(echo "$RESULT" | sed -n '/=== OpenClaw skill recognition ===/,$p')
 
   for skill in $EXPECTED_SKILLS; do
-    if echo "$RESULT" | grep -q "✓ ready" && echo "$RESULT" | grep "✓ ready" | grep -Fqi "$skill"; then
+    if echo "$SKILLS_OUTPUT" | grep -q "✓ ready" && echo "$SKILLS_OUTPUT" | grep "✓ ready" | grep -Fqi "$skill"; then
       echo "    ✓ $skill (ready)"
-    elif echo "$RESULT" | grep -Fqi "$skill"; then
+    elif echo "$SKILLS_OUTPUT" | grep -Fqi "$skill"; then
       echo "    △ $skill (listed but not ready)"
       CAMP_PASS=false
     else
