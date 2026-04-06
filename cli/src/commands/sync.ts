@@ -49,6 +49,7 @@ export const syncCommand = new Command("sync")
       language: opts.language,
       outputDir: campDir,
       extras: [],
+      mode: "sync",
     };
 
     // Load existing manifest to compare skills

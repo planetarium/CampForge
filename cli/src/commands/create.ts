@@ -18,6 +18,8 @@ export interface PipelineContext {
   language: string;
   outputDir: string;
   extras: string[];
+  /** "create" filters electives by extras; "sync" includes all electives */
+  mode: "create" | "sync";
 }
 
 const TOTAL_STEPS = 8;
@@ -41,6 +43,7 @@ export const createCommand = new Command("create")
       language: opts.language,
       outputDir,
       extras: opts.extras ? opts.extras.split(",").filter(Boolean) : [],
+      mode: "create",
     };
 
     console.log(`\n=== CampForge: Creating camp "${domainId}" ===\n`);

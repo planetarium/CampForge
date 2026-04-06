@@ -44,7 +44,18 @@ export const addSkillCommand = new Command("add-skill")
         const campPkg = JSON.parse(readFileSync(campPkgPath, "utf-8"));
         campPkg.dependencies = campPkg.dependencies || {};
         if (!Object.prototype.hasOwnProperty.call(campPkg.dependencies, depName)) {
-          campPkg.dependencies[depName] = "^0.1.0";
+          // Read actual version from scaffolded package, fall back to ^0.1.0
+          let depVersion = "^0.1.0";
+          const skillPkgPath = join(repoRoot, "packages", skillId, "package.json");
+          if (exists(skillPkgPath)) {
+            try {
+              const skillPkg = JSON.parse(readFileSync(skillPkgPath, "utf-8"));
+              if (typeof skillPkg.version === "string" && skillPkg.version.trim()) {
+                depVersion = `^${skillPkg.version}`;
+              }
+            } catch { /* ignore */ }
+          }
+          campPkg.dependencies[depName] = depVersion;
           writeFileSync(campPkgPath, JSON.stringify(campPkg, null, 2) + "\n", "utf-8");
         }
       }
