@@ -6,6 +6,7 @@ import { log } from "../utils/logger.js";
 import { exists } from "../utils/fs.js";
 import { findRepoRoot } from "../utils/repo.js";
 import { scaffoldPackage } from "../pipeline/generate-skills.js";
+import { readSkillVersion } from "../utils/skill-version.js";
 
 export const addSkillCommand = new Command("add-skill")
   .description("Add a skill scaffold to an existing camp")
@@ -40,25 +41,16 @@ export const addSkillCommand = new Command("add-skill")
 
       // Add to camp package.json dependencies (preserve existing)
       const campPkgPath = join(campDir, "package.json");
+      if (!exists(campPkgPath)) {
+        log.error(`package.json not found in ${campDir} — run "campforge create" first`);
+        process.exit(1);
+      }
       const depName = `@campforge/${skillId}`;
-      if (exists(campPkgPath)) {
-        const campPkg = JSON.parse(readFileSync(campPkgPath, "utf-8"));
-        campPkg.dependencies = campPkg.dependencies || {};
-        if (!Object.prototype.hasOwnProperty.call(campPkg.dependencies, depName)) {
-          // Read actual version from scaffolded package, fall back to ^0.1.0
-          let depVersion = "^0.1.0";
-          const skillPkgPath = join(repoRoot, "packages", skillId, "package.json");
-          if (exists(skillPkgPath)) {
-            try {
-              const skillPkg = JSON.parse(readFileSync(skillPkgPath, "utf-8"));
-              if (typeof skillPkg.version === "string" && skillPkg.version.trim()) {
-                depVersion = `^${skillPkg.version}`;
-              }
-            } catch { /* ignore */ }
-          }
-          campPkg.dependencies[depName] = depVersion;
-          writeFileSync(campPkgPath, JSON.stringify(campPkg, null, 2) + "\n", "utf-8");
-        }
+      const campPkg = JSON.parse(readFileSync(campPkgPath, "utf-8"));
+      campPkg.dependencies = campPkg.dependencies || {};
+      if (!Object.prototype.hasOwnProperty.call(campPkg.dependencies, depName)) {
+        campPkg.dependencies[depName] = readSkillVersion(repoRoot, skillId);
+        writeFileSync(campPkgPath, JSON.stringify(campPkg, null, 2) + "\n", "utf-8");
       }
     } else if (opts.source === "reference") {
       if (!opts.ref) {
@@ -66,17 +58,19 @@ export const addSkillCommand = new Command("add-skill")
         process.exit(1);
       }
       const pkgPath = join(campDir, "package.json");
-      if (exists(pkgPath)) {
-        const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
-        pkg.dependencies = pkg.dependencies || {};
-        pkg.dependencies[opts.ref] = "latest";
-        writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n", "utf-8");
+      if (!exists(pkgPath)) {
+        log.error(`package.json not found in ${campDir} — run "campforge create" first`);
+        process.exit(1);
       }
+      const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
+      pkg.dependencies = pkg.dependencies || {};
+      pkg.dependencies[opts.ref] = "latest";
+      writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n", "utf-8");
       log.info(`Added ${opts.ref} to package.json`);
     }
 
     // Update manifest (use scoped name, initialize optional if missing)
-    const scopedId = skillId.startsWith("@") ? skillId : `@campforge/${skillId}`;
+    const scopedId = `@campforge/${skillId}`;
     manifest.camp.skills.optional = manifest.camp.skills.optional || [];
     if (!manifest.camp.skills.optional.includes(scopedId)) {
       manifest.camp.skills.optional.push(scopedId);
