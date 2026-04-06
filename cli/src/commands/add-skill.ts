@@ -4,6 +4,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import * as yaml from "js-yaml";
 import { log } from "../utils/logger.js";
 import { exists, writeFile } from "../utils/fs.js";
+import { findRepoRoot } from "../utils/repo.js";
 
 export const addSkillCommand = new Command("add-skill")
   .description("Add a skill scaffold to an existing camp")
@@ -27,12 +28,17 @@ export const addSkillCommand = new Command("add-skill")
     log.info(`Adding skill "${skillId}" to ${campDir}`);
 
     if (opts.source === "scaffold") {
-      const skillDir = join(campDir, "skills", skillId);
+      const repoRoot = findRepoRoot(campDir);
+      const pkgDir = join(repoRoot, "packages", skillId);
+      const skillDir = join(pkgDir, "skills", skillId);
       const description = opts.description || `${skillId} skill`;
 
-      writeFile(
-        join(skillDir, "SKILL.md"),
-        `---
+      if (exists(join(pkgDir, "package.json"))) {
+        log.warn(`packages/${skillId}/package.json already exists — skipping scaffold`);
+      } else {
+        writeFile(
+          join(skillDir, "SKILL.md"),
+          `---
 name: ${skillId}
 description: "${description}"
 license: Apache-2.0
@@ -60,8 +66,27 @@ TODO: Define structured output format.
 - Task completed successfully
 - Error encountered — report and stop
 `
-      );
-      log.info(`Scaffold created at skills/${skillId}/SKILL.md`);
+        );
+        const pkg = {
+          name: `@campforge/${skillId}`,
+          version: "0.1.0",
+          description,
+          keywords: ["agent-skill", ...skillId.split("-"), "campforge"],
+          license: "Apache-2.0",
+          files: ["skills/"],
+        };
+        writeFile(join(pkgDir, "package.json"), JSON.stringify(pkg, null, 2) + "\n");
+        log.info(`Scaffold created at packages/${skillId}/`);
+      }
+
+      // Add to camp package.json dependencies
+      const campPkgPath = join(campDir, "package.json");
+      if (exists(campPkgPath)) {
+        const campPkg = JSON.parse(readFileSync(campPkgPath, "utf-8"));
+        campPkg.dependencies = campPkg.dependencies || {};
+        campPkg.dependencies[`@campforge/${skillId}`] = "^0.1.0";
+        writeFileSync(campPkgPath, JSON.stringify(campPkg, null, 2) + "\n", "utf-8");
+      }
     } else if (opts.source === "reference") {
       if (!opts.ref) {
         log.error("--ref required for reference source");

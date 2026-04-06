@@ -3,10 +3,12 @@ import { writeFile } from "../utils/fs.js";
 import type { PipelineContext } from "../commands/create.js";
 
 export function resolveDeps(ctx: PipelineContext): void {
-  const { domainSpec, outputDir } = ctx;
+  const { domainSpec, outputDir, extras } = ctx;
   const allSkills = [
     ...domainSpec.domain.curriculum.core,
-    ...(domainSpec.domain.curriculum.elective || []),
+    ...(domainSpec.domain.curriculum.elective || []).filter(
+      (s) => extras.includes(s.skill_id)
+    ),
   ];
 
   // Collect dependencies from all skills

@@ -1,13 +1,13 @@
-import { join, dirname } from "node:path";
-import { writeFile } from "../utils/fs.js";
+import { join } from "node:path";
+import { writeFile, exists } from "../utils/fs.js";
 import { log } from "../utils/logger.js";
+import { findRepoRoot } from "../utils/repo.js";
 import type { PipelineContext } from "../commands/create.js";
 import type { SkillSpec } from "../schema/domain-spec.js";
 
 export function generateSkills(ctx: PipelineContext): void {
   const { domainSpec, outputDir, extras } = ctx;
-  // packages/ lives alongside the camp output dir's parent (repo root)
-  const repoRoot = dirname(dirname(outputDir));
+  const repoRoot = findRepoRoot(outputDir);
   const allSkills = [
     ...domainSpec.domain.curriculum.core,
     ...(domainSpec.domain.curriculum.elective || []).filter(
@@ -18,11 +18,7 @@ export function generateSkills(ctx: PipelineContext): void {
   for (const skill of allSkills) {
     switch (skill.source) {
       case "generate": {
-        const pkgDir = join(repoRoot, "packages", skill.skill_id);
-        const skillDir = join(pkgDir, "skills", skill.skill_id);
-        writeScaffold(skill, skillDir);
-        writePackageJson(skill, pkgDir);
-        log.info(`  ${skill.skill_id}: scaffolded in packages/ (fill in with LLM)`);
+        scaffoldPackage(skill, repoRoot);
         break;
       }
       case "reference":
@@ -30,16 +26,28 @@ export function generateSkills(ctx: PipelineContext): void {
         break;
       case "fork": {
         if (skill.ref) {
-          const pkgDir = join(repoRoot, "packages", skill.skill_id);
-          const skillDir = join(pkgDir, "skills", skill.skill_id);
           log.info(`  ${skill.skill_id}: fork from ${skill.ref}`);
-          writeScaffold(skill, skillDir);
-          writePackageJson(skill, pkgDir);
+          scaffoldPackage(skill, repoRoot);
         }
         break;
       }
     }
   }
+}
+
+export function scaffoldPackage(skill: SkillSpec, repoRoot: string): void {
+  const pkgDir = join(repoRoot, "packages", skill.skill_id);
+  const pkgJsonPath = join(pkgDir, "package.json");
+
+  if (exists(pkgJsonPath)) {
+    log.warn(`  ${skill.skill_id}: packages/${skill.skill_id}/package.json already exists — skipping`);
+    return;
+  }
+
+  const skillDir = join(pkgDir, "skills", skill.skill_id);
+  writeScaffold(skill, skillDir);
+  writePackageJson(skill, pkgDir);
+  log.info(`  ${skill.skill_id}: scaffolded in packages/ (fill in with LLM)`);
 }
 
 function writePackageJson(skill: SkillSpec, pkgDir: string): void {
