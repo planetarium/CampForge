@@ -1,0 +1,48 @@
+services:
+  test-openclaw:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      # Mount packed tarballs + modified install.sh from host
+      - ${DIST_DIR:-.}:/srv:ro
+    environment:
+      - WORKSPACE=/home/node/workspace
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        set -euo pipefail
+
+        # 1. Start local file server for tarballs
+        python3 -m http.server 8080 --directory /srv &
+        SERVER_READY=0
+        for i in $$(seq 1 10); do
+          if curl -sf http://localhost:8080/ >/dev/null 2>&1; then
+            SERVER_READY=1
+            break
+          fi
+          sleep 0.5
+        done
+
+        if [ "$$SERVER_READY" -ne 1 ]; then
+          echo "Error: local file server on http://localhost:8080 did not become ready" >&2
+          exit 1
+        fi
+
+        # 2. Run camp installer
+        bash /srv/install.sh 2>&1
+
+        # 3. Configure OpenClaw to discover .agents/skills/ (test-only)
+        cd "$$WORKSPACE"
+        mkdir -p $$HOME/.openclaw
+        cat > $$HOME/.openclaw/openclaw.json <<CONF
+        {"skills":{"load":{"extraDirs":["$$WORKSPACE/.agents/skills"]}}}
+        CONF
+
+        # 4. Verify openclaw recognizes the installed skills
+        echo ""
+        echo "=== OpenClaw skill recognition ==="
+        if ! openclaw skills list 2>&1; then
+          echo "Error: 'openclaw skills list' failed" >&2
+          exit 1
+        fi
