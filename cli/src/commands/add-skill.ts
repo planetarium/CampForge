@@ -44,7 +44,7 @@ export const addSkillCommand = new Command("add-skill")
         const campPkg = JSON.parse(readFileSync(campPkgPath, "utf-8"));
         campPkg.dependencies = campPkg.dependencies || {};
         if (!Object.prototype.hasOwnProperty.call(campPkg.dependencies, depName)) {
-          campPkg.dependencies[depName] = "workspace:*";
+          campPkg.dependencies[depName] = "^0.1.0";
           writeFileSync(campPkgPath, JSON.stringify(campPkg, null, 2) + "\n", "utf-8");
         }
       }

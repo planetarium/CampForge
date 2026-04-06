@@ -4,11 +4,14 @@ import type { PipelineContext } from "../commands/create.js";
 
 export function resolveDeps(ctx: PipelineContext): void {
   const { domainSpec, outputDir, extras } = ctx;
+  const electives = domainSpec.domain.curriculum.elective || [];
+  // When extras is empty (e.g. sync), include all electives to preserve deps
+  const filteredElectives = extras.length > 0
+    ? electives.filter((s) => extras.includes(s.skill_id))
+    : electives;
   const allSkills = [
     ...domainSpec.domain.curriculum.core,
-    ...(domainSpec.domain.curriculum.elective || []).filter(
-      (s) => extras.includes(s.skill_id)
-    ),
+    ...filteredElectives,
   ];
 
   // Collect dependencies from all skills
@@ -21,8 +24,9 @@ export function resolveDeps(ctx: PipelineContext): void {
         : `@campforge/${skill.ref.replace(/.*:/, "")}`;
       npmDeps[pkgName] = "latest";
     } else if (skill.source === "generate" || skill.source === "fork") {
-      // Generated/forked skills are independent workspace packages
-      npmDeps[`@campforge/${skill.skill_id}`] = "workspace:*";
+      // Generated/forked skills are independent packages
+      // Use semver (not workspace:*) so install.sh tarball URLs work
+      npmDeps[`@campforge/${skill.skill_id}`] = "^0.1.0";
     }
   }
 
