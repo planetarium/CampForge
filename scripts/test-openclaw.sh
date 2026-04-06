@@ -8,7 +8,7 @@
 #   ./scripts/test-openclaw.sh              # Test all camps
 #   ./scripts/test-openclaw.sh v8-admin     # Test a specific camp
 #
-# Requires: docker, docker compose
+# Requires: docker, docker compose, node
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"

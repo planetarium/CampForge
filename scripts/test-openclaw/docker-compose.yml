@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       # Mount packed tarballs + modified install.sh from host
-      - ${DIST_DIR:-.}:/srv
+      - ${DIST_DIR:-.}:/srv:ro
     environment:
       - WORKSPACE=/home/node/workspace
     entrypoint: ["bash", "-c"]
