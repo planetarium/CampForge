@@ -9,7 +9,7 @@ export function resolveDeps(ctx: PipelineContext): void {
     ...(domainSpec.domain.curriculum.elective || []),
   ];
 
-  // Collect npm references from reference-type skills
+  // Collect dependencies from all skills
   const npmDeps: Record<string, string> = {};
   for (const skill of allSkills) {
     if (skill.source === "reference" && skill.ref) {
@@ -18,11 +18,11 @@ export function resolveDeps(ctx: PipelineContext): void {
         ? skill.ref
         : `@campforge/${skill.ref.replace(/.*:/, "")}`;
       npmDeps[pkgName] = "latest";
+    } else if (skill.source === "generate" || skill.source === "fork") {
+      // Generated/forked skills are independent packages
+      npmDeps[`@campforge/${skill.skill_id}`] = "^0.1.0";
     }
   }
-
-  // Always add gql-ops if any skill needs it (convention)
-  npmDeps["@campforge/gql-ops"] = "^0.2.0";
 
   const pkg = {
     name: `@campforge/camp-${domainSpec.domain.id}`,

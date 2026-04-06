@@ -41,9 +41,9 @@ export function writeManifest(ctx: PipelineContext): void {
       },
 
       dependencies: {
-        tools: tools.length > 0 ? tools : ["gq"],
+        tools: tools.length > 0 ? tools : [],
         mcp_servers: [] as any[],
-        skills: [{ "@campforge/gql-ops": "^0.2.0" }],
+        skills: [] as any[],
       },
 
       compatibility: {
