@@ -27,8 +27,9 @@ export function resolveDeps(ctx: PipelineContext): void {
         ? skill.ref
         : `@campforge/${skill.ref.replace(/.*:/, "")}`;
       npmDeps[pkgName] = "latest";
-    } else if (skill.source === "generate" || skill.source === "fork") {
-      // Read actual version from existing package, fall back to ^0.1.0
+    } else if (skill.source === "generate") {
+      npmDeps[`@campforge/${skill.skill_id}`] = readSkillVersion(repoRoot, skill.skill_id);
+    } else if (skill.source === "fork" && skill.ref) {
       npmDeps[`@campforge/${skill.skill_id}`] = readSkillVersion(repoRoot, skill.skill_id);
     }
   }

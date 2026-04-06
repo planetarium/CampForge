@@ -74,12 +74,15 @@ export const addSkillCommand = new Command("add-skill")
       log.info(`Added ${opts.ref} to package.json`);
     }
 
-    // Update manifest
-    if (!manifest.camp.skills.optional.includes(skillId)) {
-      manifest.camp.skills.optional.push(skillId);
+    // Update manifest (use scoped name, initialize optional if missing)
+    const scopedId = skillId.startsWith("@") ? skillId : `@campforge/${skillId}`;
+    manifest.camp.skills.optional = manifest.camp.skills.optional || [];
+    if (!manifest.camp.skills.optional.includes(scopedId)) {
+      manifest.camp.skills.optional.push(scopedId);
       writeFileSync(manifestPath, yaml.dump(manifest, { lineWidth: 120 }), "utf-8");
-      log.info(`Added "${skillId}" to manifest.yaml (optional)`);
+      log.info(`Added "${scopedId}" to manifest.yaml (optional)`);
     }
 
     log.success(`Skill "${skillId}" added — fill in SKILL.md with your LLM`);
+    log.warn(`Run "campforge sync" to regenerate install.sh with the new dependency.`);
   });

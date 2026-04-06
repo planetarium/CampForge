@@ -25,10 +25,11 @@ export function generateSkills(ctx: PipelineContext): void {
         log.info(`  ${skill.skill_id}: reference → package.json`);
         break;
       case "fork": {
-        if (skill.ref) {
-          log.info(`  ${skill.skill_id}: fork from ${skill.ref}`);
-          scaffoldPackage(skill, repoRoot);
+        if (!skill.ref) {
+          throw new Error(`Skill "${skill.skill_id}" has source "fork" but no "ref". Provide a ref or use source "generate".`);
         }
+        log.info(`  ${skill.skill_id}: fork from ${skill.ref}`);
+        scaffoldPackage(skill, repoRoot);
         break;
       }
     }
