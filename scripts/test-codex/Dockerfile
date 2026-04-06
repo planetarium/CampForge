@@ -1,4 +1,4 @@
-FROM node:20-bookworm
+FROM node:20.19.0-bookworm
 
 # Minimal deps for install scripts + codex
 RUN apt-get update && \

@@ -72,7 +72,6 @@ for CAMP in "${CAMPS[@]}"; do
   DOCKER_EXIT=0
   if RESULT=$(DIST_DIR="$DIST" docker compose -f "$COMPOSE_DIR/docker-compose.yml" \
     run --rm -T \
-    -e WORKSPACE=/home/node/workspace \
     test-openclaw 2>&1); then
     :
   else
