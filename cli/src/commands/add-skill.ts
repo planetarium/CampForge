@@ -24,7 +24,8 @@ export const addSkillCommand = new Command("add-skill")
     }
 
     const manifest = yaml.load(readFileSync(manifestPath, "utf-8")) as any;
-    const skillId: string = opts.skill;
+    // Normalize: strip @campforge/ scope if provided, use bare ID for paths
+    const skillId: string = opts.skill.replace(/^@campforge\//, "");
 
     log.info(`Adding skill "${skillId}" to ${campDir}`);
 

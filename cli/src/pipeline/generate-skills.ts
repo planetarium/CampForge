@@ -36,11 +36,16 @@ export function generateSkills(ctx: PipelineContext): void {
   }
 }
 
+const SAFE_SKILL_ID = /^[a-z0-9][a-z0-9-]*$/;
+
 /**
  * Scaffold a skill as an independent package under packages/.
  * Returns true if scaffolded, false if skipped (already exists).
  */
 export function scaffoldPackage(skill: SkillSpec, repoRoot: string): boolean {
+  if (!SAFE_SKILL_ID.test(skill.skill_id)) {
+    throw new Error(`Skill ID "${skill.skill_id}" is invalid. Use kebab-case (a-z, 0-9, hyphens only).`);
+  }
   const pkgDir = join(repoRoot, "packages", skill.skill_id);
   const pkgJsonPath = join(pkgDir, "package.json");
 

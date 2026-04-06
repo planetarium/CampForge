@@ -78,8 +78,9 @@ export const syncCommand = new Command("sync")
         (s) => (s.source === "generate" || s.source === "fork") &&
           !exists(join(dryRunRepoRoot, "packages", s.skill_id, "package.json"))
       );
+      const toScoped = (id: string) => id.startsWith("@") ? id : `@campforge/${id}`;
       const removedSkills = oldSkills.filter(
-        (id) => !specSkills.some((s) => s.skill_id === id)
+        (id) => !specSkills.some((s) => toScoped(s.skill_id) === toScoped(id))
       );
 
       if (newSkills.length > 0) {
@@ -140,8 +141,9 @@ export const syncCommand = new Command("sync")
     }
 
     // Warn about skills in camp but not in domain-spec
+    const toScoped = (id: string) => id.startsWith("@") ? id : `@campforge/${id}`;
     const removedSkills = oldSkills.filter(
-      (id) => !specSkills.some((s) => s.skill_id === id)
+      (id) => !specSkills.some((s) => toScoped(s.skill_id) === toScoped(id))
     );
     for (const id of removedSkills) {
       log.warn(`  ${id}: in camp but not in domain-spec — remove manually if unneeded`);
