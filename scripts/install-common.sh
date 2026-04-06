@@ -190,18 +190,26 @@ _adapter_openclaw() {
 
   # Guide: OpenClaw needs skills.load.extraDirs to discover .agents/skills/.
   if [ -d .agents/skills ]; then
-    local agents_skills_abs
+    local agents_skills_abs openclaw_config
     agents_skills_abs="$(cd .agents/skills && pwd)"
+    openclaw_config="$HOME/.openclaw/openclaw.json"
     echo ""
-    echo "  [action-required] To let OpenClaw discover installed skills,"
-    echo "  update ~/.openclaw/openclaw.json so skills.load.extraDirs includes:"
-    echo ""
-    echo "    $agents_skills_abs"
-    echo ""
-    echo "  If ~/.openclaw/openclaw.json does not exist yet, create it."
-    echo "  If it already exists, merge/add this path under skills.load.extraDirs"
-    echo "  and do not replace your whole existing OpenClaw configuration."
-    echo ""
+    if [ -f "$openclaw_config" ] && grep -Fq "\"$agents_skills_abs\"" "$openclaw_config"; then
+      echo "  [info] OpenClaw skills path already present in ~/.openclaw/openclaw.json:"
+      echo ""
+      echo "    $agents_skills_abs"
+      echo ""
+    else
+      echo "  [action-required] To let OpenClaw discover installed skills,"
+      echo "  update ~/.openclaw/openclaw.json so skills.load.extraDirs includes:"
+      echo ""
+      echo "    $agents_skills_abs"
+      echo ""
+      echo "  If ~/.openclaw/openclaw.json does not exist yet, create it."
+      echo "  If it already exists, merge/add this path under skills.load.extraDirs"
+      echo "  and do not replace your whole existing OpenClaw configuration."
+      echo ""
+    fi
   fi
 
   # Copy identity files to workspace root (OpenClaw reads from root, not identity/)

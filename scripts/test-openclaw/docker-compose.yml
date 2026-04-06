@@ -14,7 +14,7 @@ services:
         set -euo pipefail
 
         # 1. Start local file server for tarballs
-        python3 -m http.server 8080 --directory /srv 2>/dev/null &
+        python3 -m http.server 8080 --directory /srv &
         SERVER_READY=0
         for i in $$(seq 1 10); do
           if curl -sf http://localhost:8080/ >/dev/null 2>&1; then
