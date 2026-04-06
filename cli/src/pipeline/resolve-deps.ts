@@ -21,8 +21,8 @@ export function resolveDeps(ctx: PipelineContext): void {
         : `@campforge/${skill.ref.replace(/.*:/, "")}`;
       npmDeps[pkgName] = "latest";
     } else if (skill.source === "generate" || skill.source === "fork") {
-      // Generated/forked skills are independent packages
-      npmDeps[`@campforge/${skill.skill_id}`] = "^0.1.0";
+      // Generated/forked skills are independent workspace packages
+      npmDeps[`@campforge/${skill.skill_id}`] = "workspace:*";
     }
   }
 

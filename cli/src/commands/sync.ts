@@ -74,7 +74,8 @@ export const syncCommand = new Command("sync")
       ];
       const dryRunRepoRoot = findRepoRoot(campDir);
       const newSkills = specSkills.filter(
-        (s) => !exists(join(dryRunRepoRoot, "packages", s.skill_id, "skills", s.skill_id, "SKILL.md"))
+        (s) => (s.source === "generate" || s.source === "fork") &&
+          !exists(join(dryRunRepoRoot, "packages", s.skill_id, "package.json"))
       );
       const removedSkills = oldSkills.filter(
         (id) => !specSkills.some((s) => s.skill_id === id)
@@ -124,13 +125,16 @@ export const syncCommand = new Command("sync")
     let newCount = 0;
     let skippedCount = 0;
     for (const skill of specSkills) {
-      const skillMd = join(repoRoot, "packages", skill.skill_id, "skills", skill.skill_id, "SKILL.md");
-      if (exists(skillMd)) {
+      const pkgJson = join(repoRoot, "packages", skill.skill_id, "package.json");
+      if (exists(pkgJson)) {
         log.info(`  ${skill.skill_id}: exists — skipped`);
         skippedCount++;
       } else if (skill.source === "generate" || skill.source === "fork") {
-        scaffoldPackage(skill, repoRoot);
-        newCount++;
+        if (scaffoldPackage(skill, repoRoot)) {
+          newCount++;
+        } else {
+          skippedCount++;
+        }
       }
     }
 

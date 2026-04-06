@@ -3,8 +3,9 @@ import { resolve, join } from "node:path";
 import { readFileSync, writeFileSync } from "node:fs";
 import * as yaml from "js-yaml";
 import { log } from "../utils/logger.js";
-import { exists, writeFile } from "../utils/fs.js";
+import { exists } from "../utils/fs.js";
 import { findRepoRoot } from "../utils/repo.js";
+import { scaffoldPackage } from "../pipeline/generate-skills.js";
 
 export const addSkillCommand = new Command("add-skill")
   .description("Add a skill scaffold to an existing camp")
@@ -29,63 +30,23 @@ export const addSkillCommand = new Command("add-skill")
 
     if (opts.source === "scaffold") {
       const repoRoot = findRepoRoot(campDir);
-      const pkgDir = join(repoRoot, "packages", skillId);
-      const skillDir = join(pkgDir, "skills", skillId);
       const description = opts.description || `${skillId} skill`;
 
-      if (exists(join(pkgDir, "package.json"))) {
-        log.warn(`packages/${skillId}/package.json already exists — skipping scaffold`);
-      } else {
-        writeFile(
-          join(skillDir, "SKILL.md"),
-          `---
-name: ${skillId}
-description: "${description}"
-license: Apache-2.0
-metadata:
-  author: campforge
-  version: "0.1"
----
+      scaffoldPackage(
+        { skill_id: skillId, source: "generate", spec: { description, workflow: [], tools_needed: [] } },
+        repoRoot,
+      );
 
-# ${skillId}
-
-## When to Use
-
-${description}
-
-## Workflow
-
-TODO: Define workflow steps.
-
-## Output Format
-
-TODO: Define structured output format.
-
-## Stop Conditions
-
-- Task completed successfully
-- Error encountered — report and stop
-`
-        );
-        const pkg = {
-          name: `@campforge/${skillId}`,
-          version: "0.1.0",
-          description,
-          keywords: ["agent-skill", ...skillId.split("-"), "campforge"],
-          license: "Apache-2.0",
-          files: ["skills/"],
-        };
-        writeFile(join(pkgDir, "package.json"), JSON.stringify(pkg, null, 2) + "\n");
-        log.info(`Scaffold created at packages/${skillId}/`);
-      }
-
-      // Add to camp package.json dependencies
+      // Add to camp package.json dependencies (preserve existing)
       const campPkgPath = join(campDir, "package.json");
+      const depName = `@campforge/${skillId}`;
       if (exists(campPkgPath)) {
         const campPkg = JSON.parse(readFileSync(campPkgPath, "utf-8"));
         campPkg.dependencies = campPkg.dependencies || {};
-        campPkg.dependencies[`@campforge/${skillId}`] = "^0.1.0";
-        writeFileSync(campPkgPath, JSON.stringify(campPkg, null, 2) + "\n", "utf-8");
+        if (!Object.prototype.hasOwnProperty.call(campPkg.dependencies, depName)) {
+          campPkg.dependencies[depName] = "workspace:*";
+          writeFileSync(campPkgPath, JSON.stringify(campPkg, null, 2) + "\n", "utf-8");
+        }
       }
     } else if (opts.source === "reference") {
       if (!opts.ref) {

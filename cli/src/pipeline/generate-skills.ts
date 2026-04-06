@@ -35,19 +35,24 @@ export function generateSkills(ctx: PipelineContext): void {
   }
 }
 
-export function scaffoldPackage(skill: SkillSpec, repoRoot: string): void {
+/**
+ * Scaffold a skill as an independent package under packages/.
+ * Returns true if scaffolded, false if skipped (already exists).
+ */
+export function scaffoldPackage(skill: SkillSpec, repoRoot: string): boolean {
   const pkgDir = join(repoRoot, "packages", skill.skill_id);
   const pkgJsonPath = join(pkgDir, "package.json");
 
   if (exists(pkgJsonPath)) {
     log.warn(`  ${skill.skill_id}: packages/${skill.skill_id}/package.json already exists — skipping`);
-    return;
+    return false;
   }
 
   const skillDir = join(pkgDir, "skills", skill.skill_id);
   writeScaffold(skill, skillDir);
   writePackageJson(skill, pkgDir);
   log.info(`  ${skill.skill_id}: scaffolded in packages/ (fill in with LLM)`);
+  return true;
 }
 
 function writePackageJson(skill: SkillSpec, pkgDir: string): void {
