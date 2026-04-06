@@ -42,7 +42,9 @@ export const createCommand = new Command("create")
       persona: opts.persona,
       language: opts.language,
       outputDir,
-      extras: opts.extras ? opts.extras.split(",").filter(Boolean) : [],
+      extras: opts.extras
+        ? opts.extras.split(",").map((s: string) => s.trim().replace(/^@campforge\//, "")).filter(Boolean)
+        : [],
       mode: "create",
     };
 
