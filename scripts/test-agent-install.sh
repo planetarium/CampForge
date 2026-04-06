@@ -114,7 +114,7 @@ fi
 
 docker run --rm \
   "${ENV_FLAGS[@]}" \
-  "${DOCKER_EXTRA_FLAGS[@]}" \
+  ${DOCKER_EXTRA_FLAGS[@]+"${DOCKER_EXTRA_FLAGS[@]}"} \
   -v "$DIST:/srv:ro" \
   -w "$WORKSPACE_PATH" \
   "$DOCKER_IMAGE" \
