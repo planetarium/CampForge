@@ -61,6 +61,12 @@ run_installer() {
       for tool in flex-ax gws gws-auth gq; do
         command -v "$tool" 2>/dev/null && echo "${tool}=ok" || echo "${tool}=(not found)"
       done
+      echo "---HOOKS---"
+      cat workspace/.claude/settings.json 2>/dev/null || echo "(no settings.json)"
+      echo "---BOOT_MD---"
+      cat workspace/BOOT.md 2>/dev/null || echo "(no BOOT.md)"
+      echo "---CAMP_SCRIPTS---"
+      find workspace/scripts -type f 2>/dev/null | sort || echo "(no scripts/)"
       echo "---ADAPTER_STAGING---"
       cat workspace/.campforge-context*.md 2>/dev/null || echo "(not found)"
       echo "---ADAPTER_END---"
@@ -206,7 +212,7 @@ for CAMP in "${CAMPS[@]}"; do
       # Verify CLI tools declared with test_fetch were installed
       if [ ${#EXPECTED_CLI_TOOLS[@]} -gt 0 ]; then
         echo "    Verifying CLI tools..."
-        CLI_TOOLS=$(echo "$RESULT" | sed -n '/---CLI_TOOLS---/,/---ADAPTER_STAGING---/p')
+        CLI_TOOLS=$(echo "$RESULT" | sed -n '/---CLI_TOOLS---/,/---HOOKS---/p')
         for tool in "${EXPECTED_CLI_TOOLS[@]}"; do
           if echo "$CLI_TOOLS" | grep -q "^${tool}=ok"; then
             echo "      ✓ $tool installed"
@@ -215,6 +221,30 @@ for CAMP in "${CAMPS[@]}"; do
             PLATFORM_PASS=false
           fi
         done
+      fi
+
+      # Verify hooks and scripts
+      HOOKS_SECTION=$(echo "$RESULT" | sed -n '/---HOOKS---/,/---BOOT_MD---/p')
+      BOOT_SECTION=$(echo "$RESULT" | sed -n '/---BOOT_MD---/,/---CAMP_SCRIPTS---/p')
+      SCRIPTS_SECTION=$(echo "$RESULT" | sed -n '/---CAMP_SCRIPTS---/,/---ADAPTER_STAGING---/p')
+
+      # Check scripts/check-freshness.sh exists (if camp has one)
+      if [ -f "$CAMP_DIR/scripts/check-freshness.sh" ]; then
+        echo "    Verifying freshness hooks..."
+        if echo "$SCRIPTS_SECTION" | grep -q "check-freshness.sh"; then
+          echo "      ✓ scripts/check-freshness.sh installed"
+        else
+          echo "      ✗ scripts/check-freshness.sh MISSING"
+          PLATFORM_PASS=false
+        fi
+
+        # claude-code: settings.json should have UserPromptSubmit hook
+        if echo "$HOOKS_SECTION" | grep -q "UserPromptSubmit"; then
+          echo "      ✓ .claude/settings.json has UserPromptSubmit hook"
+        elif echo "$HOOKS_SECTION" | grep -q "(no settings.json)"; then
+          echo "      ✗ .claude/settings.json not created"
+          PLATFORM_PASS=false
+        fi
       fi
     fi
 
@@ -272,6 +302,16 @@ for CAMP in "${CAMPS[@]}"; do
                 PLATFORM_PASS=false
               fi
             fi
+          fi
+        fi
+        # OpenClaw: BOOT.md should reference check-freshness.sh
+        if [ -f "$CAMP_DIR/scripts/check-freshness.sh" ]; then
+          BOOT_SECTION=$(echo "$RESULT" | sed -n '/---BOOT_MD---/,/---CAMP_SCRIPTS---/p')
+          if echo "$BOOT_SECTION" | grep -q "check-freshness"; then
+            echo "      ✓ BOOT.md has freshness check"
+          elif echo "$BOOT_SECTION" | grep -q "(no BOOT.md)"; then
+            echo "      ✗ BOOT.md not created"
+            PLATFORM_PASS=false
           fi
         fi
         ;;
