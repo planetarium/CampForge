@@ -54,7 +54,7 @@ PLATFORM="$(detect_platform)"
 case "$PLATFORM" in
   claude-code)
     # UserPromptSubmit hook: check data freshness on each prompt
-    CHECK_CMD="$(cd "$WS" && pwd)/scripts/check-freshness.sh"
+    CHECK_CMD="$(pwd)/scripts/check-freshness.sh"
     if [ -f ".claude/settings.json" ]; then
       echo "  [action-required] Add this hook to .claude/settings.json:"
     else
