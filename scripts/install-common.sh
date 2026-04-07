@@ -30,7 +30,7 @@ install_gws() {
 # Install flex-ax CLI from GitHub Release.
 # Requires gh CLI or GITHUB_TOKEN for private repo access.
 install_flex_ax() {
-  local version="${FLEX_AX_VERSION:-0.0.1}"
+  local version="${FLEX_AX_VERSION:-0.1.0}"
   local tag="flex-cli@${version}"
   local tgz="flex-ax-${version}.tgz"
   local url="https://github.com/planetarium/flex-ax/releases/download/${tag}/${tgz}"
