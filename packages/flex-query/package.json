@@ -1,0 +1,8 @@
+{
+  "name": "@campforge/flex-query",
+  "version": "0.1.0",
+  "description": "flex-ax DB SQL query skill — 결재/근태/사용자 데이터 조회",
+  "keywords": ["agent-skill", "flex", "query", "campforge"],
+  "license": "Apache-2.0",
+  "files": ["skills/"]
+}

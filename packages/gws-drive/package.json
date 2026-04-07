@@ -1,0 +1,17 @@
+{
+  "name": "@campforge/gws-drive",
+  "version": "0.1.0",
+  "description": "Google Drive operations skill for CampForge camps",
+  "keywords": ["agent-skill", "google-drive", "gws", "campforge"],
+  "license": "Apache-2.0",
+  "author": "swen",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/planetarium/CampForge",
+    "directory": "packages/gws-drive"
+  },
+  "files": ["skills/"],
+  "dependencies": {
+    "@campforge/gws-auth": "^0.1.0"
+  }
+}
