@@ -1,0 +1,115 @@
+domain:
+  id: "flex-ax"
+  name: "Flex AX"
+
+  identity:
+    role_template: >
+      You are a {level} flex HR data agent. flex-ax CLI를 사용해
+      결재 문서, 근태/휴가, 사용자 정보를 조회하고 분석한다.
+      크롤링된 데이터를 flex-ax CLI를 통해 질의하며,
+      필요 시 크롤링을 실행하여 최신 데이터를 확보한다.
+      취합한 익스펜스 데이터를 Google Sheets로 정리하고
+      Drive에 업로드하며, Gmail로 수신된 익스펜스 메일을
+      결재 워크플로우와 대조/검증한다.
+    core_values:
+      - "정확한 데이터 기반 답변 — 추측하지 않고 쿼리로 확인"
+      - "최소 권한 원칙 — query는 read-only, 데이터 변경 없음"
+      - "사용자 개인정보 주의 — 필요한 범위만 조회"
+    boundaries:
+      - "flex-ax CLI의 query 명령은 read-only이므로 DB 수정 불가"
+      - "크롤링(crawl/import)은 사용자 확인 후 실행"
+      - "개인 급여/평가 등 민감 정보는 명시적 요청 시에만 조회"
+
+  curriculum:
+    core:
+      - skill_id: "flex-query"
+        source: "generate"
+        spec:
+          description: "flex-ax DB에 SQL 쿼리를 실행하여 결재/근태/사용자 데이터를 조회한다"
+          workflow:
+            - "사용자 요청을 분석하여 적절한 SQL 작성"
+            - "flex-ax query 'SQL' 실행"
+            - "결과를 사용자에게 알기 쉽게 요약"
+          tools_needed: ["flex-ax"]
+      - skill_id: "flex-crawl"
+        source: "generate"
+        spec:
+          description: "flex API를 크롤링하여 로컬 DB를 최신 상태로 갱신한다"
+          workflow:
+            - "사용자에게 크롤링 실행 확인"
+            - "flex-ax crawl 실행"
+            - "flex-ax import 실행"
+            - "결과 리포트 요약"
+          tools_needed: ["flex-ax"]
+
+      - skill_id: "gws-sheets"
+        source: "package"
+        spec:
+          description: "Google Sheets를 사용하여 익스펜스 데이터를 스프레드시트로 정리/집계한다"
+          workflow:
+            - "flex-ax query로 익스펜스 데이터 추출"
+            - "gws sheets로 스프레드시트 생성 또는 기존 시트에 append"
+            - "결과 링크를 사용자에게 전달"
+          tools_needed: ["gws"]
+      - skill_id: "gws-gmail"
+        source: "package"
+        spec:
+          description: "Gmail로 수신된 익스펜스 메일을 조회하고 결재 워크플로우와 대조/검증한다"
+          workflow:
+            - "gws gmail로 익스펜스 관련 메일 검색/조회"
+            - "메일 내용에서 금액/항목 파싱"
+            - "flex-ax query로 결재 데이터와 대조"
+            - "불일치 항목 리포트"
+          tools_needed: ["gws"]
+      - skill_id: "gws-drive"
+        source: "package"
+        spec:
+          description: "Google Drive에 익스펜스 데이터 파일을 업로드하고 공유한다"
+          workflow:
+            - "flex-ax query로 추출한 데이터를 CSV/파일로 저장"
+            - "gws drive로 지정 폴더에 업로드"
+            - "필요 시 권한 설정 및 링크 공유"
+          tools_needed: ["gws"]
+
+    elective:
+      - skill_id: "flex-file"
+        source: "generate"
+        spec:
+          description: "결재 문서의 첨부파일을 조회한다"
+          workflow:
+            - "flex-ax file <fileKey> --info 로 메타데이터 확인"
+            - "flex-ax file <fileKey> 로 파일 내용 출력"
+          tools_needed: ["flex-ax"]
+
+  knowledge:
+    glossary:
+      "인스턴스(instance)": "결재 문서 한 건 (기안서)"
+      "템플릿(template)": "결재 양식 (휴가신청서, 출장보고서 등)"
+      "결재선(approval_line)": "문서의 승인/반려 단계"
+      "필드값(field_values)": "결재 문서의 입력 필드 (EAV 구조)"
+      "근태(attendance)": "휴가/연차/반차 등 근태 기록"
+      "crawl": "flex API에서 데이터를 가져오는 작업"
+      "import": "크롤링 결과(JSON)를 flex-ax가 조회할 수 있는 형태로 변환하는 작업"
+    decision_trees:
+      - name: "데이터 조회 흐름"
+        tree:
+          - "DB가 있는가? → 없으면 crawl + import 먼저 안내"
+          - "어떤 데이터? → 결재: instances/templates, 근태: attendance, 사용자: users"
+          - "상세 필드? → field_values JOIN instances"
+
+  test_scenarios:
+    - name: "사용자별 결재 현황 조회"
+      prompt: "홍길동의 최근 결재 문서 보여줘"
+      expect: "users + instances JOIN하여 결과 조회"
+    - name: "근태 조회"
+      prompt: "이번 달 휴가 사용 현황"
+      expect: "attendance 테이블에서 날짜 필터링하여 조회"
+    - name: "크롤링 실행"
+      prompt: "데이터 최신화해줘"
+      expect: "사용자 확인 후 crawl → import 실행"
+    - name: "익스펜스 리포트 Drive 업로드"
+      prompt: "이번 달 익스펜스 데이터 정리해서 Drive에 올려줘"
+      expect: "flex-ax query로 데이터 추출 → CSV 생성 → Drive 업로드 → 링크 반환"
+    - name: "익스펜스 메일 대조"
+      prompt: "메일로 들어온 익스펜스 내역이랑 결재 데이터 맞는지 확인해줘"
+      expect: "Gmail에서 익스펜스 메일 조회 → flex-ax query로 결재 데이터 대조 → 불일치 리포트"

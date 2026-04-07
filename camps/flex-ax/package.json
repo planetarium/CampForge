@@ -1,0 +1,20 @@
+{
+  "name": "@campforge/camp-flex-ax",
+  "version": "1.0.0",
+  "description": "CampForge camp for Flex AX",
+  "keywords": [
+    "agent-skill",
+    "campforge",
+    "flex",
+    "ax"
+  ],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@campforge/flex-query": "^0.1.0",
+    "@campforge/flex-crawl": "^0.1.0",
+    "@campforge/gws-auth": "^0.1.0",
+    "@campforge/gws-sheets": "^0.1.0",
+    "@campforge/gws-gmail": "^0.1.0",
+    "@campforge/gws-drive": "^0.1.0"
+  }
+}

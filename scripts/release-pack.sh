@@ -65,7 +65,7 @@ fi
 # Pack camp identity/knowledge tarball when --camp is specified
 if [ -n "$CAMP" ]; then
   CAMP_FILES=()
-  for pattern in identity knowledge tests manifest.yaml; do
+  for pattern in identity knowledge tests scripts manifest.yaml; do
     target="$CAMP_DIR/$pattern"
     [ -e "$target" ] && CAMP_FILES+=("$pattern")
   done

@@ -57,6 +57,16 @@ run_installer() {
       wc -c < workspace/AGENTS.md 2>/dev/null || echo "0"
       echo "---ADAPTER_IDENTITY_AGENTS_MD---"
       cat workspace/identity/AGENTS.md 2>/dev/null || echo "(not found)"
+      echo "---CLI_TOOLS---"
+      for tool in flex-ax gws gws-auth gq; do
+        command -v "$tool" 2>/dev/null && echo "${tool}=ok" || echo "${tool}=(not found)"
+      done
+      echo "---HOOKS---"
+      cat workspace/.claude/settings.json 2>/dev/null || echo "(no settings.json)"
+      echo "---BOOT_MD---"
+      cat workspace/BOOT.md 2>/dev/null || echo "(no BOOT.md)"
+      echo "---CAMP_SCRIPTS---"
+      find workspace/scripts -type f 2>/dev/null | sort || echo "(no scripts/)"
       echo "---ADAPTER_STAGING---"
       cat workspace/.campforge-context*.md 2>/dev/null || echo "(not found)"
       echo "---ADAPTER_END---"
@@ -85,13 +95,46 @@ for CAMP in "${CAMPS[@]}"; do
   fi
   rm -f "$PACK_LOG"
 
-  # 2. Build a test install script: replace BASE with local server URL
-  #    and skip post-install binaries (gws/gws-auth) that aren't relevant
-  sed \
-    -e 's|^BASE=.*|BASE="http://localhost:8080"|' \
-    -e 's|^install_gws$|# skip: install_gws|' \
-    -e 's|^install_gws_auth$|# skip: install_gws_auth|' \
-    "$CAMP_DIR/install.sh" > "$DIST/install.sh"
+  # 2. Pre-fetch external CLI tarballs for E2E testing.
+  #    If the camp provides tests/fetch-tools.sh, run it on the host (where
+  #    gh auth is available). The script outputs lines: name|filename|install-cmd
+  #    We build sed expressions to replace install_<name> with local HTTP installs.
+  TOOL_SED_ARGS=(-e 's|^BASE=.*|BASE="http://localhost:8080"|')
+  EXPECTED_CLI_TOOLS=()
+
+  FETCH_SCRIPT="$CAMP_DIR/tests/fetch-tools.sh"
+  if [ -x "$FETCH_SCRIPT" ]; then
+    FETCH_OUTPUT=$(bash "$FETCH_SCRIPT" "$DIST" 2>&1) || true
+
+    while IFS='|' read -r TOOL_NAME TOOL_FILE TOOL_INSTALL; do
+      [ -z "$TOOL_NAME" ] && continue
+      echo "$TOOL_NAME" | grep -q '^\[' && continue  # skip warning lines
+      FUNC_NAME="install_$(echo "$TOOL_NAME" | tr '-' '_')"
+
+      if [ -f "$DIST/$TOOL_FILE" ]; then
+        LOCAL_INSTALL=$(echo "$TOOL_INSTALL" | sed "s|{file}|http://localhost:8080/$TOOL_FILE|g")
+        TOOL_SED_ARGS+=(-e "s|^${FUNC_NAME}\$|${LOCAL_INSTALL}|")
+        EXPECTED_CLI_TOOLS+=("$TOOL_NAME")
+        echo "  Fetched $TOOL_NAME -> $TOOL_FILE"
+      else
+        echo "  [warn] $TOOL_NAME: $TOOL_FILE not found in $DIST, will skip"
+        TOOL_SED_ARGS+=(-e "s|^${FUNC_NAME}\$|# skip: ${FUNC_NAME} (fetch failed)|")
+      fi
+    done <<< "$FETCH_OUTPUT"
+  fi
+
+  # Skip remaining install_* helpers not handled by fetch-tools.sh
+  while IFS= read -r INSTALL_FUNC; do
+    [ -z "$INSTALL_FUNC" ] && continue
+    ALREADY_HANDLED=false
+    for sed_arg in "${TOOL_SED_ARGS[@]}"; do
+      echo "$sed_arg" | grep -qF "$INSTALL_FUNC" && { ALREADY_HANDLED=true; break; }
+    done
+    $ALREADY_HANDLED || TOOL_SED_ARGS+=(-e "s|^${INSTALL_FUNC}\$|# skip: ${INSTALL_FUNC}|")
+  done < <(grep -oE '^install_[a-z_]+' "$CAMP_DIR/install.sh" 2>/dev/null | sort -u)
+
+  # 3. Build a test install script with all substitutions
+  sed "${TOOL_SED_ARGS[@]}" "$CAMP_DIR/install.sh" > "$DIST/install.sh"
 
   # 3. Collect expected files
   EXPECTED_CAMP=()
@@ -144,8 +187,8 @@ for CAMP in "${CAMPS[@]}"; do
       continue
     fi
 
-    # Common checks: camp files + skills (only for first platform to avoid noise)
-    if [ "$PLATFORM" = "claude-code" ]; then
+    # Common checks: camp files + skills + CLI tools + hooks (claude-code and openclaw)
+    if [ "$PLATFORM" = "claude-code" ] || [ "$PLATFORM" = "openclaw" ]; then
       echo "    Verifying camp files..."
       for f in "${EXPECTED_CAMP[@]}"; do
         if echo "$RESULT" | grep -q "workspace/$f"; then
@@ -165,6 +208,54 @@ for CAMP in "${CAMPS[@]}"; do
           PLATFORM_PASS=false
         fi
       done
+
+      # Verify CLI tools declared with test_fetch were installed
+      if [ ${#EXPECTED_CLI_TOOLS[@]} -gt 0 ]; then
+        echo "    Verifying CLI tools..."
+        CLI_TOOLS=$(echo "$RESULT" | sed -n '/---CLI_TOOLS---/,/---HOOKS---/p')
+        for tool in "${EXPECTED_CLI_TOOLS[@]}"; do
+          if echo "$CLI_TOOLS" | grep -q "^${tool}=ok"; then
+            echo "      ✓ $tool installed"
+          else
+            echo "      ✗ $tool NOT installed"
+            PLATFORM_PASS=false
+          fi
+        done
+      fi
+
+      # Verify hooks and scripts (if camp has freshness check)
+      if [ -f "$CAMP_DIR/scripts/check-freshness.sh" ]; then
+        SCRIPTS_SECTION=$(echo "$RESULT" | sed -n '/---CAMP_SCRIPTS---/,/---ADAPTER_STAGING---/p')
+
+        echo "    Verifying freshness hooks..."
+        if echo "$SCRIPTS_SECTION" | grep -q "check-freshness.sh"; then
+          echo "      ✓ scripts/check-freshness.sh installed"
+        else
+          echo "      ✗ scripts/check-freshness.sh MISSING"
+          PLATFORM_PASS=false
+        fi
+
+        case "$PLATFORM" in
+          claude-code)
+            HOOKS_SECTION=$(echo "$RESULT" | sed -n '/---HOOKS---/,/---BOOT_MD---/p')
+            if echo "$HOOKS_SECTION" | grep -q "UserPromptSubmit"; then
+              echo "      ✓ .claude/settings.json has UserPromptSubmit hook"
+            elif echo "$HOOKS_SECTION" | grep -q "(no settings.json)"; then
+              echo "      ✗ .claude/settings.json not created"
+              PLATFORM_PASS=false
+            fi
+            ;;
+          openclaw)
+            BOOT_SECTION=$(echo "$RESULT" | sed -n '/---BOOT_MD---/,/---CAMP_SCRIPTS---/p')
+            if echo "$BOOT_SECTION" | grep -q "check-freshness"; then
+              echo "      ✓ BOOT.md has freshness check"
+            elif echo "$BOOT_SECTION" | grep -q "(no BOOT.md)"; then
+              echo "      ✗ BOOT.md not created"
+              PLATFORM_PASS=false
+            fi
+            ;;
+        esac
+      fi
     fi
 
     # Platform-specific adapter verification

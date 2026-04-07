@@ -1,0 +1,8 @@
+{
+  "name": "@campforge/flex-crawl",
+  "version": "0.1.0",
+  "description": "flex API crawl + import skill — 로컬 DB 최신화",
+  "keywords": ["agent-skill", "flex", "crawl", "campforge"],
+  "license": "Apache-2.0",
+  "files": ["skills/"]
+}

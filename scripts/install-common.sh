@@ -27,12 +27,86 @@ install_gws() {
   fi
 }
 
+# Install flex-ax CLI from GitHub Release.
+# Requires gh CLI or GITHUB_TOKEN for private repo access.
+install_flex_ax() {
+  local version="${FLEX_AX_VERSION:-0.0.1}"
+  local tag="flex-cli@${version}"
+  local tgz="flex-ax-${version}.tgz"
+
+  echo ":: Installing flex-ax CLI (${tag})..."
+
+  if command -v flex-ax >/dev/null 2>&1; then
+    echo "  flex-ax already installed, skipping."
+    return
+  fi
+
+  local tmp_dir
+  tmp_dir="$(mktemp -d)"
+  trap "rm -rf '$tmp_dir'" RETURN
+
+  if command -v gh >/dev/null 2>&1; then
+    gh release download "$tag" --repo planetarium/flex-ax --pattern '*.tgz' --dir "$tmp_dir" 2>/dev/null || {
+      echo "  [warn] flex-ax download failed. Install manually: gh release download $tag --repo planetarium/flex-ax --pattern '*.tgz'"
+      return
+    }
+  elif [ -n "${GITHUB_TOKEN:-}" ]; then
+    local asset_id
+    asset_id=$(curl -fsSL \
+      -H "Authorization: Bearer $GITHUB_TOKEN" \
+      -H "Accept: application/vnd.github+json" \
+      "https://api.github.com/repos/planetarium/flex-ax/releases/tags/${tag}" \
+      | grep -o '"id":[0-9]*' | head -1 | grep -o '[0-9]*') || true
+
+    if [ -z "$asset_id" ]; then
+      # Try extracting asset id from assets array
+      asset_id=$(curl -fsSL \
+        -H "Authorization: Bearer $GITHUB_TOKEN" \
+        -H "Accept: application/vnd.github+json" \
+        "https://api.github.com/repos/planetarium/flex-ax/releases/tags/${tag}" \
+        2>/dev/null | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for a in data.get('assets', []):
+    if a['name'].endswith('.tgz'):
+        print(a['id']); break
+" 2>/dev/null) || true
+    fi
+
+    if [ -n "$asset_id" ]; then
+      curl -fsSL \
+        -H "Authorization: Bearer $GITHUB_TOKEN" \
+        -H "Accept: application/octet-stream" \
+        "https://api.github.com/repos/planetarium/flex-ax/releases/assets/${asset_id}" \
+        -o "$tmp_dir/$tgz" 2>/dev/null || {
+        echo "  [warn] flex-ax download failed."
+        return
+      }
+    else
+      echo "  [warn] Could not find flex-ax release asset. Install manually."
+      return
+    fi
+  else
+    echo "  [warn] Neither gh CLI nor GITHUB_TOKEN available. Install flex-ax manually:"
+    echo "    gh release download $tag --repo planetarium/flex-ax --pattern '*.tgz'"
+    echo "    npm install -g ./$tgz"
+    return
+  fi
+
+  npm install -g "$tmp_dir/$tgz" 2>/dev/null || {
+    echo "  [warn] flex-ax npm install failed."
+    return
+  }
+
+  echo "  flex-ax installed successfully."
+}
+
 # Install camp identity/knowledge/manifest/tests files from a tarball URL.
 # Extracts into a temporary directory and copies only expected entries.
 # Usage: install_camp_files <tarball-url>
 install_camp_files() {
   local url="$1"
-  local allowed_entries="identity knowledge tests manifest.yaml"
+  local allowed_entries="identity knowledge tests scripts manifest.yaml"
 
   echo ":: Installing camp files..."
 
