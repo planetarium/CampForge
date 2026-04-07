@@ -40,7 +40,7 @@ fi
 
 # --- Scenarios ---
 SCENARIOS=(
-  "Show the list of users"
+  "Show the list of employees"
   "Show recent approval documents"
   "Show approval line status for each document"
 )
@@ -53,17 +53,21 @@ WITH_GWS_SCENARIOS=(
 PROMPT_RULES="Use flex-ax query for data. Refer to skill docs in .agents/skills/ for tool usage."
 
 # --- Verification ---
+# cmds_file contains:
+#   Claude Code: actual Bash commands extracted from stream-json tool_use
+#   OpenClaw: agent's final text response (tool calls not in JSON output)
+# Both are checked for evidence of tool usage.
 verify_tools() {
   local cmds_file="$1" result_file="$2"
   USED_QUERY=false
   USED_SQLITE3=false
   USED_GWS=false
-  grep -qE 'flex-ax query' "$cmds_file" && USED_QUERY=true
-  grep -qE 'sqlite3' "$cmds_file" && USED_SQLITE3=true
-  grep -qE 'gws drive|gws sheets' "$cmds_file" && USED_GWS=true
-  # Fallback: check raw log for Drive upload evidence
+  grep -qiE 'flex-ax query' "$cmds_file" && USED_QUERY=true
+  grep -qiE 'sqlite3' "$cmds_file" && USED_SQLITE3=true
+  grep -qiE 'gws drive|gws sheets|uploaded.*drive|upload.*csv|drive.google.com' "$cmds_file" && USED_GWS=true
+  # Fallback: check raw log for Drive upload evidence (file ID pattern)
   if ! $USED_GWS; then
-    grep -qE '"id":.*"1[A-Za-z0-9_-]' "$result_file" && grep -qE 'drive.google.com\|upload\|Upload' "$result_file" && USED_GWS=true
+    grep -qE 'drive.google.com|"webViewLink"' "$result_file" && USED_GWS=true
   fi
 }
 

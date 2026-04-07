@@ -204,38 +204,58 @@ for SCENARIO in "${SCENARIOS[@]}"; do
   QUERY_PROMPT="Execute this task immediately: ${SCENARIO}. Do not explore the environment. ${PROMPT_RULES}"
 
   RESULT_FILE="$(mktemp)"
-  timeout 300 docker run --rm \
+  docker run --rm \
     "${DOCKER_ENV_FLAGS[@]}" \
     -w "$WORKSPACE_PATH" \
     "${DOCKER_IMAGE}:with-camp" \
-    bash -c "cd \$HOME/workspace && $AGENT_CMD $(printf '%q' "$QUERY_PROMPT")" > "$RESULT_FILE" 2>&1 || true
+    bash -c "cd \$HOME/workspace && $AGENT_CMD $(printf '%q' "$QUERY_PROMPT")" > "$RESULT_FILE" 2>&1 &
+  AGENT_PID=$!
+  ( sleep 300 && kill "$AGENT_PID" 2>/dev/null ) &
+  TIMER_PID=$!
+  wait "$AGENT_PID" 2>/dev/null || true
+  kill "$TIMER_PID" 2>/dev/null; wait "$TIMER_PID" 2>/dev/null || true
 
-  # Extract actual commands from log (supports both Claude Code and OpenClaw formats)
+  # Extract evidence of tool usage from agent output.
+  #
+  # Claude Code (stream-json): NDJSON lines with tool calls in
+  #   {"type":"assistant","message":{"content":[{"name":"Bash","input":{"command":"..."}}]}}
+  #
+  # OpenClaw (--json): Single JSON object. Tool calls are NOT in the output —
+  #   only final text response in payloads[].text or result.payloads[].text.
+  #   We check the agent's text response for mentions of executed commands.
   CMDS_FILE="$(mktemp)"
   python3 -c "
 import json, sys
-for line in open(sys.argv[1]):
+
+lines = open(sys.argv[1]).read()
+
+# Try as single JSON first (OpenClaw format)
+try:
+    obj = json.loads(lines)
+    # OpenClaw local: payloads[].text / gateway: result.payloads[].text
+    payloads = obj.get('payloads', [])
+    if not payloads:
+        result = obj.get('result', {})
+        if isinstance(result, dict):
+            payloads = result.get('payloads', [])
+    for p in payloads:
+        text = p.get('text', '')
+        if text:
+            print(text)
+    sys.exit(0)
+except (json.JSONDecodeError, ValueError):
+    pass
+
+# Try as NDJSON (Claude Code stream-json format)
+for line in lines.splitlines():
     line = line.strip()
     if not line: continue
     try: obj = json.loads(line)
     except: continue
-    # Claude Code stream-json format
     if obj.get('type') == 'assistant':
         for c in obj.get('message', {}).get('content', []):
             if c.get('name') == 'Bash':
                 print(c.get('input', {}).get('command', ''))
-    # OpenClaw format
-    msg = obj.get('message', obj)
-    for c in (msg.get('content', []) if isinstance(msg.get('content'), list) else []):
-        if isinstance(c, dict) and c.get('type') == 'tool_use' and c.get('name') in ('bash', 'shell', 'Bash'):
-            inp = c.get('input', {})
-            cmd = inp.get('command', inp.get('cmd', ''))
-            if cmd: print(cmd)
-    for c in (msg.get('content', []) if isinstance(msg.get('content'), list) else []):
-        if isinstance(c, dict) and c.get('type') == 'tool_result':
-            content = c.get('content', '')
-            if isinstance(content, str):
-                print(content[:500])
   " "$RESULT_FILE" > "$CMDS_FILE" 2>/dev/null || true
 
   # Camp-specific verification
