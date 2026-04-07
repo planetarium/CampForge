@@ -106,7 +106,7 @@ for a in data.get('assets', []):
 # Usage: install_camp_files <tarball-url>
 install_camp_files() {
   local url="$1"
-  local allowed_entries="identity knowledge tests manifest.yaml"
+  local allowed_entries="identity knowledge tests scripts manifest.yaml"
 
   echo ":: Installing camp files..."
 

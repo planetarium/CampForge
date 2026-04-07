@@ -40,4 +40,54 @@ install_gws_auth
 install_camp_files "$BASE/camp-flex-ax.tgz"
 generate_adapters
 
+# Install freshness check script
+FRESHNESS_SCRIPT="scripts/check-freshness.sh"
+if [ -f "$FRESHNESS_SCRIPT" ]; then
+  echo ":: Freshness check already exists"
+elif [ -f "/srv/camp-flex-ax.tgz" ]; then
+  # Extract from camp tarball (remote install)
+  tar xzf "/srv/camp-flex-ax.tgz" "$FRESHNESS_SCRIPT" 2>/dev/null || true
+fi
+
+# Set up platform-specific data freshness hooks
+PLATFORM="$(detect_platform)"
+case "$PLATFORM" in
+  claude-code)
+    # UserPromptSubmit hook: check data freshness on each prompt
+    CHECK_CMD="$(cd "$WS" && pwd)/scripts/check-freshness.sh"
+    if [ -f ".claude/settings.json" ]; then
+      echo "  [action-required] Add this hook to .claude/settings.json:"
+    else
+      cat > .claude/settings.json <<HOOKJSON
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "command": "bash $CHECK_CMD",
+        "description": "Check flex-ax data freshness and crawl if stale"
+      }
+    ]
+  }
+}
+HOOKJSON
+      echo "  Created .claude/settings.json with freshness check hook"
+    fi
+    ;;
+  openclaw)
+    # BOOT.md: runs on gateway startup
+    if [ ! -f "BOOT.md" ]; then
+      cat > BOOT.md <<'BOOTMD'
+Run this command to check if flex-ax data needs refreshing:
+
+```bash
+bash scripts/check-freshness.sh
+```
+BOOTMD
+      echo "  Created BOOT.md with freshness check"
+    else
+      echo "  [action-required] Existing BOOT.md found. Add freshness check manually."
+    fi
+    ;;
+esac
+
 echo "flex-ax camp installed"
