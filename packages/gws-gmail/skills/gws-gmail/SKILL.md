@@ -14,7 +14,7 @@ compatibility: Requires @campforge/gws-auth skill (^0.1.0). Gmail scopes require
 
 # Gmail Skill (gws CLI)
 
-Authentication, installation, and token setup are handled by the **gws-auth** skill. Before proceeding, load/activate the `@campforge/gws-auth` skill dependency. If not already authenticated, the **user** must run `gws-auth login --scope gmail.modify` themselves — the agent cannot perform this interactive browser OAuth step.
+Authentication, installation, and token setup are handled by the **gws-auth** skill. Before proceeding, load/activate the `@campforge/gws-auth` skill dependency. If not already authenticated, the agent can run `gws-auth login --scope gmail.modify` to start the OAuth flow — the user must complete the browser consent step themselves.
 
 ## How to call
 
@@ -51,8 +51,7 @@ gws gmail +forward --message-id <MESSAGE_ID> --to dave@example.com --body 'FYI s
 gws gmail +forward --message-id <MESSAGE_ID> --to dave@example.com --no-original-attachments
 
 # Watch — real-time email monitoring (requires Pub/Sub)
-# Typically, --project should match $GOOGLE_WORKSPACE_PROJECT_ID (the OAuth client's project).
-gws gmail +watch --project "$GOOGLE_WORKSPACE_PROJECT_ID" --label-ids INBOX --once
+gws gmail +watch --project "<GCP_PROJECT_ID>" --label-ids INBOX --once
 ```
 
 ### Common options for send/reply/forward
