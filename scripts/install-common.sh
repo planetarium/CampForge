@@ -124,7 +124,7 @@ install_camp_files() {
 # Install gws-auth plugin.
 install_gws_auth() {
   echo ":: Installing gws-auth..."
-  local url="https://github.com/planetarium/gws-auth/releases/download/v0.3.0/anthropic-kr-gws-auth-0.1.0.tgz"
+  local url="https://github.com/planetarium/gws-auth/releases/download/v0.4.0/planetarium-gws-auth-0.4.0.tgz"
   npm install -g "$url" 2>/dev/null || \
   npm install -g --prefix "$HOME/.local" "$url" 2>/dev/null || \
     echo "  [warn] gws-auth install failed. Install manually: npm i -g $url"
