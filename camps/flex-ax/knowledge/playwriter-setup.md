@@ -39,12 +39,16 @@ A successful response returns JSON with Chrome version information, confirming t
 - Use **Git Bash**, **MSYS2**, or **WSL** to run the install script and CLI
   wrappers. The installer generates both `.cmd` (for cmd.exe/PowerShell) and
   extensionless shell wrappers (for Git Bash).
-- **Node 24+** may be required on Windows due to ESM module resolution issues
-  in older Node versions. If you encounter `ERR_MODULE_NOT_FOUND` or similar
-  errors, upgrade Node.
 - Make sure the `.local/bin` directory created by the installer is on your
   PATH. The installer adds it automatically for the current session, but you
   may need to add it to your shell profile for persistence.
+
+> **Node 24+ is REQUIRED on Windows.** Playwriter is a pure ESM package. On Windows
+> with Node versions older than 24, `playwriter serve` will fail with
+> `ERR_REQUIRE_ESM` or `SyntaxError: Cannot use import statement outside a module`.
+> This is an upstream Node/ESM interop limitation that cannot be worked around.
+>
+> Download Node 24+: <https://nodejs.org/>
 - **Use `curl.exe` instead of `curl`**: In PowerShell, `curl` is aliased to `Invoke-WebRequest`. Use `curl.exe` explicitly when verifying the relay.
 
 ## Troubleshooting

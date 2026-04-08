@@ -245,6 +245,17 @@ install_playwriter() {
 
   path_append "$prefix/bin"
   echo "  playwriter $version installed at $prefix/bin/playwriter"
+
+  # Warn if Node < 24 on Windows (Playwriter has ESM issues on older Node)
+  if is_windows; then
+    local node_major
+    node_major=$(node -v | sed 's/v\([0-9]*\).*/\1/')
+    if [ "$node_major" -lt 24 ] 2>/dev/null; then
+      echo "⚠  playwriter requires Node 24+ on Windows (current: $(node -v))"
+      echo "   Install Node 24+: https://nodejs.org/"
+      echo "   Without it, 'playwriter serve' will fail with ESM errors."
+    fi
+  fi
 }
 
 # ---------------------------------------------------------------------------
