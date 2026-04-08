@@ -6,25 +6,45 @@
 # Prefers musl static binary on Linux to avoid glibc >=2.39 requirement.
 install_gws() {
   echo ":: Installing gws..."
-  if [ "$(uname -s)" = "Linux" ]; then
-    GWS_VERSION=$(curl -fsSL https://api.github.com/repos/googleworkspace/cli/releases/latest 2>/dev/null | grep '"tag_name"' | sed 's/.*"v\(.*\)".*/\1/' || true)
-    ARCH=$(uname -m)
-    case "$ARCH" in
-      x86_64)  GWS_TARGET="x86_64-unknown-linux-musl" ;;
-      aarch64) GWS_TARGET="aarch64-unknown-linux-musl" ;;
-      *)       GWS_TARGET="" ;;
-    esac
-    GWS_BIN_DIR="${GWS_BIN_DIR:-${HOME}/.local/bin}"
-    mkdir -p "$GWS_BIN_DIR"
-    if [ -n "$GWS_TARGET" ] && [ -n "$GWS_VERSION" ]; then
-      curl -fsSL "https://github.com/googleworkspace/cli/releases/download/v${GWS_VERSION}/google-workspace-cli-${GWS_TARGET}.tar.gz" | tar xz --strip-components=0 -C "$GWS_BIN_DIR" ./gws && \
-        chmod +x "$GWS_BIN_DIR/gws" || npm install -g @googleworkspace/cli 2>/dev/null || npm install -g --prefix "$HOME/.local" @googleworkspace/cli 2>/dev/null || echo "  [warn] gws install failed."
-    else
-      npm install -g @googleworkspace/cli 2>/dev/null || npm install -g --prefix "$HOME/.local" @googleworkspace/cli 2>/dev/null || echo "  [warn] gws install failed."
-    fi
-  else
-    npm install -g @googleworkspace/cli 2>/dev/null || npm install -g --prefix "$HOME/.local" @googleworkspace/cli 2>/dev/null || echo "  [warn] gws install failed."
+
+  if command -v gws >/dev/null 2>&1; then
+    echo "  gws already installed, skipping."
+    return
   fi
+
+  local prefix="$(pwd)/.local"
+  mkdir -p "$prefix/bin"
+
+  # Linux: try downloading pre-built binary first
+  if [ "$(uname -s)" = "Linux" ]; then
+    local gws_version arch target=""
+    gws_version=$(curl -fsSL https://api.github.com/repos/googleworkspace/cli/releases/latest 2>/dev/null | grep '"tag_name"' | sed 's/.*"v\(.*\)".*/\1/' || true)
+    arch=$(uname -m)
+    case "$arch" in
+      x86_64)  target="x86_64-unknown-linux-musl" ;;
+      aarch64) target="aarch64-unknown-linux-musl" ;;
+    esac
+    if [ -n "$target" ] && [ -n "$gws_version" ]; then
+      curl -fsSL "https://github.com/googleworkspace/cli/releases/download/v${gws_version}/google-workspace-cli-${target}.tar.gz" \
+        | tar xz --strip-components=0 -C "$prefix/bin" ./gws && \
+        chmod +x "$prefix/bin/gws" && \
+        export PATH="$prefix/bin:$PATH" && \
+        echo "  gws installed at $prefix/bin/gws" && return
+    fi
+  fi
+
+  # Fallback: npm install to workspace-local prefix
+  npm install --prefix "$prefix" @googleworkspace/cli 2>/dev/null || {
+    echo "  [warn] gws install failed."
+    return
+  }
+  local cli_js="$prefix/node_modules/@googleworkspace/cli/run.js"
+  if [ -f "$cli_js" ]; then
+    ln -sf "$cli_js" "$prefix/bin/gws"
+    chmod +x "$prefix/bin/gws"
+  fi
+  export PATH="$prefix/bin:$PATH"
+  echo "  gws installed at $prefix/bin/gws"
 }
 
 # Install flex-ax CLI from GitHub Release.
@@ -51,19 +71,24 @@ install_flex_ax() {
     return
   }
 
-  # Try global install first, fall back to user-local prefix
-  npm install -g "$tmp_dir/$tgz" 2>/dev/null || \
-  npm install -g --prefix "$HOME/.local" "$tmp_dir/$tgz" 2>/dev/null || {
+  # Install to workspace-local .local/ to avoid global PATH issues
+  local prefix="$(pwd)/.local"
+  mkdir -p "$prefix"
+  npm install --prefix "$prefix" "$tmp_dir/$tgz" 2>/dev/null || {
     echo "  [warn] flex-ax npm install failed."
     return
   }
 
-  # Ensure ~/.local/bin is in PATH
-  if ! command -v flex-ax >/dev/null 2>&1 && [ -d "$HOME/.local/bin" ]; then
-    export PATH="$HOME/.local/bin:$PATH"
+  # Symlink the binary into .local/bin for easy access
+  mkdir -p "$prefix/bin"
+  local cli_js="$prefix/node_modules/flex-ax/dist/cli.js"
+  if [ -f "$cli_js" ]; then
+    ln -sf "$cli_js" "$prefix/bin/flex-ax"
+    chmod +x "$prefix/bin/flex-ax"
   fi
 
-  echo "  flex-ax installed successfully."
+  export PATH="$prefix/bin:$PATH"
+  echo "  flex-ax installed at $prefix/bin/flex-ax"
 }
 
 # Install camp identity/knowledge/manifest/tests files from a tarball URL.
@@ -125,9 +150,20 @@ install_camp_files() {
 install_gws_auth() {
   echo ":: Installing gws-auth..."
   local url="https://github.com/planetarium/gws-auth/releases/download/v0.4.0/planetarium-gws-auth-0.4.0.tgz"
-  npm install -g "$url" 2>/dev/null || \
-  npm install -g --prefix "$HOME/.local" "$url" 2>/dev/null || \
+  local prefix="$(pwd)/.local"
+  mkdir -p "$prefix"
+  npm install --prefix "$prefix" "$url" 2>/dev/null || {
     echo "  [warn] gws-auth install failed. Install manually: npm i -g $url"
+    return
+  }
+  mkdir -p "$prefix/bin"
+  local cli_js="$prefix/node_modules/@anthropic-kr/gws-auth/bin/gws-auth.js"
+  if [ -f "$cli_js" ]; then
+    ln -sf "$cli_js" "$prefix/bin/gws-auth"
+    chmod +x "$prefix/bin/gws-auth"
+  fi
+  export PATH="$prefix/bin:$PATH"
+  echo "  gws-auth installed at $prefix/bin/gws-auth"
 }
 
 # ---------------------------------------------------------------------------
