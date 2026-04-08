@@ -18,12 +18,12 @@ install_gws() {
     mkdir -p "$GWS_BIN_DIR"
     if [ -n "$GWS_TARGET" ] && [ -n "$GWS_VERSION" ]; then
       curl -fsSL "https://github.com/googleworkspace/cli/releases/download/v${GWS_VERSION}/google-workspace-cli-${GWS_TARGET}.tar.gz" | tar xz --strip-components=0 -C "$GWS_BIN_DIR" ./gws && \
-        chmod +x "$GWS_BIN_DIR/gws" || npm install -g @googleworkspace/cli 2>/dev/null || echo "  [warn] gws install failed."
+        chmod +x "$GWS_BIN_DIR/gws" || npm install -g @googleworkspace/cli 2>/dev/null || npm install -g --prefix "$HOME/.local" @googleworkspace/cli 2>/dev/null || echo "  [warn] gws install failed."
     else
-      npm install -g @googleworkspace/cli 2>/dev/null || echo "  [warn] gws install failed."
+      npm install -g @googleworkspace/cli 2>/dev/null || npm install -g --prefix "$HOME/.local" @googleworkspace/cli 2>/dev/null || echo "  [warn] gws install failed."
     fi
   else
-    npm install -g @googleworkspace/cli 2>/dev/null || echo "  [warn] gws install failed."
+    npm install -g @googleworkspace/cli 2>/dev/null || npm install -g --prefix "$HOME/.local" @googleworkspace/cli 2>/dev/null || echo "  [warn] gws install failed."
   fi
 }
 
@@ -51,10 +51,17 @@ install_flex_ax() {
     return
   }
 
-  npm install -g "$tmp_dir/$tgz" 2>/dev/null || {
+  # Try global install first, fall back to user-local prefix
+  npm install -g "$tmp_dir/$tgz" 2>/dev/null || \
+  npm install -g --prefix "$HOME/.local" "$tmp_dir/$tgz" 2>/dev/null || {
     echo "  [warn] flex-ax npm install failed."
     return
   }
+
+  # Ensure ~/.local/bin is in PATH
+  if ! command -v flex-ax >/dev/null 2>&1 && [ -d "$HOME/.local/bin" ]; then
+    export PATH="$HOME/.local/bin:$PATH"
+  fi
 
   echo "  flex-ax installed successfully."
 }
@@ -117,8 +124,10 @@ install_camp_files() {
 # Install gws-auth plugin.
 install_gws_auth() {
   echo ":: Installing gws-auth..."
-  npm install -g https://github.com/planetarium/gws-auth/releases/download/v0.3.0/anthropic-kr-gws-auth-0.1.0.tgz 2>/dev/null || \
-    echo "  [warn] gws-auth install failed. Install manually: npm i -g https://github.com/planetarium/gws-auth/releases/download/v0.3.0/anthropic-kr-gws-auth-0.1.0.tgz"
+  local url="https://github.com/planetarium/gws-auth/releases/download/v0.3.0/anthropic-kr-gws-auth-0.1.0.tgz"
+  npm install -g "$url" 2>/dev/null || \
+  npm install -g --prefix "$HOME/.local" "$url" 2>/dev/null || \
+    echo "  [warn] gws-auth install failed. Install manually: npm i -g $url"
 }
 
 # ---------------------------------------------------------------------------
