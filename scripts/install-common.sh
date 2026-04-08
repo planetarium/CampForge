@@ -224,6 +224,40 @@ install_gws_auth() {
   echo "  gws-auth installed at $prefix/bin/gws-auth"
 }
 
+# Install Playwriter (CDP relay for cookie extraction from logged-in Chrome).
+install_playwriter() {
+  echo ":: Installing playwriter..."
+  local prefix="$(pwd)/.local"
+  local version="${PLAYWRITER_VERSION:-0.0.105}"
+
+  mkdir -p "$prefix"
+
+  ensure_npm_dir
+  npm install --prefix "$prefix" "playwriter@$version" 2>/dev/null || {
+    echo "  [warn] playwriter install failed."
+    return
+  }
+
+  local cli_js="$prefix/node_modules/playwriter/dist/cli.js"
+  if [ -f "$cli_js" ]; then
+    link_node_bin "$prefix" "playwriter" "$cli_js"
+  fi
+
+  path_append "$prefix/bin"
+  echo "  playwriter $version installed at $prefix/bin/playwriter"
+
+  # Warn if Node < 24 on Windows (Playwriter has ESM issues on older Node)
+  if is_windows; then
+    local node_major
+    node_major=$(node -v | sed 's/v\([0-9]*\).*/\1/')
+    if [ "$node_major" -lt 24 ] 2>/dev/null; then
+      echo "⚠  playwriter requires Node 24+ on Windows (current: $(node -v))"
+      echo "   Install Node 24+: https://nodejs.org/"
+      echo "   Without it, 'playwriter serve' will fail with ESM errors."
+    fi
+  fi
+}
+
 # ---------------------------------------------------------------------------
 # Platform adapter: wire identity/knowledge files into the agent's context.
 # ---------------------------------------------------------------------------

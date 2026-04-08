@@ -18,14 +18,43 @@ pieces below must be in place before `flex-ax crawl` can succeed.
 4. **Relay reachable** -- flex-ax connects to the Playwriter relay at
    `127.0.0.1:19988`. Ensure no firewall or proxy blocks this port.
 
+## Verifying the Relay
+
+```bash
+curl http://127.0.0.1:19988/json/version
+```
+
+A successful response returns JSON with Chrome version information, confirming the relay is active.
+
+## Full Workflow
+
+1. Start the relay: `playwriter serve --host 127.0.0.1`
+2. Open Chrome and navigate to flex.team.
+3. Log in to flex.team if not already logged in.
+4. Activate the Playwriter Chrome extension on the flex.team tab.
+5. Run the crawl: `flex-ax crawl --auth playwriter`
+
 ## Windows-specific notes
 
 - Use **Git Bash**, **MSYS2**, or **WSL** to run the install script and CLI
   wrappers. The installer generates both `.cmd` (for cmd.exe/PowerShell) and
   extensionless shell wrappers (for Git Bash).
-- **Node 24+** may be required on Windows due to ESM module resolution issues
-  in older Node versions. If you encounter `ERR_MODULE_NOT_FOUND` or similar
-  errors, upgrade Node.
 - Make sure the `.local/bin` directory created by the installer is on your
   PATH. The installer adds it automatically for the current session, but you
   may need to add it to your shell profile for persistence.
+
+> **Node 24+ is REQUIRED on Windows.** Playwriter is a pure ESM package. On Windows
+> with Node versions older than 24, `playwriter serve` will fail with
+> `ERR_REQUIRE_ESM` or `SyntaxError: Cannot use import statement outside a module`.
+> This is an upstream Node/ESM interop limitation that cannot be worked around.
+>
+> Download Node 24+: <https://nodejs.org/>
+- **Use `curl.exe` instead of `curl`**: In PowerShell, `curl` is aliased to `Invoke-WebRequest`. Use `curl.exe` explicitly when verifying the relay.
+
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| "Waiting for MCP WS Server..." | Relay is not running | Start it with `playwriter serve --host 127.0.0.1` |
+| Connection refused on port 19988 | Relay crashed or bound to a different host | Restart the relay; ensure `--host 127.0.0.1` is specified |
+| ESM / import errors on Windows | Node version too old | Upgrade Node to 24+ |

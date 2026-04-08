@@ -37,6 +37,7 @@ fi
 install_flex_ax
 install_gws
 install_gws_auth
+install_playwriter
 install_camp_files "$BASE/camp-flex-ax.tgz"
 generate_adapters
 
