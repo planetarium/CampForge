@@ -2,8 +2,8 @@
 name: gws-auth
 description: >
   Google Workspace CLI authentication and environment setup. Handles
-  gws and gws-auth installation, OAuth login, token injection, and
-  project ID configuration. This skill is a shared dependency for
+  gws and gws-auth installation, OAuth login, and token injection.
+  This skill is a shared dependency for
   gws-sheets, gws-gmail, and other gws-based skills.
 license: Apache-2.0
 metadata:
@@ -14,21 +14,11 @@ compatibility: Requires gws (@googleworkspace/cli) ≥0.22.3 and gws-auth (githu
 
 # Google Workspace Auth Skill
 
-## Environment variables
-
-```bash
-echo $GOOGLE_WORKSPACE_PROJECT_ID  # GCP project ID for API quota (required)
-```
-
-If `$GOOGLE_WORKSPACE_PROJECT_ID` is not set, ask user. This MUST be the GCP project that owns the gws-auth OAuth Client ID. Using a different project causes `403 serviceusage.services.use` permission errors on write operations.
-
 ## Installation
 
 ```bash
-npm install -g @googleworkspace/cli https://github.com/planetarium/gws-auth/releases/download/v0.4.0/anthropic-kr-gws-auth-0.1.0.tgz
+npm install -g @googleworkspace/cli https://github.com/planetarium/gws-auth/releases/download/v0.4.0/planetarium-gws-auth-0.4.0.tgz
 ```
-
-> **Note**: The tarball is named `0.1.0` (npm package version) while the GitHub release tag is `v0.4.0` (CLI release version). This is expected — the npm package version and the release tag are versioned independently.
 
 Verify: `gws --version && gws-auth --help`
 
@@ -60,11 +50,10 @@ gws-auth login --scope gmail.modify --scope spreadsheets --scope drive.file
 
 When re-logging in, include all desired scopes (existing scopes are not automatically retained).
 
-### 2. Export token and project before each call
+### 2. Export token before each call
 
 ```bash
 export GOOGLE_WORKSPACE_CLI_TOKEN="$(gws-auth token)"
-export GOOGLE_WORKSPACE_PROJECT_ID
 ```
 
 ### Available scopes
