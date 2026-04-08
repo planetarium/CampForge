@@ -17,14 +17,10 @@ is_windows() {
   return 1
 }
 
-# Portable PATH append — uses ';' on Windows, ':' elsewhere.
+# Append a directory to PATH. Always use ':' because this runs in bash,
+# which expects colon-separated PATH even on Windows (Git Bash / MSYS).
 path_append() {
-  local dir="$1"
-  if is_windows; then
-    export PATH="$dir;$PATH"
-  else
-    export PATH="$dir:$PATH"
-  fi
+  export PATH="$1:$PATH"
 }
 
 # Ensure npm's global prefix directory exists on Windows.
@@ -220,7 +216,7 @@ install_gws_auth() {
     echo "  [warn] gws-auth install failed. Install manually: npm i -g $url"
     return
   }
-  local cli_js="$prefix/node_modules/@anthropic-kr/gws-auth/bin/gws-auth.js"
+  local cli_js="$prefix/node_modules/@planetarium/gws-auth/bin/gws-auth.js"
   if [ -f "$cli_js" ]; then
     link_node_bin "$prefix" "gws-auth" "$cli_js"
   fi
