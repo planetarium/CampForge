@@ -4,7 +4,7 @@
 #
 # Environment:
 #   FLEX_AX_MAX_AGE_SEC — max data age in seconds (default: 10800 = 3 hours)
-#   FLEX_AX_AUTH_MODE   — crawl auth mode (default: credentials)
+#   FLEX_AX_AUTH_MODE   — crawl auth mode (default: playwriter)
 set -euo pipefail
 
 MAX_AGE="${FLEX_AX_MAX_AGE_SEC:-10800}"
@@ -26,10 +26,8 @@ if [ "$FRESHNESS" = "fresh" ]; then
 fi
 
 echo "[flex-ax] Data is ${FRESHNESS} — crawling..."
-AUTH_FLAG=""
-if [ -n "${FLEX_AX_AUTH_MODE:-}" ]; then
-  AUTH_FLAG="--auth $FLEX_AX_AUTH_MODE"
-fi
+AUTH_MODE="${FLEX_AX_AUTH_MODE:-playwriter}"
+AUTH_FLAG="--auth $AUTH_MODE"
 
 if flex-ax $AUTH_FLAG crawl 2>&1 && flex-ax import 2>&1; then
   echo "[flex-ax] Data refreshed."

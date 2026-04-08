@@ -20,8 +20,8 @@
 
 ## Error Handling
 
-1. DB not found → `flex-ax crawl` + `flex-ax import` 안내
-2. Authentication error (crawl) → .env 설정 확인 안내
+1. DB not found → `flex-ax crawl --auth playwriter` + `flex-ax import` 안내
+2. Authentication error (crawl) → playwriter 모드 우선 시도, 안 되면 credentials 환경변수 확인 안내
 3. SQL error → 스키마 확인 후 쿼리 수정
 4. GWS auth error → `gws-auth login --scope drive --scope gmail.modify --scope spreadsheets` 안내
 5. Unknown error → report to user with full context

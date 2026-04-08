@@ -23,26 +23,30 @@ metadata:
 # flex-ax 프로젝트 디렉토리
 FLEX_AX_DIR="<flex-ax-project>/apps/flex-cli"
 
-# 인증 설정 (.env 파일에 정의)
-# AUTH_MODE: credentials | sso | playwriter
-# FLEX_EMAIL, FLEX_PASSWORD (credentials 모드)
+# 인증 모드: playwriter (권장) | credentials | sso
+# playwriter: 호스트 Chrome 세션을 재활용 (playwriter CLI 필요)
+# credentials: FLEX_EMAIL, FLEX_PASSWORD 환경변수 사용
+# sso: Playwright 브라우저로 SSO 로그인 (대화형)
 ```
 
 ## Workflow
 
 1. **사용자 확인** — 크롤링은 시간이 걸리므로 실행 전 반드시 확인
-2. **크롤링 실행** — `flex-ax crawl` (또는 `--auth <mode>` 옵션 사용)
+2. **크롤링 실행** — `flex-ax crawl --auth playwriter` (권장) 또는 다른 인증 모드
 3. **DB 변환** — `flex-ax import`
 4. **결과 리포트** — 템플릿/인스턴스/근태 각 건수와 에러 요약
 
 ### 명령어
 
 ```bash
-# 기본 크롤링 (credentials 모드)
-flex-ax crawl
+# playwriter 모드 (권장 — 호스트 Chrome 세션 재활용)
+flex-ax crawl --auth playwriter
 
-# SSO 인증 모드
-flex-ax --auth sso crawl
+# credentials 모드 (환경변수 필요)
+flex-ax crawl --auth credentials
+
+# SSO 인증 모드 (대화형)
+flex-ax crawl --auth sso
 
 # 크롤링 결과 → DB 변환
 flex-ax import
@@ -62,5 +66,5 @@ flex-ax import
 ## Stop Conditions
 
 - crawl + import 모두 성공
-- 인증 실패 → .env 설정 확인 안내
+- 인증 실패 → playwriter 모드 시도, 안 되면 credentials 환경변수 확인 안내
 - 크롤링 에러(exit code 2) → 에러 목록 표시 후 재시도 여부 확인
