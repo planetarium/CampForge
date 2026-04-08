@@ -1,6 +1,6 @@
 {
   "name": "@campforge/gws-sheets",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Google Sheets operations skill for CampForge camps",
   "keywords": ["agent-skill", "google-sheets", "gws", "campforge"],
   "license": "Apache-2.0",
