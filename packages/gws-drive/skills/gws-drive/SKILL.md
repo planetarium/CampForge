@@ -134,3 +134,4 @@ gws drive files list --params '{"pageSize": 5}' --dry-run
 - Folder MIME type: `application/vnd.google-apps.folder`
 - File ID is the long string in the URL: `drive.google.com/file/d/<FILE_ID>/view`
 - `drive.file` scope only accesses files created/opened by the app; use `drive` scope for full access
+- **Windows**: `--params` / `--json` examples are bash syntax. On Windows, use Git Bash — PowerShell mangles JSON quotes passed to native executables

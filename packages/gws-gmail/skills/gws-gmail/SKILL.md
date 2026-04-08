@@ -149,3 +149,4 @@ gws gmail users getProfile --params '{"userId": "me"}'
 - Gmail search query syntax matches the Gmail web search box (e.g., `from:`, `subject:`, `is:unread`, `has:attachment`)
 - Total attachment size limit: 25MB
 - `+watch` requires GCP Pub/Sub setup (for typical use, `+triage` is sufficient)
+- **Windows**: `--params` / `--json` examples are bash syntax. On Windows, use Git Bash — PowerShell mangles JSON quotes passed to native executables
