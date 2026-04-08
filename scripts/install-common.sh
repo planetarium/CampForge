@@ -217,9 +217,6 @@ _adapter_claude_code() {
 # identity/ files must be copied to root. Knowledge is appended to AGENTS.md.
 # If root files already exist, stage camp content for manual merge.
 _adapter_openclaw() {
-  local has_conflict=false
-  local staging_content=""
-
   # Guide: OpenClaw needs skills.load.extraDirs to discover .agents/skills/.
   if [ -d .agents/skills ]; then
     local agents_skills_abs openclaw_config
@@ -248,9 +245,9 @@ _adapter_openclaw() {
   for f in SOUL.md IDENTITY.md; do
     [ -f "identity/$f" ] || continue
     if [ -f "$f" ]; then
-      has_conflict=true
-      staging_content+=$'# === '"$f"$' ===\n'
-      staging_content+="$(cat "identity/$f")"$'\n\n'
+      printf '\n\n---\n\n' >> "$f"
+      cat "identity/$f" >> "$f"
+      echo "  Appended identity/$f -> $f"
     else
       cp "identity/$f" "$f"
       echo "  Copied identity/$f -> $f"
@@ -280,22 +277,13 @@ _adapter_openclaw() {
 
   if [ -n "$agents_content" ]; then
     if [ -f AGENTS.md ]; then
-      has_conflict=true
-      staging_content+=$'# === AGENTS.md ===\n'
-      staging_content+="$agents_content"$'\n'
+      printf '\n\n---\n\n' >> AGENTS.md
+      printf '%s\n' "$agents_content" >> AGENTS.md
+      echo "  Appended identity + knowledge -> AGENTS.md"
     else
       printf '%s\n' "$agents_content" > AGENTS.md
       echo "  Created AGENTS.md with identity + knowledge"
     fi
-  fi
-
-  if $has_conflict; then
-    _write_staging "$staging_content"
-    echo ""
-    echo "  [action-required] Existing OpenClaw root files found."
-    echo "  Camp context has been written to $STAGING_FILE"
-    echo "  Please merge the content into your existing root files,"
-    echo "  then delete $STAGING_FILE."
   fi
 }
 
