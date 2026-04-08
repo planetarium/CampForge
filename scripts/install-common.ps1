@@ -115,7 +115,7 @@ function Install-GwsAuth {
         return
     }
 
-    $cliJs = Join-Path $prefix "node_modules" "@anthropic-kr" "gws-auth" "bin" "gws-auth.js"
+    $cliJs = Join-Path $prefix "node_modules" "@planetarium" "gws-auth" "bin" "gws-auth.js"
     if (Test-Path $cliJs) {
         $cmdWrapper = Join-Path $binDir "gws-auth.cmd"
         Set-Content -Path $cmdWrapper -Value "@echo off`r`nnode `"$cliJs`" %*"

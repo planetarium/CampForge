@@ -29,7 +29,7 @@ try {
     }
     else {
         $TmpCommon = Join-Path ([System.IO.Path]::GetTempPath()) "install-common.ps1"
-        Invoke-WebRequest -Uri "$Base/install-common.ps1" -OutFile $TmpCommon -UseBasicParsing
+        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/planetarium/CampForge/flex-ax-$CampVersion/scripts/install-common.ps1" -OutFile $TmpCommon -UseBasicParsing
         . $TmpCommon
         Remove-Item -Force $TmpCommon -ErrorAction SilentlyContinue
     }
