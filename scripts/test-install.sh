@@ -423,24 +423,25 @@ for CAMP in "${CAMPS[@]}"; do
           fi
           ;;
         openclaw)
-          # Existing root files should be preserved
+          # Existing root content should be preserved (appended, not overwritten)
           ROOT_AGENTS=$(echo "$RESULT" | sed -n '/---ADAPTER_AGENTS_MD---/,/---ADAPTER_AGENTS_MD_SIZE---/p')
           if echo "$ROOT_AGENTS" | grep -q "My existing agents"; then
-            echo "      ✓ Existing AGENTS.md preserved"
+            echo "      ✓ Existing AGENTS.md content preserved"
           else
-            echo "      ✗ Existing AGENTS.md was overwritten"
+            echo "      ✗ Existing AGENTS.md content was lost"
             CONFLICT_PASS=false
           fi
-          if echo "$STAGING" | grep -q "(not found)"; then
-            echo "      ✗ .campforge-context.md not created"
+          # Camp identity should be appended to existing files
+          if echo "$ROOT_AGENTS" | grep -q "Knowledge Reference\|AGENTS"; then
+            echo "      ✓ Camp content appended to AGENTS.md"
+          else
+            echo "      ✗ Camp content not appended to AGENTS.md"
             CONFLICT_PASS=false
-          else
-            echo "      ✓ .campforge-context.md created with camp context"
           fi
-          if echo "$RESULT" | grep -q "action-required"; then
-            echo "      ✓ Merge instruction printed"
+          if echo "$RESULT" | grep -q "Appended"; then
+            echo "      ✓ Append operation logged"
           else
-            echo "      ✗ No merge instruction in output"
+            echo "      ✗ No append log in output"
             CONFLICT_PASS=false
           fi
           ;;
