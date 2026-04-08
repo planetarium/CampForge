@@ -2,6 +2,70 @@
 # Common installation functions for CampForge camps.
 # Sourced by each camp's install.sh — not executed directly.
 
+# ---------------------------------------------------------------------------
+# Windows / MSYS / Git Bash detection
+# ---------------------------------------------------------------------------
+
+# Returns 0 (true) if running on a Windows-like environment.
+is_windows() {
+  case "${OSTYPE:-}" in
+    msys*|mingw*|cygwin*) return 0 ;;
+  esac
+  case "$(uname -s 2>/dev/null)" in
+    MSYS*|MINGW*|CYGWIN*) return 0 ;;
+  esac
+  return 1
+}
+
+# Portable PATH append — uses ';' on Windows, ':' elsewhere.
+path_append() {
+  local dir="$1"
+  if is_windows; then
+    export PATH="$dir;$PATH"
+  else
+    export PATH="$dir:$PATH"
+  fi
+}
+
+# Ensure npm's global prefix directory exists on Windows.
+# On MSYS/Git Bash, `npm install --prefix` may fail if %APPDATA%/npm is absent.
+ensure_npm_dir() {
+  if is_windows && [ -n "${APPDATA:-}" ]; then
+    mkdir -p "$APPDATA/npm" 2>/dev/null || true
+  fi
+}
+
+# Create a CLI wrapper at $prefix/bin/<name> that invokes a Node script.
+# On Windows this also generates a .cmd batch file so the tool is callable
+# from cmd.exe and PowerShell.
+#
+# Usage: link_node_bin <prefix> <name> <path-to-js>
+link_node_bin() {
+  local prefix="$1" name="$2" cli_js="$3"
+  mkdir -p "$prefix/bin"
+
+  if is_windows; then
+    # Compute the path from $prefix/bin to $cli_js relative through $prefix.
+    # cli_js is always under $prefix/node_modules/..., so strip the prefix.
+    local rel_js="${cli_js#"$prefix/"}"
+
+    # .cmd wrapper for cmd.exe / PowerShell
+    printf '@echo off\r\nnode "%%~dp0\\..\\%s" %%*\r\n' \
+      "$(echo "$rel_js" | sed 's|/|\\|g')" \
+      > "$prefix/bin/${name}.cmd"
+
+    # Shell wrapper for Git Bash / MSYS users
+    cat > "$prefix/bin/$name" <<SHEOF
+#!/usr/bin/env bash
+exec node "\$(dirname "\$0")/../${rel_js}" "\$@"
+SHEOF
+    chmod +x "$prefix/bin/$name" 2>/dev/null || true
+  else
+    ln -sf "$cli_js" "$prefix/bin/$name"
+    chmod +x "$prefix/bin/$name"
+  fi
+}
+
 # Install Google Workspace CLI (gws).
 # Prefers musl static binary on Linux to avoid glibc >=2.39 requirement.
 install_gws() {
@@ -34,16 +98,16 @@ install_gws() {
   fi
 
   # Fallback: npm install to workspace-local prefix
+  ensure_npm_dir
   npm install --prefix "$prefix" @googleworkspace/cli 2>/dev/null || {
     echo "  [warn] gws install failed."
     return
   }
   local cli_js="$prefix/node_modules/@googleworkspace/cli/run.js"
   if [ -f "$cli_js" ]; then
-    ln -sf "$cli_js" "$prefix/bin/gws"
-    chmod +x "$prefix/bin/gws"
+    link_node_bin "$prefix" "gws" "$cli_js"
   fi
-  export PATH="$prefix/bin:$PATH"
+  path_append "$prefix/bin"
   echo "  gws installed at $prefix/bin/gws"
 }
 
@@ -74,20 +138,19 @@ install_flex_ax() {
   # Install to workspace-local .local/ to avoid global PATH issues
   local prefix="$(pwd)/.local"
   mkdir -p "$prefix"
+  ensure_npm_dir
   npm install --prefix "$prefix" "$tmp_dir/$tgz" 2>/dev/null || {
     echo "  [warn] flex-ax npm install failed."
     return
   }
 
-  # Symlink the binary into .local/bin for easy access
-  mkdir -p "$prefix/bin"
+  # Create wrapper in .local/bin for easy access
   local cli_js="$prefix/node_modules/flex-ax/dist/cli.js"
   if [ -f "$cli_js" ]; then
-    ln -sf "$cli_js" "$prefix/bin/flex-ax"
-    chmod +x "$prefix/bin/flex-ax"
+    link_node_bin "$prefix" "flex-ax" "$cli_js"
   fi
 
-  export PATH="$prefix/bin:$PATH"
+  path_append "$prefix/bin"
   echo "  flex-ax installed at $prefix/bin/flex-ax"
 }
 
@@ -152,17 +215,16 @@ install_gws_auth() {
   local url="https://github.com/planetarium/gws-auth/releases/download/v0.4.0/planetarium-gws-auth-0.4.0.tgz"
   local prefix="$(pwd)/.local"
   mkdir -p "$prefix"
+  ensure_npm_dir
   npm install --prefix "$prefix" "$url" 2>/dev/null || {
     echo "  [warn] gws-auth install failed. Install manually: npm i -g $url"
     return
   }
-  mkdir -p "$prefix/bin"
   local cli_js="$prefix/node_modules/@anthropic-kr/gws-auth/bin/gws-auth.js"
   if [ -f "$cli_js" ]; then
-    ln -sf "$cli_js" "$prefix/bin/gws-auth"
-    chmod +x "$prefix/bin/gws-auth"
+    link_node_bin "$prefix" "gws-auth" "$cli_js"
   fi
-  export PATH="$prefix/bin:$PATH"
+  path_append "$prefix/bin"
   echo "  gws-auth installed at $prefix/bin/gws-auth"
 }
 
