@@ -1,6 +1,6 @@
 {
   "name": "@campforge/gws-drive",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Google Drive operations skill for CampForge camps",
   "keywords": ["agent-skill", "google-drive", "gws", "campforge"],
   "license": "Apache-2.0",

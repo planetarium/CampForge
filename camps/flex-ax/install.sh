@@ -14,9 +14,9 @@ npm pkg set \
   "dependencies.@campforge/flex-query=$BASE/campforge-flex-query-0.1.0.tgz" \
   "dependencies.@campforge/flex-crawl=$BASE/campforge-flex-crawl-0.1.0.tgz" \
   "dependencies.@campforge/gws-auth=$BASE/campforge-gws-auth-0.1.0.tgz" \
-  "dependencies.@campforge/gws-sheets=$BASE/campforge-gws-sheets-0.1.0.tgz" \
-  "dependencies.@campforge/gws-gmail=$BASE/campforge-gws-gmail-0.1.0.tgz" \
-  "dependencies.@campforge/gws-drive=$BASE/campforge-gws-drive-0.1.0.tgz"
+  "dependencies.@campforge/gws-sheets=$BASE/campforge-gws-sheets-0.1.1.tgz" \
+  "dependencies.@campforge/gws-gmail=$BASE/campforge-gws-gmail-0.1.1.tgz" \
+  "dependencies.@campforge/gws-drive=$BASE/campforge-gws-drive-0.1.1.tgz"
 
 npx skillpm install
 

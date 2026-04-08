@@ -1,6 +1,6 @@
 {
   "name": "@campforge/gws-gmail",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Gmail operations skill for CampForge camps",
   "keywords": ["agent-skill", "gmail", "gws", "campforge"],
   "license": "Apache-2.0",

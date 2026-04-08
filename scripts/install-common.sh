@@ -33,7 +33,7 @@ ensure_npm_dir() {
 
 # Create a CLI wrapper at $prefix/bin/<name> that invokes a Node script.
 # On Windows this also generates a .cmd batch file so the tool is callable
-# from cmd.exe and PowerShell.
+# from cmd.exe, and a shell wrapper for Git Bash.
 #
 # Usage: link_node_bin <prefix> <name> <path-to-js>
 link_node_bin() {
@@ -45,7 +45,7 @@ link_node_bin() {
     # cli_js is always under $prefix/node_modules/..., so strip the prefix.
     local rel_js="${cli_js#"$prefix/"}"
 
-    # .cmd wrapper for cmd.exe / PowerShell
+    # .cmd wrapper for cmd.exe
     printf '@echo off\r\nnode "%%~dp0\\..\\%s" %%*\r\n' \
       "$(echo "$rel_js" | sed 's|/|\\|g')" \
       > "$prefix/bin/${name}.cmd"

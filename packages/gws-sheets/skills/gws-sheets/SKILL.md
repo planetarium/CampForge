@@ -136,3 +136,4 @@ gws sheets +read --spreadsheet <ID> --range Sheet1 --dry-run
 - `--page-all` flag auto-paginates large result sets (NDJSON output)
 - Spreadsheet ID is the long string in the URL: `docs.google.com/spreadsheets/d/<SPREADSHEET_ID>/edit`
 - `valueInputOption`: `USER_ENTERED` (parses formulas) vs `RAW` (literal strings)
+- **Windows**: `--params` / `--json` examples are bash syntax. On Windows, use Git Bash — PowerShell mangles JSON quotes passed to native executables

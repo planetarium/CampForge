@@ -28,6 +28,32 @@ curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/fl
 - **gws-drive**: Google Drive에 파일 업로드/관리
 - **gws-gmail**: Gmail 수신 익스펜스 메일 조회 및 결재 데이터 대조
 
+## Windows
+
+Windows에서는 **Git Bash**를 기본 셸로 사용하세요.
+
+- 설치 및 모든 CLI 명령(`flex-ax`, `gws`, `gws-auth`, `playwriter`)은 Git Bash 기준으로 작성되어 있습니다.
+- PowerShell은 설치(`install.sh | bash`) 이외의 런타임 용도로 **권장하지 않습니다**.
+
+### gws JSON 인자 주의사항
+
+`gws` CLI의 `--params`, `--json` 옵션은 JSON 문자열을 인자로 받습니다.
+PowerShell은 네이티브 실행파일에 argv를 전달할 때 따옴표를 제거하여 JSON이 깨질 수 있습니다:
+
+```text
+# PowerShell에서 실제로 gws.exe에 전달되는 값
+입력: --params '{"userId":"me"}'
+전달: --params {userId:me}          ← JSON 파싱 실패
+```
+
+Git Bash에서는 이 문제가 발생하지 않습니다:
+
+```bash
+# Git Bash — 정상 동작
+gws gmail users getProfile --params '{"userId":"me"}'
+gws sheets spreadsheets create --json '{"properties":{"title":"Report"}}'
+```
+
 ## Validate
 
 ```bash
