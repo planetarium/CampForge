@@ -224,6 +224,29 @@ install_gws_auth() {
   echo "  gws-auth installed at $prefix/bin/gws-auth"
 }
 
+# Install Playwriter (CDP relay for cookie extraction from logged-in Chrome).
+install_playwriter() {
+  echo ":: Installing playwriter..."
+  local prefix="$(pwd)/.local"
+  local version="${PLAYWRITER_VERSION:-0.0.105}"
+
+  mkdir -p "$prefix"
+
+  ensure_npm_dir
+  npm install --prefix "$prefix" "playwriter@$version" 2>/dev/null || {
+    echo "  [warn] playwriter install failed."
+    return
+  }
+
+  local cli_js="$prefix/node_modules/playwriter/dist/cli.js"
+  if [ -f "$cli_js" ]; then
+    link_node_bin "$prefix" "playwriter" "$cli_js"
+  fi
+
+  path_append "$prefix/bin"
+  echo "  playwriter $version installed at $prefix/bin/playwriter"
+}
+
 # ---------------------------------------------------------------------------
 # Platform adapter: wire identity/knowledge files into the agent's context.
 # ---------------------------------------------------------------------------
