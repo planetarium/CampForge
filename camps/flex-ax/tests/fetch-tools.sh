@@ -12,7 +12,7 @@ set -euo pipefail
 
 DIST="${1:?Usage: fetch-tools.sh <dist-dir>}"
 
-FLEX_AX_VERSION="${FLEX_AX_VERSION:-0.2.1}"
+FLEX_AX_VERSION="${FLEX_AX_VERSION:-0.3.0}"
 FLEX_AX_TAG="flex-cli@${FLEX_AX_VERSION}"
 FLEX_AX_TGZ="flex-ax-${FLEX_AX_VERSION}.tgz"
 
