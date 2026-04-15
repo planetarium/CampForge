@@ -7,7 +7,7 @@ description: >
   working files referenced during the session.
   Triggers on requests like "fly에 떠 있는 봇 어제 뭐했어",
   "openclaw 봇 세션 audit", "봇 세션 로그 보여줘",
-  "이 봇이 발행한 tx 뭐있어", "어제 패치한 CSV 복원해줘",
+  "이 봇이 실행한 명령 뭐있어", "어제 작업한 파일 복원해줘",
   "what did <bot-name> do yesterday".
 license: Apache-2.0
 metadata:
@@ -196,18 +196,22 @@ jq -r --arg id "$TID" '
 ' "$S"
 ```
 
-### Extract all transaction IDs (Nine Chronicles, ETH-style hex64)
+### Extract IDs / hashes from tool results
+
+Grep a regex across all text output. Adjust the pattern to whatever the
+domain uses (hex hashes, UUIDs, order IDs, etc.):
 
 ```bash
 jq -r 'select(.type=="message" and .message.role=="toolResult")
        | .message.content[]? | select(.type=="text") | .text' "$S" \
-  | grep -oE '"txId":"[0-9a-f]{64}"' | sort -u
+  | grep -oE '<regex>' | sort -u
 ```
 
 ### Find tool results that mention a substring
 
 ```bash
-jq -r --arg pat "CollectionSheet" '
+PAT="<substring>"   # e.g. a filename, symbol, or error marker
+jq -r --arg pat "$PAT" '
   select(.type=="message" and .message.role=="toolResult")
   | .message.content[]? | select(.type=="text")
   | select(.text | contains($pat))
@@ -218,7 +222,8 @@ jq -r --arg pat "CollectionSheet" '
 ### Pair commands containing a pattern with their output
 
 ```bash
-jq -r --arg pat "table-patch-stage" '
+PAT="<regex>"   # matches .arguments.command
+jq -r --arg pat "$PAT" '
   select(.type=="message" and .message.role=="assistant")
   | .message.content[]?
   | select(.type=="toolCall")
@@ -254,15 +259,18 @@ When replaying transformations, copy the python/bash heredoc verbatim from
 the JSONL — tiny differences (whitespace, sort order, line endings) change
 the resulting hash and make chain comparisons fail.
 
-## 7. Cross-checking on-chain artifacts
+## 7. Cross-checking external artifacts
 
-For Nine Chronicles bots, txIds extracted in §5 can be inspected at:
+IDs extracted in §5 often correspond to records in external systems (block
+explorers, dashboards, issue trackers, object storage, etc.). The audit
+value comes from round-tripping: take an ID found in a `toolResult`, look it
+up externally, then match it back to the originating `toolCall.id` to see
+the exact input arguments that produced it.
 
-- Mainnet (Odin): `https://9cscan.com/tx/<txId>`
-- Internal (Odin): `https://internal-odin.9cscan.com/tx/<txId>`
-
-Match the txId back to the originating `toolCall.id` to see the exact
-`tableName`, `planetId`, and CSV that produced it.
+Example — Nine Chronicles bots emit `txId` values that resolve at
+`https://9cscan.com/tx/<txId>` (or the corresponding internal explorer).
+Map each txId back to the `toolCall` whose `arguments.command` contains the
+table name, planet ID, and CSV payload used to sign the transaction.
 
 ## 8. Cleanup
 
@@ -292,8 +300,9 @@ shred -u /tmp/<app>-<runId>.jsonl 2>/dev/null || rm -f /tmp/<app>-<runId>.jsonl
 - **Compaction summaries:** sessions that ran long contain `type=summary`
   entries with `tokensBefore`. Earlier raw turns are still present above
   the summary line — don't assume the summary replaced them.
-- **Secrets in commands:** `BO_API_KEY`, `V8_TOKEN`, sheet share URLs and
-  similar may appear in plain text inside `toolCall.arguments.command`.
-  Mask before pasting into chat or tickets.
+- **Secrets in commands:** API keys, tokens, and share URLs (e.g.
+  `*_API_KEY`, `*_TOKEN`, signed Google Sheet URLs) may appear in plain
+  text inside `toolCall.arguments.command`. Mask before pasting into chat
+  or tickets.
 - **Multiple sessions per day:** each `openclaw agent run` writes a new
   JSONL. If the user's timeframe spans a restart, you may need two files.
