@@ -144,9 +144,11 @@ event entries with a stable shape:
 {"type":"summary",...}       // post-compaction summaries (note tokensBefore)
 ```
 
-Match a `toolCall.id` to its `toolResult.toolCallId` to pair command with
-output. Roles inside `message.role`: `user`, `assistant`, `toolResult`
-(plus `null` for some custom entries).
+Pair a tool call with its result by matching the `id` on an assistant
+`toolCall` entry (`.message.content[].id`) against `.message.toolCallId`
+on the corresponding `toolResult` entry. Both appear under `.message` —
+the jq recipes below use those exact paths. Roles at `.message.role`:
+`user`, `assistant`, `toolResult` (plus `null` for some custom entries).
 
 ## 5. Standard jq recipes
 
