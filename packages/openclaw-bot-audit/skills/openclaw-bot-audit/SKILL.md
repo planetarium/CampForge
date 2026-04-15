@@ -242,8 +242,9 @@ jq -r --arg pat "$PAT" '
 ' "$S" | while read -r tid; do
   echo "--- $tid ---"
   jq -r --arg id "$tid" '
-    select(.message.toolCallId==$id)
-    | .message.content[].text
+    select(.type=="message" and .message.role=="toolResult"
+           and .message.toolCallId==$id)
+    | .message.content[]? | select(.type=="text") | .text
   ' "$S" | head -5
 done
 ```
@@ -258,8 +259,9 @@ paths, in order of fidelity:
    (`-j '{"tableCsv":"id,..."}'`), the full payload is in the JSONL. Extract
    it from `.arguments.command`.
 2. **Echoed tool output** — `head`, `cat`, `wc`, `python3 ... print(...)`
-   results land in `toolResult.content[].text`. Even partial output (e.g.
-   `head -3`) lets you verify the shape and re-derive from a source.
+   results land in `.message.content[].text` on records where
+   `.message.role=="toolResult"`. Even partial output (e.g. `head -3`)
+   lets you verify the shape and re-derive from a source.
 3. **Original source** — if the data came from a Google Sheet, R2 URL, or
    GitHub, refetch and replay the same transformation pipeline that the
    agent ran (the pipeline itself is preserved as a Bash/Python heredoc
