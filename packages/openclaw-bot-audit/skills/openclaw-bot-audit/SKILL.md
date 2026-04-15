@@ -5,15 +5,23 @@ description: >
   stopped, download the session JSONL from the persistent volume, and reconstruct
   the conversation (user messages, tool calls, tool results) plus any ephemeral
   working files referenced during the session.
-  Triggers on requests like "fly에 떠 있는 봇 어제 뭐했어",
-  "openclaw 봇 세션 audit", "봇 세션 로그 보여줘",
-  "이 봇이 실행한 명령 뭐있어", "어제 작업한 파일 복원해줘",
-  "what did <bot-name> do yesterday".
+  Triggers ONLY when the target is an OpenClaw bot deployed on Fly.io and
+  the user wants to audit its session JSONL. Example phrases:
+  "fly에 떠 있는 openclaw 봇 어제 뭐했어",
+  "openclaw 봇 세션 audit 해줘",
+  "openclaw bot의 session JSONL 봐줘",
+  "이 openclaw 봇이 실행한 명령 뭐있어",
+  "audit the session log of <openclaw-bot-name> on fly",
+  "what did the openclaw bot <name> do yesterday".
+  If the user does not mention OpenClaw (or something synonymous — e.g.
+  "the bot we deployed via OpenClaw"), confirm the target is an OpenClaw
+  bot before proceeding. Do not trigger on unrelated Fly.io apps (e.g.
+  flex-ax, generic web services) even if the phrasing matches.
 license: Apache-2.0
 metadata:
   author: swen
   version: "0.1"
-compatibility: Requires `flyctl` (authenticated, with access to the target org) and `jq`. Read access to the bot's Fly app + volume is required.
+compatibility: Requires the Fly.io CLI (`fly`, a.k.a. `flyctl`) — authenticated and with access to the target org — plus `jq`. Read access to the bot's Fly app + volume is required.
 ---
 
 # OpenClaw Bot Audit (Fly.io)
