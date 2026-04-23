@@ -3,7 +3,7 @@
 #
 # Catches: CAMP_VERSION points to a tag that was never cut, or an asset is missing
 # from the release. Does NOT check internal consistency (see validate-install-consistency.js).
-set -uo pipefail
+set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 RELEASE_BASE="https://github.com/planetarium/CampForge/releases/download"

@@ -31,7 +31,12 @@ function validateCamp(camp) {
   const campDir = path.join(CAMPS_DIR, camp);
   const installPath = path.join(campDir, 'install.sh');
   const pkgPath = path.join(campDir, 'package.json');
-  if (!fs.existsSync(installPath) || !fs.existsSync(pkgPath)) return;
+  const hasInstall = fs.existsSync(installPath);
+  const hasPkg = fs.existsSync(pkgPath);
+  if (!hasInstall && !hasPkg) return;
+  if (!hasInstall) errors.push(`[${camp}] missing required file: camps/${camp}/install.sh`);
+  if (!hasPkg) errors.push(`[${camp}] missing required file: camps/${camp}/package.json`);
+  if (!hasInstall || !hasPkg) return;
 
   const install = fs.readFileSync(installPath, 'utf8');
   const campPkg = readJson(pkgPath);
