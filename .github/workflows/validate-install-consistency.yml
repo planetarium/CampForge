@@ -1,0 +1,26 @@
+name: Validate install.sh consistency
+
+on:
+  pull_request:
+    paths:
+      - 'camps/*/install.sh'
+      - 'camps/*/package.json'
+      - 'packages/*/package.json'
+      - 'scripts/validate-install-consistency.js'
+  push:
+    branches: [main]
+    paths:
+      - 'camps/*/install.sh'
+      - 'camps/*/package.json'
+      - 'packages/*/package.json'
+      - 'scripts/validate-install-consistency.js'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/validate-install-consistency.js
