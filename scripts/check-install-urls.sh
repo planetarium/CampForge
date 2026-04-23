@@ -40,7 +40,25 @@ for camp_dir in "$REPO_ROOT"/camps/*/; do
     continue
   fi
 
-  base="${RELEASE_BASE}/${camp}-${ver}"
+  raw_base=$(sed -nE 's/^BASE="([^"]+)".*/\1/p' "$install" | head -1)
+  if [ -z "$raw_base" ]; then
+    echo "=== $camp ==="
+    echo "  [parse-error] could not extract BASE from $install"
+    FAILURES+=("[$camp] could not parse BASE")
+    FAIL=$((FAIL + 1))
+    continue
+  fi
+  base=$(printf '%s' "$raw_base" | sed -e "s|\${CAMP_VERSION}|$ver|g" -e "s|\$CAMP_VERSION|$ver|g")
+
+  expected_base="${RELEASE_BASE}/${camp}-${ver}"
+  if [ "$base" != "$expected_base" ]; then
+    echo "=== $camp ($ver) ==="
+    echo "  [base-mismatch] install.sh BASE resolves to '$base', expected '$expected_base'"
+    FAILURES+=("[$camp] BASE mismatch: $base != $expected_base")
+    FAIL=$((FAIL + 1))
+    continue
+  fi
+
   echo "=== $camp ($ver) ==="
 
   while IFS= read -r suffix; do

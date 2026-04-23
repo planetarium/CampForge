@@ -76,7 +76,9 @@ function validateCamp(camp) {
   }
 
   const campTgzMatch = install.match(CAMP_FILES_LINE);
-  if (campTgzMatch && campTgzMatch[1] !== camp) {
+  if (!campTgzMatch) {
+    errors.push(`[${camp}] install.sh does not call install_camp_files "$BASE/camp-${camp}.tgz"`);
+  } else if (campTgzMatch[1] !== camp) {
     errors.push(`[${camp}] install_camp_files uses camp-${campTgzMatch[1]}.tgz but camp directory is '${camp}'`);
   }
 }
