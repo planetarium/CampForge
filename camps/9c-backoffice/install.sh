@@ -12,7 +12,7 @@ mkdir -p "$WS" && cd "$WS"
 npm init -y --silent 2>/dev/null
 npm pkg set \
   "dependencies.@campforge/9c-backoffice=$BASE/campforge-9c-backoffice-1.0.0.tgz" \
-  "dependencies.@campforge/gql-ops=$BASE/campforge-gql-ops-0.2.0.tgz"
+  "dependencies.@campforge/gql-ops=$BASE/campforge-gql-ops-0.2.1.tgz"
 
 npx skillpm install
 
