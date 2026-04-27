@@ -3,6 +3,11 @@
 # "not found or not accessible" instead of the URL.
 # Variables: $fileUploadId (String!) — id from allFileUploads / fileUploadById nodes
 # Returns: url (1-hour TTL), fileName, expiresIn (seconds)
+#
+# Always go through this mutation. The `flex.team/api/v3/...` downloadUrl
+# embedded in `formData.document.attachments[].file.downloadUrl` lives on a
+# different domain and is NOT authenticated by our SIWE token (returns 401).
+# This mutation is the only path that yields a token-usable download URL.
 mutation GetFileDownloadUrl($fileUploadId: String!) {
   getFileDownloadUrl(input: { fileUploadId: $fileUploadId }) {
     url
