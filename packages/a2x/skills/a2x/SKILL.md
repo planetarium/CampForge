@@ -50,10 +50,11 @@ echo "$TAG"
 
 ```bash
 case "$(uname -s)/$(uname -m)" in
-  Darwin/arm64)   ASSET=a2x-macos-arm64 ;;
-  Darwin/x86_64)  ASSET=a2x-macos-x64 ;;
-  Linux/aarch64)  ASSET=a2x-linux-arm64 ;;
-  Linux/x86_64)   ASSET=a2x-linux-x64 ;;
+  Darwin/arm64)                   ASSET=a2x-macos-arm64 ;;
+  Darwin/x86_64)                  ASSET=a2x-macos-x64 ;;
+  Linux/arm64|Linux/aarch64)      ASSET=a2x-linux-arm64 ;;
+  Linux/x86_64)                   ASSET=a2x-linux-x64 ;;
+  MINGW64_NT-*/x86_64|MSYS_NT-*/x86_64|CYGWIN_NT-*/x86_64) ASSET=a2x-win-x64.exe ;;
   *) echo "unsupported platform"; exit 1 ;;
 esac
 echo "$ASSET"
