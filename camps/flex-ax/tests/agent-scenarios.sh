@@ -44,7 +44,9 @@ verify_tools() {
   USED_QUERY=false
   USED_SQLITE3=false
   USED_GWS=false
-  grep -qE 'gq +"?\$?FLEX_HR_GQL' "$cmds_file" && USED_QUERY=true
+  # Accept either `gq $FLEX_HR_GQL ...` (the documented form) or
+  # an inlined https://.../graphql URL (still a valid camp-rule path).
+  grep -qE 'gq +("?(\$?FLEX_HR_GQL|https?://[^"[:space:]]*/graphql)"?)' "$cmds_file" && USED_QUERY=true
   grep -qE 'sqlite3|flex-ax query' "$cmds_file" && USED_SQLITE3=true
   grep -qE 'gws drive|gws sheets' "$cmds_file" && USED_GWS=true
   # Fallback: check raw log for Drive upload evidence
