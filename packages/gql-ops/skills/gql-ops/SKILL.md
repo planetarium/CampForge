@@ -8,7 +8,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: swen
-  version: "0.2.1"
+  version: "0.2"
 compatibility: Requires gq (graphqurl) CLI
 ---
 

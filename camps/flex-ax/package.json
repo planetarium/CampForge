@@ -11,7 +11,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@campforge/a2x": "^0.1.0",
-    "@campforge/gql-ops": "^0.2.1",
+    "@campforge/gql-ops": "^0.2.0",
     "@campforge/gws-auth": "^0.1.0",
     "@campforge/gws-sheets": "^0.1.0",
     "@campforge/gws-gmail": "^0.1.0",
