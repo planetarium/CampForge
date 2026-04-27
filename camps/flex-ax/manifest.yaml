@@ -23,10 +23,10 @@ camp:
     optional: []
   dependencies:
     tools:
-      - a2x
-      - gq
-      - gws
-      - gws-auth
+      - a2x                        # planetarium/a2x release binary
+      - gq                         # npm i -g graphqurl
+      - gws                        # npm i -g @googleworkspace/cli
+      - gws-auth                   # planetarium/gws-auth
     mcp_servers: []
     skills: []
   compatibility:

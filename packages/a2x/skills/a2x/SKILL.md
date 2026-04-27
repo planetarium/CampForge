@@ -10,7 +10,7 @@ license: Apache-2.0
 metadata:
   author: swen
   version: "0.1"
-compatibility: Requires gh CLI to download release binaries. On macOS, requires `xattr` and `codesign` (both ship with the OS) to bypass Gatekeeper SIGKILL of unsigned binaries.
+compatibility: Requires `curl` or `gh` to download release binaries. On macOS, requires `xattr` and `codesign` (both ship with the OS) to bypass Gatekeeper SIGKILL of unsigned binaries.
 ---
 
 # a2x CLI Skill

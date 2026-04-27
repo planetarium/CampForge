@@ -125,11 +125,13 @@ install_a2x() {
   mkdir -p "$prefix/bin"
 
   local asset out_name="a2x"
+  # Linux uname -m can report either `aarch64` or `arm64` for arm64 boxes
+  # depending on kernel/distro, so accept both spellings.
   case "$(uname -s)/$(uname -m)" in
-    Darwin/arm64)  asset="a2x-macos-arm64" ;;
-    Darwin/x86_64) asset="a2x-macos-x64" ;;
-    Linux/aarch64) asset="a2x-linux-arm64" ;;
-    Linux/x86_64)  asset="a2x-linux-x64" ;;
+    Darwin/arm64)               asset="a2x-macos-arm64" ;;
+    Darwin/x86_64)              asset="a2x-macos-x64" ;;
+    Linux/aarch64|Linux/arm64)  asset="a2x-linux-arm64" ;;
+    Linux/x86_64)               asset="a2x-linux-x64" ;;
     *)
       if is_windows; then
         asset="a2x-win-x64.exe"
