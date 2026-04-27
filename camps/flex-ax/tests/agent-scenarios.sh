@@ -34,15 +34,18 @@ WITH_GWS_SCENARIOS=(
 PROMPT_RULES="Use 'gq \"\$FLEX_HR_GQL\" -H \"Authorization: Bearer \$FLEX_HR_TOKEN\" ...' for HR data queries. Use a2x only for the initial device-flow auth that mints the token. Refer to skill docs in .agents/skills/ for tool usage."
 
 # --- Verification ---
+# Contract with scripts/test-agent-query.sh: must export USED_QUERY,
+# USED_SQLITE3, USED_GWS. We map:
+#   USED_QUERY   ← the agent issued a Flex HR GraphQL query via gq (correct path)
+#   USED_SQLITE3 ← the agent fell back to local DB access (forbidden by camp rules)
+#   USED_GWS     ← Google Workspace upload/Sheets evidence
 verify_tools() {
   local cmds_file="$1" result_file="$2"
-  USED_GQL=false
-  USED_DIRECT_DB=false
-  USED_A2X_SEND=false
+  USED_QUERY=false
+  USED_SQLITE3=false
   USED_GWS=false
-  grep -qE 'gq +"?\$?FLEX_HR_GQL' "$cmds_file" && USED_GQL=true
-  grep -qE 'sqlite3|flex-ax query' "$cmds_file" && USED_DIRECT_DB=true
-  grep -qE 'a2x a2a (send|stream) ' "$cmds_file" && USED_A2X_SEND=true
+  grep -qE 'gq +"?\$?FLEX_HR_GQL' "$cmds_file" && USED_QUERY=true
+  grep -qE 'sqlite3|flex-ax query' "$cmds_file" && USED_SQLITE3=true
   grep -qE 'gws drive|gws sheets' "$cmds_file" && USED_GWS=true
   # Fallback: check raw log for Drive upload evidence
   if ! $USED_GWS; then

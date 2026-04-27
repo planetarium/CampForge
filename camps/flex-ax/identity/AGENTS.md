@@ -12,7 +12,7 @@ used by this camp.
    ```bash
    export FLEX_HR_AGENT_URL="${FLEX_HR_AGENT_URL:-https://flex-hr-10780.fly.dev}"
    export FLEX_HR_GQL="${FLEX_HR_AGENT_URL}/graphql"
-   export FLEX_HR_QUERIES_DIR="<absolute path to camp's knowledge/queries>"
+   export FLEX_HR_QUERIES_DIR="$(pwd)/knowledge/queries"
    ```
 4. a2x로 1회 인증한 뒤 토큰을 환경변수로 export한다:
    ```bash
@@ -22,7 +22,14 @@ used by this camp.
    if ! jq -e --arg u "$FLEX_HR_AGENT_URL" '.[$u]' ~/.a2x/tokens.json >/dev/null 2>&1; then
      a2x a2a send "$FLEX_HR_AGENT_URL" "ping" >/dev/null
    fi
-   export FLEX_HR_TOKEN="$(jq -r --arg u "$FLEX_HR_AGENT_URL" '.[$u][0].credential' ~/.a2x/tokens.json)"
+   # Use `jq -er` so a missing entry / null credential exits non-zero instead of
+   # silently exporting FLEX_HR_TOKEN="null" (which produces confusing 401s later).
+   if ! FLEX_HR_TOKEN="$(jq -er --arg u "$FLEX_HR_AGENT_URL" '.[$u][0].credential' ~/.a2x/tokens.json)"; then
+     echo "Failed to extract a cached credential for $FLEX_HR_AGENT_URL from ~/.a2x/tokens.json." >&2
+     echo "Re-run: a2x a2a send \"$FLEX_HR_AGENT_URL\" \"ping\" to refresh auth, or delete the stale cache entry and try again." >&2
+     exit 1
+   fi
+   export FLEX_HR_TOKEN
    ```
 5. `gws-auth status 2>/dev/null` 로 Google Workspace 인증 상태 확인
    - 인증 OK → `gws gmail users getProfile --params '{"userId":"me"}'` 등으로 실제 접근 가능 여부 확인

@@ -86,8 +86,13 @@ data query:
 ```bash
 export FLEX_HR_AGENT_URL="${FLEX_HR_AGENT_URL:-https://flex-hr-10780.fly.dev}"
 export FLEX_HR_GQL="${FLEX_HR_AGENT_URL}/graphql"
-export FLEX_HR_TOKEN="$(jq -r --arg u "$FLEX_HR_AGENT_URL" '.[$u][0].credential' ~/.a2x/tokens.json)"
 export FLEX_HR_QUERIES_DIR="$(pwd)/knowledge/queries"   # absolute path
+
+# Use `jq -er` so a missing/null cache entry fails fast instead of exporting "null".
+FLEX_HR_TOKEN="$(jq -er --arg u "$FLEX_HR_AGENT_URL" '.[$u][0].credential' ~/.a2x/tokens.json)" \
+  && [ -n "$FLEX_HR_TOKEN" ] \
+  || { echo "Missing cached Flex HR token for $FLEX_HR_AGENT_URL in ~/.a2x/tokens.json. Run 'a2x a2a send' first to authenticate." >&2; exit 1; }
+export FLEX_HR_TOKEN
 
 # Smoke test
 gq "$FLEX_HR_GQL" -H "Authorization: Bearer $FLEX_HR_TOKEN" \

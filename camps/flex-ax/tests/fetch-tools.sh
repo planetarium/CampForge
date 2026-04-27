@@ -14,7 +14,18 @@ DIST="${1:?Usage: fetch-tools.sh <dist-dir>}"
 
 A2X_VERSION="${A2X_VERSION:-0.2.0}"
 A2X_TAG="cli-v${A2X_VERSION}"
-A2X_ASSET="a2x-linux-x64"
+
+# Pick the asset matching the host architecture. The Docker test runner inherits
+# the host platform (no `--platform` pin), so on Apple Silicon / arm64 hosts we
+# need the linux-arm64 binary or the container will refuse to exec it.
+case "$(uname -m)" in
+  x86_64)         A2X_ASSET="a2x-linux-x64" ;;
+  arm64|aarch64)  A2X_ASSET="a2x-linux-arm64" ;;
+  *)
+    echo "  [warn] unsupported architecture for a2x: $(uname -m)" >&2
+    exit 0
+    ;;
+esac
 
 if [ ! -f "$DIST/$A2X_ASSET" ]; then
   gh release download "$A2X_TAG" --repo planetarium/a2x \
