@@ -107,47 +107,57 @@ install_gws() {
   echo "  gws installed at $prefix/bin/gws"
 }
 
-# Install flex-ax CLI from GitHub Release.
-# Requires gh CLI or GITHUB_TOKEN for private repo access.
-install_flex_ax() {
-  local version="${FLEX_AX_VERSION:-0.3.0}"
-  local tag="flex-cli@${version}"
-  local tgz="flex-ax-${version}.tgz"
-  local url="https://github.com/planetarium/flex-ax/releases/download/${tag}/${tgz}"
+# Install a2x CLI (A2A protocol client) from GitHub Release.
+# Downloads the platform-matched single-file binary into .local/bin/.
+# On macOS, ad-hoc signs the binary so Gatekeeper does not SIGKILL it.
+install_a2x() {
+  local version="${A2X_VERSION:-0.2.0}"
+  local tag="cli-v${version}"
 
-  echo ":: Installing flex-ax CLI (${tag})..."
+  echo ":: Installing a2x CLI (${tag})..."
 
-  if command -v flex-ax >/dev/null 2>&1; then
-    echo "  flex-ax already installed, skipping."
+  if command -v a2x >/dev/null 2>&1; then
+    echo "  a2x already installed, skipping."
     return
   fi
 
-  local tmp_dir
-  tmp_dir="$(mktemp -d)"
-  trap "rm -rf '$tmp_dir'" RETURN
-
-  curl -fsSL "$url" -o "$tmp_dir/$tgz" 2>/dev/null || {
-    echo "  [warn] flex-ax download failed from $url"
-    return
-  }
-
-  # Install to workspace-local .local/ to avoid global PATH issues
   local prefix="$(pwd)/.local"
-  mkdir -p "$prefix"
-  ensure_npm_dir
-  npm install --prefix "$prefix" "$tmp_dir/$tgz" 2>/dev/null || {
-    echo "  [warn] flex-ax npm install failed."
+  mkdir -p "$prefix/bin"
+
+  local asset out_name="a2x"
+  case "$(uname -s)/$(uname -m)" in
+    Darwin/arm64)  asset="a2x-macos-arm64" ;;
+    Darwin/x86_64) asset="a2x-macos-x64" ;;
+    Linux/aarch64) asset="a2x-linux-arm64" ;;
+    Linux/x86_64)  asset="a2x-linux-x64" ;;
+    *)
+      if is_windows; then
+        asset="a2x-win-x64.exe"
+        out_name="a2x.exe"
+      else
+        echo "  [warn] Unsupported platform for a2x binary; skipping."
+        return
+      fi
+      ;;
+  esac
+
+  local url="https://github.com/planetarium/a2x/releases/download/${tag}/${asset}"
+  local out="$prefix/bin/${out_name}"
+
+  curl -fsSL "$url" -o "$out" 2>/dev/null || {
+    echo "  [warn] a2x download failed from $url"
     return
   }
+  chmod +x "$out"
 
-  # Create wrapper in .local/bin for easy access
-  local cli_js="$prefix/node_modules/flex-ax/dist/cli.js"
-  if [ -f "$cli_js" ]; then
-    link_node_bin "$prefix" "flex-ax" "$cli_js"
+  # macOS: bypass Gatekeeper SIGKILL on unsigned binary.
+  if [ "$(uname -s)" = "Darwin" ]; then
+    xattr -c "$out" 2>/dev/null || true
+    codesign --force --sign - "$out" 2>/dev/null || true
   fi
 
   path_append "$prefix/bin"
-  echo "  flex-ax installed at $prefix/bin/flex-ax"
+  echo "  a2x installed at $out"
 }
 
 # Install camp identity/knowledge/manifest/tests files from a tarball URL.
@@ -222,40 +232,6 @@ install_gws_auth() {
   fi
   path_append "$prefix/bin"
   echo "  gws-auth installed at $prefix/bin/gws-auth"
-}
-
-# Install Playwriter (CDP relay for cookie extraction from logged-in Chrome).
-install_playwriter() {
-  echo ":: Installing playwriter..."
-  local prefix="$(pwd)/.local"
-  local version="${PLAYWRITER_VERSION:-0.0.105}"
-
-  mkdir -p "$prefix"
-
-  ensure_npm_dir
-  npm install --prefix "$prefix" "playwriter@$version" 2>/dev/null || {
-    echo "  [warn] playwriter install failed."
-    return
-  }
-
-  local cli_js="$prefix/node_modules/playwriter/dist/cli.js"
-  if [ -f "$cli_js" ]; then
-    link_node_bin "$prefix" "playwriter" "$cli_js"
-  fi
-
-  path_append "$prefix/bin"
-  echo "  playwriter $version installed at $prefix/bin/playwriter"
-
-  # Warn if Node < 24 on Windows (Playwriter has ESM issues on older Node)
-  if is_windows; then
-    local node_major
-    node_major=$(node -v | sed 's/v\([0-9]*\).*/\1/')
-    if [ "$node_major" -lt 24 ] 2>/dev/null; then
-      echo "⚠  playwriter requires Node 24+ on Windows (current: $(node -v))"
-      echo "   Install Node 24+: https://nodejs.org/"
-      echo "   Without it, 'playwriter serve' will fail with ESM errors."
-    fi
-  fi
 }
 
 # ---------------------------------------------------------------------------

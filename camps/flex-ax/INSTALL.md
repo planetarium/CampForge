@@ -19,9 +19,8 @@ curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/fl
 
 1. **Skill packages** — `npm pkg set` + `npx skillpm install` (skillpm resolves skill doc dependencies into `.agents/skills/`)
 2. **Camp files** — downloads tarball, extracts identity/, knowledge/, scripts/
-3. **CLI tools** — installs flex-ax, gws, gws-auth to `workspace/.local/bin/` (no global npm changes)
+3. **CLI tools** — installs a2x, gws, gws-auth into `workspace/.local/bin/` (no global npm changes). On macOS, the a2x binary is ad-hoc signed during install so Gatekeeper does not kill it.
 4. **Platform adapter** — detects agent platform and generates config files
-5. **Freshness hook** — sets up auto data-refresh (platform-specific)
 
 ### Platform detection
 
@@ -42,9 +41,10 @@ export PATH="$(pwd)/.local/bin:$PATH"
 
 ```bash
 ls .agents/skills/
-# Expected: flex-query/ flex-crawl/ gws-auth/ gws-sheets/ gws-gmail/ gws-drive/
+# Expected: a2x/ gql-ops/ gws-auth/ gws-sheets/ gws-gmail/ gws-drive/
 
-flex-ax --version
+a2x --version
+gq --version  # install with `npm i -g graphqurl` if missing
 gws --version
 gws-auth --help
 ```
@@ -54,27 +54,49 @@ gws-auth --help
 PowerShell install script is tracked in [planetarium/CampForge#32](https://github.com/planetarium/CampForge/issues/32).
 
 Until available, the key differences for manual setup:
-- Use `.cmd` wrappers instead of symlinks for CLI tools in `.local/bin/`
+- The a2x Windows binary is `a2x-win-x64.exe`; rename to `a2x.exe` and place on PATH
+- Use `.cmd` wrappers instead of symlinks for Node-based CLI tools in `.local/bin/`
 - `npm install --prefix .local <tgz>` works the same
 - Platform adapter and skill installation steps are identical
 
-Example `.cmd` wrapper for flex-ax (adjust path to match actual install location):
-```cmd
-@node "%~dp0\..\node_modules\flex-ax\dist\cli.js" %*
-```
-
 ## Post-install: Authentication
 
-### flex-ax (data crawling)
+### Flex HR (a2x → SIWE token → GraphQL)
 
-flex-ax crawl fetches HR data from the flex API. `import` converts the crawled JSON into the queryable format.
+The agent target is `${FLEX_HR_AGENT_URL:-https://flex-hr-10780.fly.dev}`.
+Override `FLEX_HR_AGENT_URL` to point at a different workspace or staging
+deployment.
+
+This camp uses `a2x` only for the initial device-flow authentication. The
+SIWE token it caches is then reused as a Bearer token against the
+PostGraphile endpoint at `${FLEX_HR_AGENT_URL}/graphql`.
+
+The first `a2x a2a send` call against the URL prompts for an
+authentication method:
+
+- **OAuth2 Device Flow** (recommended) — a2x prints a one-time URL
+  containing a `user_code`. Open it in a browser and approve. Tokens are
+  cached in `~/.a2x/tokens.json` per agent base URL.
+- **SIWE Bearer** — wallet-based identity. Run `a2x wallet create` first,
+  then pick this method when prompted.
+
+After the first auth, export the token + endpoint env vars before any
+data query:
 
 ```bash
-flex-ax crawl --auth playwriter   # preferred — reuses host Chrome session
-flex-ax import                    # required — converts crawled JSON into queryable format
+export FLEX_HR_AGENT_URL="${FLEX_HR_AGENT_URL:-https://flex-hr-10780.fly.dev}"
+export FLEX_HR_GQL="${FLEX_HR_AGENT_URL}/graphql"
+export FLEX_HR_TOKEN="$(jq -r --arg u "$FLEX_HR_AGENT_URL" '.[$u][0].credential' ~/.a2x/tokens.json)"
+export FLEX_HR_QUERIES_DIR="$(pwd)/knowledge/queries"   # absolute path
+
+# Smoke test
+gq "$FLEX_HR_GQL" -H "Authorization: Bearer $FLEX_HR_TOKEN" \
+  -q '{ __schema { queryType { name } } }' -l
 ```
 
-Alternative: `flex-ax crawl --auth credentials` (requires `FLEX_EMAIL`, `FLEX_PASSWORD` env vars).
+Force a re-auth by deleting the entry for that URL from
+`~/.a2x/tokens.json`. Detailed flow is in the `a2x` skill's SKILL.md
+(`.agents/skills/a2x/SKILL.md`).
 
 ### Google Workspace
 
