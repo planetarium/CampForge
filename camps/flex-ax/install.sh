@@ -3,6 +3,12 @@
 # Usage: curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/flex-ax/install.sh | bash
 set -euo pipefail
 
+# When invoked via `curl ... | bash`, our stdin IS the script body bash is
+# parsing. Child processes (npm, curl, etc.) inherit that stdin and may
+# race-read it, truncating us mid-script with cryptic syntax errors.
+# Detach unconditionally if stdin is not a terminal.
+[ -t 0 ] || exec < /dev/null
+
 CAMP_VERSION="${CAMP_VERSION:-v2.0.0}"
 BASE="https://github.com/planetarium/CampForge/releases/download/flex-ax-$CAMP_VERSION"
 
