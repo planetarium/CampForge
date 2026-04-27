@@ -47,7 +47,15 @@ verify_tools() {
   # Accept either `gq $FLEX_HR_GQL ...` (the documented form) or
   # an inlined https://.../graphql URL (still a valid camp-rule path).
   grep -qE 'gq +("?(\$?FLEX_HR_GQL|https?://[^"[:space:]]*/graphql)"?)' "$cmds_file" && USED_QUERY=true
-  grep -qE 'sqlite3|flex-ax query' "$cmds_file" && USED_SQLITE3=true
+  # Local DB access is forbidden in this camp. If detected, force the
+  # query-path check to fail even when the agent ALSO ran a valid `gq`
+  # call — the orchestrator's pass condition is `USED_QUERY && !USED_SQLITE3`,
+  # but the existing pass branches that just check `USED_QUERY` would
+  # otherwise let a forbidden fallback slip through as a partial success.
+  if grep -qE 'sqlite3|flex-ax query' "$cmds_file"; then
+    USED_SQLITE3=true
+    USED_QUERY=false
+  fi
   grep -qE 'gws drive|gws sheets' "$cmds_file" && USED_GWS=true
   # Fallback: check raw log for Drive upload evidence
   if ! $USED_GWS; then

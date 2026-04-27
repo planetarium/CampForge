@@ -2,7 +2,7 @@ FROM node:20.19.0-bookworm
 
 # Minimal deps for install scripts + claude-code
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl git python3 && \
+    apt-get install -y --no-install-recommends curl git python3 jq && \
     rm -rf /var/lib/apt/lists/*
 
 # Non-root user

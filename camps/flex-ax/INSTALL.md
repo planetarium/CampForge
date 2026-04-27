@@ -7,6 +7,7 @@
 
 - Node.js >=18 and npm
 - curl
+- `jq` (used by the post-install token-extraction snippet — `brew install jq` on macOS, `apt-get install jq` on Debian/Ubuntu)
 - bash (Windows: use WSL, Git Bash, or see the PowerShell section)
 
 ## Quick install
