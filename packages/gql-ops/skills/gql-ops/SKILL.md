@@ -50,6 +50,13 @@ are active.
 **Note:** `gq --introspect` outputs **SDL format** (not JSON). Use `grep` to search
 for type/field names in the SDL file. Do not attempt to parse it as JSON.
 
+**Stale cache check.** A previously cached `/tmp/<name>-schema.sdl` is reliable for
+field/argument lookups, but it does NOT prove that a feature you can't find
+doesn't exist — the server may have shipped a new mutation or query since the
+file was written. Before concluding "the schema does not expose X", re-run
+`gq ... --introspect` to refresh the file. Pay particular attention when the
+user references a recent change (a merged PR, a redeploy, an issue number).
+
 ```bash
 # v8-api
 gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --introspect > /tmp/v8-api-schema.sdl

@@ -1,6 +1,6 @@
 camp:
   name: flex-ax
-  version: 1.2.0
+  version: 2.0.0
   spec_version: camp/1.0
   description: Flex AX agent camp
   domain:
@@ -15,18 +15,18 @@ camp:
     language: ko
   skills:
     required:
-      - '@campforge/flex-query'
-      - '@campforge/flex-crawl'
+      - '@campforge/a2x'
+      - '@campforge/gql-ops'
       - '@campforge/gws-sheets'
       - '@campforge/gws-gmail'
       - '@campforge/gws-drive'
-    optional:
-      - '@campforge/flex-file'
+    optional: []
   dependencies:
     tools:
-      - flex-ax
-      - gws
-      - gws-auth
+      - a2x                        # planetarium/a2x release binary
+      - gq                         # npm i -g graphqurl
+      - gws                        # npm i -g @googleworkspace/cli
+      - gws-auth                   # planetarium/gws-auth
     mcp_servers: []
     skills: []
   compatibility:

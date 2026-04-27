@@ -2,7 +2,7 @@ FROM node:20.19.0-bookworm
 
 # Minimal deps for install scripts + codex
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl git python3 bubblewrap && \
+    apt-get install -y --no-install-recommends curl git python3 jq bubblewrap && \
     rm -rf /var/lib/apt/lists/*
 
 # Non-root user

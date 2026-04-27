@@ -1,0 +1,14 @@
+{
+  "name": "@campforge/a2x",
+  "version": "0.1.0",
+  "description": "A2A (Agent2Agent) protocol client skill using the a2x CLI",
+  "keywords": ["agent-skill", "a2a", "a2x", "agent2agent", "campforge"],
+  "license": "Apache-2.0",
+  "author": "swen",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/planetarium/CampForge",
+    "directory": "packages/a2x"
+  },
+  "files": ["skills/"]
+}
