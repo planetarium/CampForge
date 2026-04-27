@@ -1,0 +1,12 @@
+# Get a presigned R2 download URL for a `file_uploads` row.
+# RLS-aware on the server side: callers in a different workspace get
+# "not found or not accessible" instead of the URL.
+# Variables: $fileUploadId (String!) — id from allFileUploads / fileUploadById nodes
+# Returns: url (1-hour TTL), fileName, expiresIn (seconds)
+mutation GetFileDownloadUrl($fileUploadId: String!) {
+  getFileDownloadUrl(input: { fileUploadId: $fileUploadId }) {
+    url
+    fileName
+    expiresIn
+  }
+}

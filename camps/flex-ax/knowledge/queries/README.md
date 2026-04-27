@@ -4,8 +4,14 @@ Reusable PostGraphile GraphQL queries for the Flex HR endpoint
 (`$FLEX_HR_GQL`). Each `.gql` file in this directory is a single
 operation that the agent can invoke via `gq --queryFile`.
 
-This directory ships **empty on purpose** — populate it as patterns
-emerge in your workflows. Don't pre-fill it speculatively.
+Populate this directory as patterns emerge in your workflows. Don't
+pre-fill it speculatively.
+
+## Available queries
+
+| File | Operation | Variables |
+|------|-----------|-----------|
+| `get-file-download-url.gql` | Mutation: presigned R2 download URL for a file upload (1-hour TTL, RLS-enforced) | `fileUploadId` |
 
 ## When to add a query here
 

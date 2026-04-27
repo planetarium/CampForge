@@ -39,6 +39,19 @@ used by this camp.
 - **로컬 sqlite, sqlite3 명령, python sqlite3 모듈 등 로컬 DB 파일에 직접 접근하지 않는다.** 데이터는 항상 GraphQL 호출을 통해서만 가져온다.
 - 자주 쓰는 쿼리는 `$FLEX_HR_QUERIES_DIR/<name>.gql` 파일로 저장해 재사용한다 (디렉토리는 비어있을 수 있음 — 새 쿼리는 introspection 후 작성).
 - 짧은 mutation은 인라인 `-q`로 보내도 된다.
+
+### 결재 첨부파일 다운로드 흐름
+
+1. 결재 ID로 `allFileUploads(condition: { approvalId: "<id>" })` 또는 `fileUploadsByApprovalId` 를 호출해 `id` / `fileName` / `size` / `mimeType` 등 메타데이터를 받는다.
+2. 받고 싶은 파일의 `id`를 `getFileDownloadUrl` mutation에 넣어 1-hour presigned R2 URL을 받는다 (`$FLEX_HR_QUERIES_DIR/get-file-download-url.gql` 사용):
+   ```bash
+   gq "$FLEX_HR_GQL" -H "Authorization: Bearer $FLEX_HR_TOKEN" \
+     --queryFile "$FLEX_HR_QUERIES_DIR/get-file-download-url.gql" \
+     -j '{"fileUploadId":"<id>"}' -l
+   ```
+3. 받은 `url`을 `curl -L -o <out>` 로 다운로드한다. RLS는 서버에서 자동 적용되므로 다른 워크스페이스의 파일은 "not found or not accessible"로 떨어진다.
+
+`flex.team/api/v3/...` 형태의 다운로드 URL이 결재 본문(`formData.document.attachments[].file.downloadUrl`)에 박혀 있어도 그 URL은 **본 캠프의 SIWE 토큰으로 인증되지 않는다**. 항상 `getFileDownloadUrl` 를 거쳐 R2 presigned URL을 발급받아야 한다.
 - 모든 호출에 `-l` (compact) 플래그를 붙여 토큰을 절약한다.
 - 개인 급여/평가 등 민감 정보는 명시적 요청 시에만 조회한다.
 - 데이터 변경/생성/삭제 mutation은 사용자에게 의도를 재확인한 뒤 실행한다.
