@@ -35,5 +35,7 @@ if [ ! -f "$DIST/$A2X_ASSET" ]; then
   }
 fi
 
-# Install: copy the binary into a PATH dir and chmod +x.
-echo "a2x|${A2X_ASSET}|install -m 0755 {file} /usr/local/bin/a2x"
+# Install: copy the binary into a user-writable PATH dir and chmod +x.
+# E2E test images run as non-root (e.g. tester/node), so /usr/local/bin
+# would fail with EACCES — use $HOME/.local/bin instead.
+echo "a2x|${A2X_ASSET}|mkdir -p \"\$HOME/.local/bin\" && install -m 0755 {file} \"\$HOME/.local/bin/a2x\""

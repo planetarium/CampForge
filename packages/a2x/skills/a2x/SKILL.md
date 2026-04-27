@@ -62,11 +62,19 @@ echo "$ASSET"
 
 ### 4. Download to `~/.local/bin/a2x`
 
+On Windows the executable name needs the `.exe` extension so cmd /
+PowerShell can launch it (Git Bash will accept either form). On other
+platforms the binary is extensionless.
+
 ```bash
 mkdir -p ~/.local/bin
+case "$ASSET" in
+  *.exe) OUT_NAME="a2x.exe" ;;
+  *)     OUT_NAME="a2x" ;;
+esac
 gh release download "$TAG" --repo planetarium/a2x \
-  --pattern "$ASSET" --output ~/.local/bin/a2x --clobber
-chmod +x ~/.local/bin/a2x
+  --pattern "$ASSET" --output "$HOME/.local/bin/$OUT_NAME" --clobber
+chmod +x "$HOME/.local/bin/$OUT_NAME"
 ```
 
 Make sure `~/.local/bin` is on `PATH`.
