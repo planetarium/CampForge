@@ -58,7 +58,7 @@ run_installer() {
       echo "---ADAPTER_IDENTITY_AGENTS_MD---"
       cat workspace/identity/AGENTS.md 2>/dev/null || echo "(not found)"
       echo "---CLI_TOOLS---"
-      for tool in flex-ax gws gws-auth gq; do
+      for tool in a2x flex-ax gws gws-auth gq; do
         command -v "$tool" 2>/dev/null && echo "${tool}=ok" || echo "${tool}=(not found)"
       done
       echo "---HOOKS---"

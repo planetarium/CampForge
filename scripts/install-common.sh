@@ -23,6 +23,72 @@ path_append() {
   export PATH="$1:$PATH"
 }
 
+have_node_runtime() {
+  command -v node >/dev/null 2>&1 &&
+    command -v npm >/dev/null 2>&1 &&
+    command -v npx >/dev/null 2>&1
+}
+
+refresh_node_path() {
+  if is_windows; then
+    [ -n "${LOCALAPPDATA:-}" ] && [ -d "$LOCALAPPDATA/Programs/nodejs" ] && path_append "$LOCALAPPDATA/Programs/nodejs"
+    [ -d "/c/Program Files/nodejs" ] && path_append "/c/Program Files/nodejs"
+  elif [ "$(uname -s)" = "Darwin" ]; then
+    if command -v brew >/dev/null 2>&1; then
+      local prefix
+      prefix="$(brew --prefix 2>/dev/null || true)"
+      [ -n "$prefix" ] && [ -d "$prefix/bin" ] && path_append "$prefix/bin"
+      prefix="$(brew --prefix node@20 2>/dev/null || true)"
+      [ -n "$prefix" ] && [ -d "$prefix/bin" ] && path_append "$prefix/bin"
+      prefix="$(brew --prefix node 2>/dev/null || true)"
+      [ -n "$prefix" ] && [ -d "$prefix/bin" ] && path_append "$prefix/bin"
+    fi
+  fi
+}
+
+ensure_node_runtime() {
+  if have_node_runtime; then
+    return
+  fi
+
+  echo ":: Ensuring Node.js runtime (node/npm/npx)..."
+
+  if is_windows; then
+    if command -v winget >/dev/null 2>&1; then
+      echo "  Installing Node.js LTS via winget..."
+      winget install -e --id OpenJS.NodeJS.LTS \
+        --accept-package-agreements \
+        --accept-source-agreements >/dev/null 2>&1 || {
+        echo "  [warn] winget Node.js install failed."
+      }
+      refresh_node_path
+    fi
+  elif [ "$(uname -s)" = "Darwin" ]; then
+    if command -v brew >/dev/null 2>&1; then
+      echo "  Installing Node.js via Homebrew..."
+      brew install node@20 >/dev/null 2>&1 || brew install node >/dev/null 2>&1 || {
+        echo "  [warn] brew Node.js install failed."
+      }
+      refresh_node_path
+    fi
+  fi
+
+  if have_node_runtime; then
+    echo "  Node.js runtime ready: $(node -v), npm $(npm -v)"
+    return
+  fi
+
+  echo "  [error] Node.js, npm, and npx are required for CampForge skill installation." >&2
+  if is_windows; then
+    echo "  Install Node.js LTS, then re-run the installer. Preferred: 'winget install OpenJS.NodeJS.LTS'." >&2
+  elif [ "$(uname -s)" = "Darwin" ]; then
+    echo "  Install Node.js 20+, then re-run the installer. Preferred: 'brew install node@20'." >&2
+  else
+    echo "  Install Node.js 20+, npm, and npx, then re-run the installer." >&2
+  fi
+  exit 1
+}
+
 # Ensure npm's global prefix directory exists on Windows.
 # On MSYS/Git Bash, `npm install --prefix` may fail if %APPDATA%/npm is absent.
 ensure_npm_dir() {
@@ -125,8 +191,6 @@ install_a2x() {
   mkdir -p "$prefix/bin"
 
   local asset out_name="a2x"
-  # Linux uname -m can report either `aarch64` or `arm64` for arm64 boxes
-  # depending on kernel/distro, so accept both spellings.
   case "$(uname -s)/$(uname -m)" in
     Darwin/arm64)               asset="a2x-macos-arm64" ;;
     Darwin/x86_64)              asset="a2x-macos-x64" ;;
@@ -152,7 +216,6 @@ install_a2x() {
   }
   chmod +x "$out"
 
-  # macOS: bypass Gatekeeper SIGKILL on unsigned binary.
   if [ "$(uname -s)" = "Darwin" ]; then
     xattr -c "$out" 2>/dev/null || true
     codesign --force --sign - "$out" 2>/dev/null || true
@@ -160,6 +223,55 @@ install_a2x() {
 
   path_append "$prefix/bin"
   echo "  a2x installed at $out"
+}
+
+# Install flex-ax CLI from GitHub Release.
+# Since flex-cli 0.7.x, releases are standalone executables rather than npm tarballs.
+install_flex_ax() {
+  local version="${FLEX_AX_VERSION:-0.7.1}"
+  local tag="flex-cli@${version}"
+
+  echo ":: Installing flex-ax CLI (${tag})..."
+
+  if command -v flex-ax >/dev/null 2>&1; then
+    echo "  flex-ax already installed, skipping."
+    return
+  fi
+
+  local prefix="$(pwd)/.local"
+  mkdir -p "$prefix/bin"
+
+  local asset out_name="flex-ax"
+  case "$(uname -s)/$(uname -m)" in
+    Darwin/arm64)  asset="flex-ax-darwin-arm64" ;;
+    Linux/x86_64)  asset="flex-ax-linux-x64" ;;
+    *)
+      if is_windows; then
+        asset="flex-ax-windows-x64.exe"
+        out_name="flex-ax.exe"
+      else
+        echo "  [warn] Unsupported platform for flex-ax standalone binary; skipping."
+        return
+      fi
+      ;;
+  esac
+
+  local url="https://github.com/planetarium/flex-ax/releases/download/${tag}/${asset}"
+  local out="$prefix/bin/${out_name}"
+
+  curl -fsSL "$url" -o "$out" 2>/dev/null || {
+    echo "  [warn] flex-ax download failed from $url"
+    return
+  }
+  chmod +x "$out"
+
+  if [ "$(uname -s)" = "Darwin" ]; then
+    xattr -c "$out" 2>/dev/null || true
+    codesign --force --sign - "$out" 2>/dev/null || true
+  fi
+
+  path_append "$prefix/bin"
+  echo "  flex-ax installed at $out"
 }
 
 # Install camp identity/knowledge/manifest/tests files from a tarball URL.
@@ -234,6 +346,40 @@ install_gws_auth() {
   fi
   path_append "$prefix/bin"
   echo "  gws-auth installed at $prefix/bin/gws-auth"
+}
+
+# Install Playwriter (CDP relay for cookie extraction from logged-in Chrome).
+install_playwriter() {
+  echo ":: Installing playwriter..."
+  local prefix="$(pwd)/.local"
+  local version="${PLAYWRITER_VERSION:-0.0.105}"
+
+  mkdir -p "$prefix"
+
+  ensure_npm_dir
+  npm install --prefix "$prefix" "playwriter@$version" 2>/dev/null || {
+    echo "  [warn] playwriter install failed."
+    return
+  }
+
+  local cli_js="$prefix/node_modules/playwriter/dist/cli.js"
+  if [ -f "$cli_js" ]; then
+    link_node_bin "$prefix" "playwriter" "$cli_js"
+  fi
+
+  path_append "$prefix/bin"
+  echo "  playwriter $version installed at $prefix/bin/playwriter"
+
+  # Warn if Node < 24 on Windows (Playwriter has ESM issues on older Node)
+  if is_windows; then
+    local node_major
+    node_major=$(node -v | sed 's/v\([0-9]*\).*/\1/')
+    if [ "$node_major" -lt 24 ] 2>/dev/null; then
+      echo "⚠  playwriter requires Node 24+ on Windows (current: $(node -v))"
+      echo "   Install Node 24+: https://nodejs.org/"
+      echo "   Without it, 'playwriter serve' will fail with ESM errors."
+    fi
+  fi
 }
 
 # ---------------------------------------------------------------------------
@@ -457,4 +603,3 @@ _adapter_codex() {
     echo "  Created AGENTS.md ($(wc -c < AGENTS.md)B)"
   fi
 }
-

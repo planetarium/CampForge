@@ -5,9 +5,8 @@
 
 ## Prerequisites
 
-- Node.js >=18 and npm
+- Node.js >=20 and npm
 - curl
-- `jq` (used by the post-install token-extraction snippet — `brew install jq` on macOS, `apt-get install jq` on Debian/Ubuntu)
 - bash (Windows: use WSL, Git Bash, or see the PowerShell section)
 
 ## Quick install
@@ -16,12 +15,16 @@
 curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/flex-ax/install.sh | bash
 ```
 
+By default, the installer creates and uses `./workspace/`.
+Override with `WORKSPACE=/your/path` if you want a different install location.
+
 ## What the script does
 
 1. **Skill packages** — `npm pkg set` + `npx skillpm install` (skillpm resolves skill doc dependencies into `.agents/skills/`)
 2. **Camp files** — downloads tarball, extracts identity/, knowledge/, scripts/
-3. **CLI tools** — installs a2x, gws, gws-auth into `workspace/.local/bin/` (no global npm changes). On macOS, the a2x binary is ad-hoc signed during install so Gatekeeper does not kill it.
+3. **CLI tools** — installs the standalone `flex-ax` executable plus gws, gws-auth to `workspace/.local/bin/` (no global npm changes)
 4. **Platform adapter** — detects agent platform and generates config files
+5. **Freshness hook** — sets up auto data-refresh (platform-specific)
 
 ### Platform detection
 
@@ -34,6 +37,12 @@ Override: `CAMPFORGE_PLATFORM=<platform> bash install.sh`
 
 ## Verify installation
 
+If you used the default install path, move into the generated workspace first:
+
+```bash
+cd workspace
+```
+
 The script adds `.local/bin/` to PATH during installation. If running in a new shell:
 
 ```bash
@@ -42,67 +51,114 @@ export PATH="$(pwd)/.local/bin:$PATH"
 
 ```bash
 ls .agents/skills/
-# Expected: a2x/ gql-ops/ gws-auth/ gws-sheets/ gws-gmail/ gws-drive/
+# Expected: flex-query/ flex-crawl/ gws-auth/ gws-sheets/ gws-gmail/ gws-drive/
 
-a2x --version
-gq --version  # install with `npm i -g graphqurl` if missing
+flex-ax --version
 gws --version
-gws-auth --help
+command -v gws-auth
 ```
 
 ## Windows (PowerShell)
 
 PowerShell install script is tracked in [planetarium/CampForge#32](https://github.com/planetarium/CampForge/issues/32).
 
-Until available, the key differences for manual setup:
-- The a2x Windows binary is `a2x-win-x64.exe`; rename to `a2x.exe` and place on PATH
-- Use `.cmd` wrappers instead of symlinks for Node-based CLI tools in `.local/bin/`
-- `npm install --prefix .local <tgz>` works the same
-- Platform adapter and skill installation steps are identical
+Recommended setup on Windows:
+- Use **Git Bash** as the default runtime shell for `flex-ax`, `gws`, and `gws-auth`
+- Use PowerShell only for one-time file placement / PATH setup when needed
+
+### Preferred path: Git Bash install
+
+If Git Bash is available, use the normal installer:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/flex-ax/install.sh | bash
+```
+
+After install, restart Git Bash or export the local bin directory:
+
+```bash
+export PATH="$(pwd)/.local/bin:$PATH"
+flex-ax --version
+gws --version
+gws-auth --help
+```
+
+### Manual PowerShell setup
+
+If you must place the tools manually from PowerShell:
+- Download the standalone `flex-ax-windows-x64.exe` release asset
+- Rename it to `flex-ax.exe`
+- Put it in a user-writable bin directory such as `%USERPROFILE%\\.local\\bin`
+- Add that directory to `PATH`
+- Use `.cmd` wrappers instead of symlinks for Node-based CLI tools such as `gws` / `gws-auth`
+
+Example:
+
+```powershell
+New-Item -ItemType Directory -Force "$HOME\.local\bin" | Out-Null
+Copy-Item .\flex-ax-windows-x64.exe "$HOME\.local\bin\flex-ax.exe"
+$env:PATH = "$HOME\.local\bin;$env:PATH"
+flex-ax --version
+```
+
+For persistent PATH setup, add `%USERPROFILE%\.local\bin` to the user PATH in Windows settings.
+
+Example `.cmd` wrapper for `gws-auth` (adjust path to match actual install location):
+```cmd
+@node "%~dp0\..\node_modules\@planetarium\gws-auth\bin\gws-auth.js" %*
+```
+
+### Post-install checks on Windows
+
+Run these from **Git Bash** when possible:
+
+```bash
+flex-ax --version
+flex-ax status
+gws --version
+gws-auth --help
+```
+
+If `flex-ax query` fails later with an export-dir error, point `OUTPUT_DIR` at a concrete export directory before querying:
+
+```bash
+export OUTPUT_DIR="$HOME/.flex-ax-data/output/<customerIdHash>"
+flex-ax query "SELECT * FROM users LIMIT 5"
+```
 
 ## Post-install: Authentication
 
-### Flex HR (a2x → SIWE token → GraphQL)
+### flex-ax (credentials + crawl)
 
-The agent target is `${FLEX_HR_AGENT_URL:-https://flex-hr-10780.fly.dev}`.
-Override `FLEX_HR_AGENT_URL` to point at a different workspace or staging
-deployment.
-
-This camp uses `a2x` only for the initial device-flow authentication. The
-SIWE token it caches is then reused as a Bearer token against the
-PostGraphile endpoint at `${FLEX_HR_AGENT_URL}/graphql`.
-
-The first `a2x a2a send` call against the URL prompts for an
-authentication method:
-
-- **OAuth2 Device Flow** (recommended) — a2x prints a one-time URL
-  containing a `user_code`. Open it in a browser and approve. Tokens are
-  cached in `~/.a2x/tokens.json` per agent base URL.
-- **SIWE Bearer** — wallet-based identity. Run `a2x wallet create` first,
-  then pick this method when prompted.
-
-After the first auth, export the token + endpoint env vars before any
-data query:
+Since `flex-cli@0.7.0`, the official install is a standalone executable and the recommended auth flow is `login` / OS keyring storage.
 
 ```bash
-export FLEX_HR_AGENT_URL="${FLEX_HR_AGENT_URL:-https://flex-hr-10780.fly.dev}"
-export FLEX_HR_GQL="${FLEX_HR_AGENT_URL}/graphql"
-export FLEX_HR_QUERIES_DIR="$(pwd)/knowledge/queries"   # absolute path
-
-# Use `jq -er` so a missing/null cache entry fails fast instead of exporting "null".
-FLEX_HR_TOKEN="$(jq -er --arg u "$FLEX_HR_AGENT_URL" '.[$u][0].credential' ~/.a2x/tokens.json)" \
-  && [ -n "$FLEX_HR_TOKEN" ] \
-  || { echo "Missing cached Flex HR token for $FLEX_HR_AGENT_URL in ~/.a2x/tokens.json. Run 'a2x a2a send' first to authenticate." >&2; exit 1; }
-export FLEX_HR_TOKEN
-
-# Smoke test
-gq "$FLEX_HR_GQL" -H "Authorization: Bearer $FLEX_HR_TOKEN" \
-  -q '{ __schema { queryType { name } } }' -l
+flex-ax login
+flex-ax status
+flex-ax crawl
+flex-ax import
 ```
 
-Force a re-auth by deleting the entry for that URL from
-`~/.a2x/tokens.json`. Detailed flow is in the `a2x` skill's SKILL.md
-(`.agents/skills/a2x/SKILL.md`).
+Non-interactive environments can still use env vars:
+
+```bash
+export FLEX_EMAIL="you@example.com"
+export FLEX_PASSWORD="..."
+flex-ax crawl
+flex-ax import
+```
+
+Notes:
+- `flex-ax login` stores the email in `~/.flex-ax/config.json`
+- The password is stored in the OS keyring, or can be injected via `FLEX_PASSWORD` / `--password-stdin`
+- `query` now expects `OUTPUT_DIR` to point at a concrete export directory when multiple customer exports exist
+
+Example:
+
+```bash
+export OUTPUT_DIR="$HOME/.flex-ax-data/output/<customerIdHash>"
+flex-ax query "SELECT * FROM users LIMIT 5"
+```
 
 ### Google Workspace
 

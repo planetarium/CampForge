@@ -1,0 +1,40 @@
+camp:
+  name: flex-ax-remote
+  version: 2.0.0
+  spec_version: camp/1.0
+  description: Flex AX remote A2A + GraphQL agent camp
+  domain:
+    primary: flex
+    tags:
+      - flex
+      - ax
+      - remote
+      - a2a
+  persona:
+    level: senior
+    tone: direct
+    proactivity: medium
+    language: ko
+  skills:
+    required:
+      - '@campforge/a2x'
+      - '@campforge/gql-ops'
+      - '@campforge/gws-sheets'
+      - '@campforge/gws-gmail'
+      - '@campforge/gws-drive'
+    optional: []
+  dependencies:
+    tools:
+      - a2x
+      - gq
+      - gws
+      - gws-auth
+    mcp_servers: []
+    skills: []
+  compatibility:
+    tested:
+      - platform: claude-code
+        status: pass
+      - platform: openclaw
+        status: pass
+    frontmatter_mode: minimal

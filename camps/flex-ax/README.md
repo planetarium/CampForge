@@ -1,13 +1,13 @@
 # CampForge: Flex AX
 
-a2x CLI로 Flex HR 서비스(`$FLEX_HR_AGENT_URL`, 기본 `https://flex-hr-10780.fly.dev`)에 SIWE 토큰을 한 번 발급받은 뒤, 그 토큰으로 PostGraphile GraphQL 엔드포인트(`$FLEX_HR_GQL`)에 직접 질의해 결재/근태/사용자 데이터를 조회·분석하고, Google Workspace(Sheets/Drive/Gmail)를 통해 익스펜스 리포트를 정리/공유하는 에이전트 캠프.
+flex-ax CLI를 사용하여 flex HR 데이터를 로컬 dump로 수집·변환한 뒤 SQL로 조회/분석하고, Google Workspace(Sheets/Drive/Gmail)를 통해 익스펜스 리포트를 정리/공유하는 에이전트 캠프.
 
 ## Prerequisites
 
-- a2x CLI (install.sh가 자동 설치)
-- Flex HR 서비스 첫 호출 시 OAuth Device Flow 승인 1회 (브라우저)
-- gq (graphqurl) — `npm i -g graphqurl`. `gql-ops` 스킬 안내 참조
-- [gws CLI](https://www.npmjs.com/package/@googleworkspace/cli) + [gws-auth](https://github.com/planetarium/gws-auth) (install.sh가 자동 설치)
+- [flex-ax CLI](https://github.com/planetarium/flex-ax) 0.7.1+
+- 로그인 완료 (`flex-ax login`) 또는 `FLEX_EMAIL` / `FLEX_PASSWORD` 준비
+- 크롤링 완료 (`flex-ax crawl` + `flex-ax import`)
+- [gws CLI](https://www.npmjs.com/package/@googleworkspace/cli) + [gws-auth](https://github.com/planetarium/gws-auth) 설치
 - `gws-auth login --scope drive --scope gmail.modify --scope spreadsheets` 인증 완료
 
 ## Install
@@ -22,31 +22,23 @@ curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/fl
 
 ## Skills
 
-- **a2x**: SIWE 토큰을 발급/캐시하는 인증 도구 (device flow)
-- **gql-ops**: GraphQL 호출 패턴 (gq, queryFile, introspection, self-healing)
+- **flex-query**: flex-ax DB에 SQL 쿼리를 실행하여 결재/근태/사용자 데이터를 조회
+- **flex-crawl**: flex API를 크롤링하여 법인별 로컬 export/DB를 최신 상태로 갱신
 - **gws-sheets**: Google Sheets로 익스펜스 데이터 정리/집계
 - **gws-drive**: Google Drive에 파일 업로드/관리
 - **gws-gmail**: Gmail 수신 익스펜스 메일 조회 및 결재 데이터 대조
 
-## Configuration
+## flex-ax 0.7.1 Notes
 
-| Env var | Default | Description |
-|---------|---------|-------------|
-| `FLEX_HR_AGENT_URL` | `https://flex-hr-10780.fly.dev` | Flex HR 서비스 base URL |
-| `FLEX_HR_GQL` | `${FLEX_HR_AGENT_URL}/graphql` | PostGraphile 엔드포인트 |
-| `FLEX_HR_TOKEN` | (a2x 캐시에서 추출) | SIWE Bearer 토큰 |
-| `FLEX_HR_QUERIES_DIR` | `<camp>/knowledge/queries` | 재사용 가능한 `.gql` 파일 디렉토리 |
-| `A2X_VERSION` | `0.2.0` | install.sh가 다운로드할 a2x CLI 버전 |
-
-## Reusable queries
-
-`knowledge/queries/`에 자주 쓰는 GraphQL 쿼리를 `.gql` 파일로 저장해 재사용한다. 디렉토리는 비어 있는 상태로 출고되며, 사용 패턴이 명확해질 때 추가한다. 작성 가이드는 `knowledge/queries/README.md` 참조.
+- 배포 형식이 npm 패키지에서 standalone 실행 파일로 바뀌었다.
+- 기본 인증 흐름은 `flex-ax login` / `flex-ax status` / `flex-ax crawl` 이다.
+- 여러 법인 export가 있으면 `flex-ax query` 전에 `OUTPUT_DIR` 를 특정 export 디렉터리로 지정해야 한다.
 
 ## Windows
 
 Windows에서는 **Git Bash**를 기본 셸로 사용하세요.
 
-- 설치 및 모든 CLI 명령(`a2x`, `gq`, `gws`, `gws-auth`)은 Git Bash 기준으로 작성되어 있습니다.
+- 설치 및 모든 CLI 명령(`flex-ax`, `gws`, `gws-auth`)은 Git Bash 기준으로 작성되어 있습니다.
 - PowerShell은 설치(`install.sh | bash`) 이외의 런타임 용도로 **권장하지 않습니다**.
 
 ### gws JSON 인자 주의사항
