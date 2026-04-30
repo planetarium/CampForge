@@ -1,13 +1,13 @@
 # flex-ax Camp Installation
 
 > This document supplements `install.sh` — the primary installation method.
-> For manual or Windows installation, refer to the sections below.
+> For Windows usage notes, refer to the section below.
 
 ## Prerequisites
 
 - Node.js >=20 and npm
 - curl
-- bash (Windows: use WSL, Git Bash, or see the PowerShell section)
+- bash (Windows: use Git Bash)
 
 On Windows, the installer will also try to bootstrap missing prerequisites via `winget`:
 - `OpenJS.NodeJS.LTS`
@@ -63,18 +63,12 @@ gws --version
 command -v gws-auth
 ```
 
-## Windows (PowerShell)
+## Windows
 
-PowerShell install script is tracked in [planetarium/CampForge#32](https://github.com/planetarium/CampForge/issues/32).
+Use **Git Bash** as the default runtime shell for `flex-ax`, `gws`, and `gws-auth`.
+If `Node.js` or `Git for Windows` is missing, the installer will try `winget install OpenJS.NodeJS.LTS` and `winget install Git.Git`.
 
-Recommended setup on Windows:
-- Use **Git Bash** as the default runtime shell for `flex-ax`, `gws`, and `gws-auth`
-- Use PowerShell only for one-time file placement / PATH setup when needed
-- If `Node.js` or `Git for Windows` is missing, the installer will try `winget install OpenJS.NodeJS.LTS` and `winget install Git.Git`
-
-### Preferred path: Git Bash install
-
-If Git Bash is available, use the normal installer:
+Install with the normal command from Git Bash:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/flex-ax/install.sh | bash
@@ -86,43 +80,7 @@ After install, restart Git Bash or export the local bin directory:
 export PATH="$(pwd)/.local/bin:$PATH"
 flex-ax --version
 gws --version
-gws-auth --help
-```
-
-### Manual PowerShell setup
-
-If you must place the tools manually from PowerShell:
-- Download the standalone `flex-ax-windows-x64.exe` release asset
-- Rename it to `flex-ax.exe`
-- Put it in a user-writable bin directory such as `%USERPROFILE%\\.local\\bin`
-- Add that directory to `PATH`
-- Use `.cmd` wrappers instead of symlinks for Node-based CLI tools such as `gws` / `gws-auth`
-
-Example:
-
-```powershell
-New-Item -ItemType Directory -Force "$HOME\.local\bin" | Out-Null
-Copy-Item .\flex-ax-windows-x64.exe "$HOME\.local\bin\flex-ax.exe"
-$env:PATH = "$HOME\.local\bin;$env:PATH"
-flex-ax --version
-```
-
-For persistent PATH setup, add `%USERPROFILE%\.local\bin` to the user PATH in Windows settings.
-
-Example `.cmd` wrapper for `gws-auth` (adjust path to match actual install location):
-```cmd
-@node "%~dp0\..\node_modules\@planetarium\gws-auth\bin\gws-auth.js" %*
-```
-
-### Post-install checks on Windows
-
-Run these from **Git Bash** when possible:
-
-```bash
-flex-ax --version
-flex-ax status
-gws --version
-gws-auth --help
+command -v gws-auth
 ```
 
 If `flex-ax query` fails later with an export-dir error, point `OUTPUT_DIR` at a concrete export directory before querying:

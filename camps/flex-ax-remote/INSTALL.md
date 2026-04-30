@@ -1,14 +1,14 @@
 # flex-ax-remote Camp Installation
 
 > This document supplements `install.sh` — the primary installation method.
-> For manual or Windows installation, refer to the sections below.
+> For Windows usage notes, refer to the sections below.
 
 ## Prerequisites
 
 - Node.js >=18 and npm
 - curl
 - `jq` (used by the post-install token-extraction snippet)
-- bash (Windows: use WSL or Git Bash)
+- bash (Windows: use Git Bash)
 
 On Windows, the installer will also try to bootstrap missing prerequisites via `winget`:
 - `OpenJS.NodeJS.LTS`
@@ -19,6 +19,8 @@ On Windows, the installer will also try to bootstrap missing prerequisites via `
 ```bash
 curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/flex-ax-remote/install.sh | bash
 ```
+
+On Windows, run the installer from **Git Bash**.
 
 ## What the script does
 
