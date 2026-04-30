@@ -9,6 +9,10 @@
 - curl
 - bash (Windows: use WSL, Git Bash, or see the PowerShell section)
 
+On Windows, the installer will also try to bootstrap missing prerequisites via `winget`:
+- `OpenJS.NodeJS.LTS`
+- `Git.Git` (Git for Windows / Git Bash)
+
 ## Quick install
 
 ```bash
@@ -17,6 +21,7 @@ curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/fl
 
 By default, the installer creates and uses `./workspace/`.
 Override with `WORKSPACE=/your/path` if you want a different install location.
+If the path contains spaces, quote it: `WORKSPACE=\"/path/with spaces\" bash install.sh`.
 
 ## What the script does
 
@@ -65,6 +70,7 @@ PowerShell install script is tracked in [planetarium/CampForge#32](https://githu
 Recommended setup on Windows:
 - Use **Git Bash** as the default runtime shell for `flex-ax`, `gws`, and `gws-auth`
 - Use PowerShell only for one-time file placement / PATH setup when needed
+- If `Node.js` or `Git for Windows` is missing, the installer will try `winget install OpenJS.NodeJS.LTS` and `winget install Git.Git`
 
 ### Preferred path: Git Bash install
 
