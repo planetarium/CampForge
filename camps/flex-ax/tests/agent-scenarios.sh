@@ -10,13 +10,12 @@
 #   is_gws_scenario — function: return 0 if scenario needs gws verification
 
 # --- Artifacts ---
-# This camp talks to a remote A2A agent; nothing to stage on the host.
+# This camp uses local flex-ax exports; no extra fixture is staged here.
 setup_artifacts() {
   :
 }
 
 # --- Post-install setup (runs inside Docker after camp install) ---
-# The agent is reached via $FLEX_HR_AGENT_URL; no local fixture is required.
 SETUP_EXTRA=''
 
 # --- Scenarios ---
@@ -31,28 +30,21 @@ WITH_GWS_SCENARIOS=(
 )
 
 # --- Prompt rules ---
-PROMPT_RULES="Use 'gq \"\$FLEX_HR_GQL\" -H \"Authorization: Bearer \$FLEX_HR_TOKEN\" ...' for HR data queries. Use a2x only for the initial device-flow auth that mints the token. Refer to skill docs in .agents/skills/ for tool usage."
+PROMPT_RULES="Use 'flex-ax query \"SQL\"' for HR data queries. If data is missing or stale, check 'flex-ax status' and then use 'flex-ax crawl' plus 'flex-ax import'. Do not use sqlite3 or read DB files directly. Refer to skill docs in .agents/skills/ for tool usage."
 
 # --- Verification ---
 # Contract with scripts/test-agent-query.sh: must export USED_QUERY,
 # USED_SQLITE3, USED_GWS. We map:
-#   USED_QUERY   ← the agent issued a Flex HR GraphQL query via gq (correct path)
-#   USED_SQLITE3 ← the agent fell back to local DB access (forbidden by camp rules)
+#   USED_QUERY   ← the agent issued a flex-ax SQL query (correct path)
+#   USED_SQLITE3 ← the agent fell back to sqlite3 / direct DB access (forbidden)
 #   USED_GWS     ← Google Workspace upload/Sheets evidence
 verify_tools() {
   local cmds_file="$1" result_file="$2"
   USED_QUERY=false
   USED_SQLITE3=false
   USED_GWS=false
-  # Accept either `gq $FLEX_HR_GQL ...` (the documented form) or
-  # an inlined https://.../graphql URL (still a valid camp-rule path).
-  grep -qE 'gq +("?(\$?FLEX_HR_GQL|https?://[^"[:space:]]*/graphql)"?)' "$cmds_file" && USED_QUERY=true
-  # Local DB access is forbidden in this camp. If detected, force the
-  # query-path check to fail even when the agent ALSO ran a valid `gq`
-  # call — the orchestrator's pass condition is `USED_QUERY && !USED_SQLITE3`,
-  # but the existing pass branches that just check `USED_QUERY` would
-  # otherwise let a forbidden fallback slip through as a partial success.
-  if grep -qE 'sqlite3|flex-ax query' "$cmds_file"; then
+  grep -qE 'flex-ax +query +["'\'']' "$cmds_file" && USED_QUERY=true
+  if grep -qE 'sqlite3|python3? .*(sqlite|\\.db)|\\.db\\b' "$cmds_file"; then
     USED_SQLITE3=true
     USED_QUERY=false
   fi

@@ -1,8 +1,8 @@
 camp:
   name: flex-ax
-  version: 2.0.0
+  version: 3.0.0
   spec_version: camp/1.0
-  description: Flex AX agent camp
+  description: Flex AX local dump agent camp
   domain:
     primary: flex
     tags:
@@ -15,16 +15,15 @@ camp:
     language: ko
   skills:
     required:
-      - '@campforge/a2x'
-      - '@campforge/gql-ops'
+      - '@campforge/flex-query'
+      - '@campforge/flex-crawl'
       - '@campforge/gws-sheets'
       - '@campforge/gws-gmail'
       - '@campforge/gws-drive'
     optional: []
   dependencies:
     tools:
-      - a2x                        # planetarium/a2x release binary
-      - gq                         # npm i -g graphqurl
+      - flex-ax                    # planetarium/flex-ax standalone binary
       - gws                        # npm i -g @googleworkspace/cli
       - gws-auth                   # planetarium/gws-auth
     mcp_servers: []
