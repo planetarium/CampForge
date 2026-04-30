@@ -10,6 +10,10 @@
 - `jq` (used by the post-install token-extraction snippet)
 - bash (Windows: use WSL or Git Bash)
 
+On Windows, the installer will also try to bootstrap missing prerequisites via `winget`:
+- `OpenJS.NodeJS.LTS`
+- `Git.Git` (Git for Windows / Git Bash)
+
 ## Quick install
 
 ```bash

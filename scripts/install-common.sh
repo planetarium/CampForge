@@ -33,6 +33,8 @@ refresh_node_path() {
   if is_windows; then
     [ -n "${LOCALAPPDATA:-}" ] && [ -d "$LOCALAPPDATA/Programs/nodejs" ] && path_append "$LOCALAPPDATA/Programs/nodejs"
     [ -d "/c/Program Files/nodejs" ] && path_append "/c/Program Files/nodejs"
+    [ -d "/c/Program Files/Git/bin" ] && path_append "/c/Program Files/Git/bin"
+    [ -d "/c/Program Files/Git/cmd" ] && path_append "/c/Program Files/Git/cmd"
   elif [ "$(uname -s)" = "Darwin" ]; then
     if command -v brew >/dev/null 2>&1; then
       local prefix
@@ -46,7 +48,32 @@ refresh_node_path() {
   fi
 }
 
+ensure_windows_git_runtime() {
+  if ! is_windows; then
+    return
+  fi
+
+  if command -v git >/dev/null 2>&1; then
+    return
+  fi
+
+  echo "  Ensuring Git for Windows (Git Bash runtime)..."
+  if command -v winget >/dev/null 2>&1; then
+    winget install -e --id Git.Git \
+      --accept-package-agreements \
+      --accept-source-agreements >/dev/null 2>&1 || {
+      echo "  [warn] winget Git for Windows install failed."
+      return
+    }
+    refresh_node_path
+  fi
+}
+
 ensure_node_runtime() {
+  if is_windows; then
+    ensure_windows_git_runtime
+  fi
+
   if have_node_runtime; then
     return
   fi
