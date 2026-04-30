@@ -19,13 +19,18 @@ metadata:
 
 - **반드시 `flex-ax query 'SQL'` 명령만 사용하여 데이터를 조회한다.**
 - sqlite3, DB 파일 직접 접근, .db 파일 읽기 등은 절대 하지 않는다.
-- flex-ax CLI가 유일한 데이터 접근 수단이다 (향후 외부 서비스로 전환 예정).
+- flex-ax CLI가 유일한 데이터 접근 수단이다.
+- 여러 법인 export가 있으면 먼저 `OUTPUT_DIR` 를 특정 export 디렉터리로 지정해야 한다.
 
 ## How to call
 
 ```bash
 # 쿼리 실행 — 결과는 JSON 배열로 출력
 flex-ax query 'SELECT * FROM users LIMIT 5'
+
+# 여러 export가 있을 때는 특정 export 디렉터리 지정
+OUTPUT_DIR="$HOME/.flex-ax-data/output/<customerIdHash>" \
+  flex-ax query 'SELECT * FROM users LIMIT 5'
 
 # 스키마 확인이 필요할 때
 flex-ax query "SELECT name FROM sqlite_master WHERE type='table'"
@@ -35,9 +40,10 @@ flex-ax query "PRAGMA table_info(users)"
 ## Workflow
 
 1. 스키마를 모르면 `flex-ax query`로 테이블 목록/컬럼 확인부터
-2. 사용자 요청을 분석하여 적절한 SQL 작성
-3. `flex-ax query 'SQL'` 실행 (read-only)
-4. 결과 JSON을 파싱하여 사용자에게 알기 쉽게 요약
+2. 여러 export가 있으면 `OUTPUT_DIR` 를 먼저 특정 법인 디렉터리로 좁힘
+3. 사용자 요청을 분석하여 적절한 SQL 작성
+4. `flex-ax query 'SQL'` 실행 (read-only)
+5. 결과 JSON을 파싱하여 사용자에게 알기 쉽게 요약
 
 ### 자주 쓰는 쿼리 패턴
 

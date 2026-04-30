@@ -1,0 +1,8 @@
+# Get a presigned R2 download URL for a file upload row.
+mutation GetFileDownloadUrl($fileUploadId: String!) {
+  getFileDownloadUrl(input: { fileUploadId: $fileUploadId }) {
+    url
+    fileName
+    expiresIn
+  }
+}

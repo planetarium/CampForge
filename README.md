@@ -25,6 +25,8 @@ A camp is agent-agnostic — each camp's `install.sh` handles installation via [
 | [v8-admin](./camps/v8-admin/) | V8 Platform Admin | v8-api, gql-ops, gws-sheets |
 | [9c-backoffice](./camps/9c-backoffice/) | Nine Chronicles Table Patch | 9c-backoffice, gql-ops |
 | [campforge-guide](./camps/campforge-guide/) | CampForge Usage Guide | camp-create, camp-validate, camp-add-skill, camp-sync, camp-bench, campforge-interview |
+| [flex-ax](./camps/flex-ax/) | Flex HR via local flex-ax dump | flex-query, flex-crawl, gws-sheets, gws-gmail, gws-drive |
+| [flex-ax-remote](./camps/flex-ax-remote/) | Flex HR via remote A2A + GraphQL | a2x, gql-ops, gws-sheets, gws-gmail, gws-drive |
 
 ---
 

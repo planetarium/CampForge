@@ -1,74 +1,41 @@
-# Query files
+# Query patterns
 
-Reusable PostGraphile GraphQL queries for the Flex HR endpoint
-(`$FLEX_HR_GQL`). Each `.gql` file in this directory is a single
-operation that the agent can invoke via `gq --queryFile`.
+Reusable SQL snippets and schema notes for the local `flex-ax query`
+workflow. This camp does not call a remote GraphQL endpoint. All data
+access goes through `flex-ax query "SQL"` against the imported local DB.
 
-Populate this directory as patterns emerge in your workflows. Don't
-pre-fill it speculatively.
+Populate this directory only when a query pattern keeps recurring across
+sessions. Do not add speculative templates.
 
-## Available queries
+## When to add a snippet here
 
-| File | Operation | Variables |
-|------|-----------|-----------|
-| `get-file-download-url.gql` | Mutation: presigned R2 download URL for a file upload (1-hour TTL, RLS-enforced) | `fileUploadId` |
+- A SQL pattern is used repeatedly across sessions.
+- The join path is non-trivial enough that re-deriving it wastes time.
+- The query needs human review or explanation before reuse.
 
-## When to add a query here
+For one-off ad-hoc queries, write SQL inline with `flex-ax query`.
 
-- A query is run more than once across sessions.
-- A query is non-trivial enough that re-deriving it from introspection
-  would waste tokens (multi-table joins, deep nesting, computed fields).
-- A query needs documentation or examples for human review.
+## Suggested naming
 
-For one-off ad-hoc queries, write inline with `gq -q '...'` instead.
+Use kebab-case names that match the intent:
 
-## Naming
-
-Use kebab-case verbs that match what the operation does:
-
-- `list-employees.gql`
-- `recent-approvals.gql`
-- `attendance-by-month.gql`
-- `update-employee-by-id.gql`
-
-## File template
-
-```graphql
-# Short description of what this query returns and when to use it.
-# Variables: $first (Int), $employeeId (Int)
-query ListAttendancesForEmployee($first: Int = 30, $employeeId: Int!) {
-  allAttendances(
-    first: $first
-    condition: { employeeId: $employeeId }
-    orderBy: CREATED_AT_DESC
-  ) {
-    totalCount
-    nodes {
-      id
-      createdAt
-      # ...select only fields you need
-    }
-  }
-}
-```
+- `list-employees.sql`
+- `recent-approvals.sql`
+- `attendance-by-month.sql`
+- `expense-documents.sql`
 
 ## Discovery
 
-Need a field or relation? Don't guess — introspect:
+Need to inspect schema first? Use `flex-ax query` directly:
 
 ```bash
-gq "$FLEX_HR_GQL" -H "Authorization: Bearer $FLEX_HR_TOKEN" \
-  --introspect > /tmp/flex-hr-schema.sdl
-grep -A 5 'type Employee ' /tmp/flex-hr-schema.sdl
+flex-ax query "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name"
+flex-ax query "PRAGMA table_info(users)"
 ```
 
-PostGraphile conventions (connection / condition / orderBy / camelCase /
-RLS) are documented in `identity/AGENTS.md`.
-
-## Calling
+If multiple exports exist, narrow to one before querying:
 
 ```bash
-gq "$FLEX_HR_GQL" -H "Authorization: Bearer $FLEX_HR_TOKEN" \
-  --queryFile "$FLEX_HR_QUERIES_DIR/list-employees.gql" \
-  -j '{"first": 20}' -l
+OUTPUT_DIR="$HOME/.flex-ax-data/output/<customerIdHash>" \
+  flex-ax query "SELECT COUNT(*) AS users FROM users"
 ```

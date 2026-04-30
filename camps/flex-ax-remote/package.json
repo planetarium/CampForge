@@ -1,17 +1,19 @@
 {
-  "name": "@campforge/camp-flex-ax",
-  "version": "3.0.0",
-  "description": "CampForge camp for Flex AX local dumps",
+  "name": "@campforge/camp-flex-ax-remote",
+  "version": "2.0.0",
+  "description": "CampForge camp for Flex AX remote A2A access",
   "keywords": [
     "agent-skill",
     "campforge",
     "flex",
-    "ax"
+    "ax",
+    "remote",
+    "a2a"
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "@campforge/flex-query": "^0.1.0",
-    "@campforge/flex-crawl": "^0.1.0",
+    "@campforge/a2x": "^0.1.0",
+    "@campforge/gql-ops": "^0.2.0",
     "@campforge/gws-auth": "^0.1.0",
     "@campforge/gws-sheets": "^0.1.0",
     "@campforge/gws-gmail": "^0.1.0",
