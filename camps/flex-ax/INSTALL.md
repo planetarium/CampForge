@@ -21,6 +21,7 @@ curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/fl
 
 By default, the installer creates and uses `./workspace/`.
 Override with `WORKSPACE=/your/path` if you want a different install location.
+If the path contains spaces, quote it: `WORKSPACE=\"/path/with spaces\" bash install.sh`.
 
 ## What the script does
 

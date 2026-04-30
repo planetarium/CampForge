@@ -74,6 +74,38 @@ run_installer() {
     ' 2>&1
 }
 
+run_installer_with_workspace() {
+  local dist="$1" platform="$2" workspace_name="$3"
+  docker run --rm \
+    -v "$dist:/srv" \
+    -e "CAMPFORGE_PLATFORM=$platform" \
+    -e "WORKSPACE_NAME=$workspace_name" \
+    node:20 bash -c '
+      set -euo pipefail
+      python3 -m http.server 8080 --directory /srv 2>/dev/null &
+      SERVER_PID=$!
+      SERVER_READY=false
+      for i in $(seq 1 10); do
+        if curl -sf http://localhost:8080/ >/dev/null 2>&1; then
+          SERVER_READY=true
+          break
+        fi
+        sleep 0.5
+      done
+      if [ "$SERVER_READY" != "true" ]; then
+        echo "[error] HTTP server failed to start" >&2
+        exit 1
+      fi
+      cd /tmp
+      WORKSPACE="$WORKSPACE_NAME" bash /srv/install.sh 2>&1
+      echo "---SPACE_WORKSPACE_SKILLS---"
+      find "$WORKSPACE_NAME/.agents/skills" -maxdepth 2 -name SKILL.md -type f 2>/dev/null | sort
+      echo "---SPACE_WORKSPACE_HOOKS---"
+      cat "$WORKSPACE_NAME/.claude/settings.json" 2>/dev/null || echo "(no settings.json)"
+      kill $SERVER_PID 2>/dev/null || true
+    ' 2>&1
+}
+
 for CAMP in "${CAMPS[@]}"; do
   echo ""
   echo "========================================="
@@ -362,6 +394,39 @@ for CAMP in "${CAMPS[@]}"; do
       FAIL=$((FAIL + 1))
     fi
   done
+
+  if [ "$CAMP" = "flex-ax" ]; then
+    echo ""
+    echo "  --- Workspace Path With Spaces ---"
+    SPACE_RESULT=$(run_installer_with_workspace "$DIST" "claude-code" "workspace with spaces")
+    SPACE_PASS=true
+
+    echo "    Verifying skill install under spaced workspace path..."
+    for skill in "${EXPECTED_SKILLS[@]}"; do
+      if echo "$SPACE_RESULT" | grep -q "workspace with spaces/.agents/skills/$skill/SKILL.md"; then
+        echo "      ✓ $skill/SKILL.md"
+      else
+        echo "      ✗ $skill/SKILL.md MISSING"
+        SPACE_PASS=false
+      fi
+    done
+
+    echo "    Verifying freshness hook command quoting..."
+    if echo "$SPACE_RESULT" | grep -Fq '"command": "bash \"/tmp/workspace with spaces/scripts/check-freshness.sh\""'; then
+      echo "      ✓ .claude/settings.json quotes spaced script path"
+    else
+      echo "      ✗ .claude/settings.json does not quote spaced script path"
+      SPACE_PASS=false
+    fi
+
+    if $SPACE_PASS; then
+      echo "    => PASS"
+      PASS=$((PASS + 1))
+    else
+      echo "    => FAIL"
+      FAIL=$((FAIL + 1))
+    fi
+  fi
 
   # -------------------------------------------------------
   # Test conflict cases (existing files in workspace)

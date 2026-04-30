@@ -57,6 +57,8 @@ case "$PLATFORM" in
   claude-code)
     # UserPromptSubmit hook: check data freshness on each prompt
     CHECK_CMD="$(pwd)/scripts/check-freshness.sh"
+    CHECK_CMD_ESCAPED="${CHECK_CMD//\\/\\\\}"
+    CHECK_CMD_ESCAPED="${CHECK_CMD_ESCAPED//\"/\\\"}"
     if [ -f ".claude/settings.json" ]; then
       echo "  [action-required] Add this hook to .claude/settings.json:"
     else
@@ -65,7 +67,7 @@ case "$PLATFORM" in
   "hooks": {
     "UserPromptSubmit": [
       {
-        "command": "bash $CHECK_CMD",
+        "command": "bash \"$CHECK_CMD_ESCAPED\"",
         "description": "Check flex-ax data freshness and crawl if stale"
       }
     ]
