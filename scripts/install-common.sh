@@ -255,7 +255,7 @@ install_a2x() {
 # Install flex-ax CLI from GitHub Release.
 # Since flex-cli 0.7.x, releases are standalone executables rather than npm tarballs.
 install_flex_ax() {
-  local version="${FLEX_AX_VERSION:-0.7.1}"
+  local version="${FLEX_AX_VERSION:-0.8.1}"
   local tag="flex-cli@${version}"
 
   echo ":: Installing flex-ax CLI (${tag})..."

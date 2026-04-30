@@ -13,7 +13,7 @@ set -euo pipefail
 DIST="${1:?Usage: fetch-tools.sh <dist-dir>}"
 mkdir -p "$DIST"
 
-FLEX_AX_VERSION="${FLEX_AX_VERSION:-0.7.1}"
+FLEX_AX_VERSION="${FLEX_AX_VERSION:-0.8.1}"
 FLEX_AX_TAG="flex-cli@${FLEX_AX_VERSION}"
 FLEX_AX_ASSET="flex-ax-linux-x64"
 
