@@ -3,7 +3,7 @@
 # Usage: curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/flex-ax-remote/install.sh | bash
 set -euo pipefail
 
-CAMP_VERSION="${CAMP_VERSION:-v2.0.0}"
+CAMP_VERSION="${CAMP_VERSION:-v2.0.1}"
 BASE="https://github.com/planetarium/CampForge/releases/download/flex-ax-remote-$CAMP_VERSION"
 
 WS="${WORKSPACE:-workspace}"

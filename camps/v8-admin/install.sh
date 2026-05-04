@@ -3,7 +3,7 @@
 # Usage: curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/v8-admin/install.sh | bash
 set -euo pipefail
 
-CAMP_VERSION="${CAMP_VERSION:-v1.3.0}"
+CAMP_VERSION="${CAMP_VERSION:-v1.3.1}"
 BASE="https://github.com/planetarium/CampForge/releases/download/v8-admin-${CAMP_VERSION}"
 
 WS="${WORKSPACE:-workspace}"
