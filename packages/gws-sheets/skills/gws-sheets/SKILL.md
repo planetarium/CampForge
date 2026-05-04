@@ -119,8 +119,8 @@ gws sheets +read --spreadsheet <ID> --range Sheet1 --dry-run
 
 ### Create new spreadsheet with initial data
 
-1. `gws sheets spreadsheets create --json '{"properties": {"title": "..."}}'` -> get new spreadsheet ID
-2. `gws sheets +append --spreadsheet <NEW_ID> --json-values '[["Header1","Header2"],[...]]'`
+1. `gws sheets spreadsheets create --json '{"properties": {"title": "..."}}'` -> capture **both** `spreadsheetId` and `sheets[0].properties.title` from the response. The first sheet's title is locale-dependent (e.g. `시트1` on Korean accounts, `Sheet1` on English), so do not hardcode `Sheet1!A1` in subsequent ranges -- use the title returned by `create`.
+2. `gws sheets +append --spreadsheet <NEW_ID> --json-values '[["Header1","Header2"],[...]]'` (defaults to the first sheet), or pass the actual title in `--params` `range` for `values update`/`append`.
 3. Optionally share: `gws drive permissions create ...`
 
 ### Find and update specific spreadsheet
@@ -151,23 +151,48 @@ command -v gws-auth
    `\uXXXX` escapes instead of raw Unicode.
 4. After any write containing non-ASCII text, immediately re-read a small
    range such as `A1:C5` to verify the stored characters.
-5. Avoid passing raw non-ASCII JSON through PowerShell into `gws.cmd` unless
-   code page and quoting behavior are already known to be safe.
+5. **Avoid** `gws.cmd --json $json` directly from PowerShell -- variable
+   interpolation reshapes quotes and produces `Invalid --json body`. The
+   same applies to deeply nested `bash -lc '... --json ... '` one-liners,
+   where the inner JSON gets mangled by outer quoting.
 
-If Git Bash is unavailable but `bash` is still present, a safer fallback is to
-write the command into a UTF-8 without BOM script and execute that script with
-`bash` instead of pasting raw JSON directly into PowerShell:
+### Windows-safe end-to-end example
+
+For JSON-heavy flows, write the whole workflow into a UTF-8 (no BOM) bash
+script and run it from Git Bash. This is the prescriptive Windows path for
+`create -> write -> verify` with non-ASCII content:
 
 ```bash
-cat > write-sheet.sh <<'EOF'
-gws sheets spreadsheets values update \
-  --params '{"spreadsheetId":"<ID>","range":"A1","valueInputOption":"USER_ENTERED"}' \
+cat > sheets-flow.sh <<'EOF'
+set -euo pipefail
+
+# gws-auth status alone is not enough -- gws picks up the OAuth token from
+# this env var, so export it before any gws call in the same session.
+export GOOGLE_WORKSPACE_CLI_TOKEN="$(gws-auth token)"
+
+# 1. Create. Read both spreadsheetId AND first sheet title from the
+#    response; the default title is locale-dependent (e.g. Korean accounts
+#    get a localized name, not "Sheet1"), so hardcoding "Sheet1!A1" yields
+#    "Unable to parse range".
+CREATE=$(gws sheets spreadsheets create \
+  --json '{"properties":{"title":"\uD68C\uC0AC \uBA85\uB2E8"}}')
+SID=$(node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).spreadsheetId" <<<"$CREATE")
+TITLE=$(node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).sheets[0].properties.title" <<<"$CREATE")
+
+# 2. Write -- build --params via node so $SID/$TITLE are JSON-quoted safely.
+PARAMS=$(node -e 'console.log(JSON.stringify({spreadsheetId:process.argv[1],range:process.argv[2]+"!A1",valueInputOption:"USER_ENTERED"}))' "$SID" "$TITLE")
+gws sheets spreadsheets values update --params "$PARAMS" \
   --json '{"values":[["\uD68C\uC0AC","ACME"],["\uC0C1\uD0DC","\uC815\uC0C1"]]}'
+
+# 3. Verify the stored characters round-tripped correctly.
+gws sheets +read --spreadsheet "$SID" --range "$TITLE!A1:B2"
 EOF
 
-bash write-sheet.sh
-gws sheets +read --spreadsheet <ID> --range "A1:B2"
+bash sheets-flow.sh
 ```
+
+`node -p` is used instead of `jq` because Git Bash on Windows does not ship
+`jq` by default, but Node is already present (gws is an npm package).
 
 ## Notes
 
