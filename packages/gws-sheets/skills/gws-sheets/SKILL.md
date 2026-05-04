@@ -161,12 +161,12 @@ write the command into a UTF-8 without BOM script and execute that script with
 ```bash
 cat > write-sheet.sh <<'EOF'
 gws sheets spreadsheets values update \
-  --params '{"spreadsheetId":"<ID>","range":"Sheet1!A1","valueInputOption":"USER_ENTERED"}' \
+  --params '{"spreadsheetId":"<ID>","range":"A1","valueInputOption":"USER_ENTERED"}' \
   --json '{"values":[["\uD68C\uC0AC","ACME"],["\uC0C1\uD0DC","\uC815\uC0C1"]]}'
 EOF
 
 bash write-sheet.sh
-gws sheets +read --spreadsheet <ID> --range "Sheet1!A1:B2"
+gws sheets +read --spreadsheet <ID> --range "A1:B2"
 ```
 
 ## Notes
