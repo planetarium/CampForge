@@ -14,7 +14,7 @@ npm pkg set \
   "dependencies.@campforge/v8-api=$BASE/campforge-v8-api-1.1.0.tgz" \
   "dependencies.@campforge/gql-ops=$BASE/campforge-gql-ops-0.2.0.tgz" \
   "dependencies.@campforge/gws-auth=$BASE/campforge-gws-auth-0.1.0.tgz" \
-  "dependencies.@campforge/gws-sheets=$BASE/campforge-gws-sheets-0.1.1.tgz"
+  "dependencies.@campforge/gws-sheets=$BASE/campforge-gws-sheets-0.1.2.tgz"
 
 npx skillpm install
 
