@@ -134,6 +134,15 @@ gws sheets +read --spreadsheet <ID> --range Sheet1 --dry-run
 When writing Korean or other non-ASCII text on Windows, prefer a bash-based
 path for any command that sends JSON to `gws`.
 
+If `gws` is not on `PATH` in a local workspace install, check `./.local/bin`
+first and export it before retrying:
+
+```bash
+export PATH="$(pwd)/.local/bin:$PATH"
+gws --version
+command -v gws-auth
+```
+
 1. Use Git Bash for `gws sheets spreadsheets values update`, `append`, and
    `batchUpdate`.
 2. If generating a script or JSON file on Windows, save it as UTF-8 without
@@ -144,6 +153,21 @@ path for any command that sends JSON to `gws`.
    range such as `A1:C5` to verify the stored characters.
 5. Avoid passing raw non-ASCII JSON through PowerShell into `gws.cmd` unless
    code page and quoting behavior are already known to be safe.
+
+If Git Bash is unavailable but `bash` is still present, a safer fallback is to
+write the command into a UTF-8 without BOM script and execute that script with
+`bash` instead of pasting raw JSON directly into PowerShell:
+
+```bash
+cat > write-sheet.sh <<'EOF'
+gws sheets spreadsheets values update \
+  --params '{"spreadsheetId":"<ID>","range":"Sheet1!A1","valueInputOption":"USER_ENTERED"}' \
+  --json '{"values":[["\uD68C\uC0AC","ACME"],["\uC0C1\uD0DC","\uC815\uC0C1"]]}'
+EOF
+
+bash write-sheet.sh
+gws sheets +read --spreadsheet <ID> --range "Sheet1!A1:B2"
+```
 
 ## Notes
 
