@@ -129,6 +129,22 @@ gws sheets +read --spreadsheet <ID> --range Sheet1 --dry-run
 2. `gws sheets +read --spreadsheet <ID> --range Sheet1` -> read current data
 3. `gws sheets spreadsheets values update ...` -> update specific range
 
+## Windows Encoding Safety
+
+When writing Korean or other non-ASCII text on Windows, prefer a bash-based
+path for any command that sends JSON to `gws`.
+
+1. Use Git Bash for `gws sheets spreadsheets values update`, `append`, and
+   `batchUpdate`.
+2. If generating a script or JSON file on Windows, save it as UTF-8 without
+   BOM before executing it from Bash.
+3. If terminal quoting or encoding is unstable, send text through JSON
+   `\uXXXX` escapes instead of raw Unicode.
+4. After any write containing non-ASCII text, immediately re-read a small
+   range such as `A1:C5` to verify the stored characters.
+5. Avoid passing raw non-ASCII JSON through PowerShell into `gws.cmd` unless
+   code page and quoting behavior are already known to be safe.
+
 ## Notes
 
 - `+read`, `+append` are gws skill shortcuts (simpler syntax than direct API)
@@ -136,4 +152,4 @@ gws sheets +read --spreadsheet <ID> --range Sheet1 --dry-run
 - `--page-all` flag auto-paginates large result sets (NDJSON output)
 - Spreadsheet ID is the long string in the URL: `docs.google.com/spreadsheets/d/<SPREADSHEET_ID>/edit`
 - `valueInputOption`: `USER_ENTERED` (parses formulas) vs `RAW` (literal strings)
-- **Windows**: `--params` / `--json` examples are bash syntax. On Windows, use Git Bash — PowerShell mangles JSON quotes passed to native executables
+- **Windows**: `--params` / `--json` examples are bash syntax. On Windows, use Git Bash. PowerShell can corrupt JSON quoting passed to native executables, and raw Unicode writes need extra care as described above.
