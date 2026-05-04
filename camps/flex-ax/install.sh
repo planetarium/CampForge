@@ -3,7 +3,7 @@
 # Usage: curl -fsSL https://raw.githubusercontent.com/planetarium/CampForge/main/camps/flex-ax/install.sh | bash
 set -euo pipefail
 
-CAMP_VERSION="${CAMP_VERSION:-v3.0.0}"
+CAMP_VERSION="${CAMP_VERSION:-v3.0.1}"
 BASE="https://github.com/planetarium/CampForge/releases/download/flex-ax-$CAMP_VERSION"
 
 WS="${WORKSPACE:-workspace}"
@@ -30,7 +30,7 @@ npm pkg set \
   "dependencies.@campforge/flex-query=$BASE/campforge-flex-query-0.1.0.tgz" \
   "dependencies.@campforge/flex-crawl=$BASE/campforge-flex-crawl-0.1.0.tgz" \
   "dependencies.@campforge/gws-auth=$BASE/campforge-gws-auth-0.1.0.tgz" \
-  "dependencies.@campforge/gws-sheets=$BASE/campforge-gws-sheets-0.1.1.tgz" \
+  "dependencies.@campforge/gws-sheets=$BASE/campforge-gws-sheets-0.1.2.tgz" \
   "dependencies.@campforge/gws-gmail=$BASE/campforge-gws-gmail-0.1.1.tgz" \
   "dependencies.@campforge/gws-drive=$BASE/campforge-gws-drive-0.1.1.tgz"
 
