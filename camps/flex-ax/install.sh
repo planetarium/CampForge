@@ -95,3 +95,19 @@ BOOTMD
 esac
 
 echo "flex-ax camp installed"
+cat <<NEXTSTEPS
+
+Next steps:
+  cd $WS
+  export PATH="\$(pwd)/.local/bin:\$PATH"
+  flex-ax --version
+  flex-ax login --gui
+  flex-ax status
+
+To load queryable flex data:
+  flex-ax crawl
+  flex-ax import
+
+If import creates multiple output/<customerIdHash>/ directories, set OUTPUT_DIR
+to the specific export before querying.
+NEXTSTEPS

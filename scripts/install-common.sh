@@ -26,7 +26,10 @@ path_append() {
 have_node_runtime() {
   command -v node >/dev/null 2>&1 &&
     command -v npm >/dev/null 2>&1 &&
-    command -v npx >/dev/null 2>&1
+    command -v npx >/dev/null 2>&1 &&
+    node -v >/dev/null 2>&1 &&
+    npm -v >/dev/null 2>&1 &&
+    npx -v >/dev/null 2>&1
 }
 
 refresh_node_path() {
@@ -255,7 +258,7 @@ install_a2x() {
 # Install flex-ax CLI from GitHub Release.
 # Since flex-cli 0.7.x, releases are standalone executables rather than npm tarballs.
 install_flex_ax() {
-  local version="${FLEX_AX_VERSION:-0.8.1}"
+  local version="${FLEX_AX_VERSION:-0.8.3}"
   local tag="flex-cli@${version}"
 
   echo ":: Installing flex-ax CLI (${tag})..."
