@@ -23,6 +23,10 @@ By default, the installer creates and uses `./workspace/`.
 Override with `WORKSPACE=/your/path` if you want a different install location.
 If the path contains spaces, quote it: `WORKSPACE=\"/path/with spaces\" bash install.sh`.
 
+On Windows, run this command from **Git Bash**, not from PowerShell. In
+PowerShell, `curl` may resolve to `Invoke-WebRequest` instead of the curl
+executable expected by the pipe-to-bash install command.
+
 ## What the script does
 
 1. **Skill packages** — `npm pkg set` + `npx skillpm install` (skillpm resolves skill doc dependencies into `.agents/skills/`)
@@ -83,6 +87,14 @@ gws --version
 command -v gws-auth
 ```
 
+For SQL checks on Windows, keep using Git Bash so `OUTPUT_DIR` and quoting
+behave the same way as the installer:
+
+```bash
+export OUTPUT_DIR="$(pwd)/output/<customerIdHash>"
+flex-ax query "SELECT * FROM users LIMIT 5"
+```
+
 If `flex-ax query` fails later with an export-dir error, point `OUTPUT_DIR` at a concrete export directory before querying:
 
 ```bash
@@ -97,11 +109,16 @@ flex-ax query "SELECT * FROM users LIMIT 5"
 Since `flex-cli@0.7.0`, the official install is a standalone executable and the recommended auth flow is `login` / OS keyring storage.
 
 ```bash
-flex-ax login
+flex-ax login --gui
 flex-ax status
 flex-ax crawl
 flex-ax import
 ```
+
+Use `flex-ax login --gui` for Codex, CI-adjacent terminals, and other
+non-interactive agent environments. It opens a platform dialog and avoids
+stdin/password prompt issues. Plain `flex-ax login` is still fine in a fully
+interactive shell.
 
 Non-interactive environments can still use env vars:
 
@@ -116,6 +133,9 @@ Notes:
 - `flex-ax login` stores the email in `~/.flex-ax/config.json`
 - The password is stored in the OS keyring, or can be injected via `FLEX_PASSWORD` / `--password-stdin`
 - `query` now expects `OUTPUT_DIR` to point at a concrete export directory when multiple customer exports exist
+- Run `flex-ax query` commands sequentially. The imported SQLite database can
+  report `database is locked` or `disk I/O error` when multiple agent queries
+  read it concurrently.
 
 Example:
 
@@ -135,6 +155,10 @@ gws-auth login --scope gmail.modify --scope spreadsheets --scope drive.file
 Verify access after login:
 
 ```bash
+gws-auth status
 export GOOGLE_WORKSPACE_CLI_TOKEN="$(gws-auth token)"
 gws gmail users getProfile --params '{"userId":"me"}'
 ```
+
+If a required scope is missing from `gws-auth status`, run `gws-auth login`
+again with the full scope list.

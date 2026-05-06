@@ -1,5 +1,13 @@
 # Operating Rules
 
+## Windows / Codex runtime notes
+
+- Prefer `flex-ax login --gui` when stdin is not a real interactive terminal.
+- On Windows, use Git Bash for install, auth, crawl, and import commands.
+- Use Git Bash for SQL checks too, with `OUTPUT_DIR="$(pwd)/output/<customerIdHash>"`.
+- Run `flex-ax query` commands sequentially; concurrent reads can lock the
+  imported SQLite database.
+
 ## Startup
 
 1. Check required environment variables — ask user if not set
