@@ -76,7 +76,7 @@ echo "=== Verse ===" ; gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" --queryFi
 | `users-search.gql` | Search users | `{"keyword":"…","limit":20}` |
 | `users-low-balance.gql` | Low balance users | `{"threshold":5,"limit":20}` |
 | `comments-list.gql` | List/search comments | `{"limit":50}` or `{"searchType":"…","keyword":"…","filter":"…"}` |
-| `verse-list.gql` | List verses | `{"limit":20,"featured":"ONLY"}` |
+| `verse-list.gql` | List verses (optionally filter by `userUid`) | `{"limit":20,"featured":"ONLY"}` or `{"userUid":"<uid>","limit":50}` |
 | `game-payments-list.gql` | List game payments | `{"limit":20}` |
 | `game-payment-items-list.gql` | Payment items | `{"gamePaymentId":"<id>","limit":20}` |
 
@@ -93,6 +93,9 @@ gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" -q 'mutation { adminControllerCr
 
 # Delete comments
 gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" -q 'mutation { adminControllerBatchCommentAction(batchCommentActionDtoInput: {commentIds: [1,2,3], action: "delete"}) { processed failed errors } }' -l
+
+# Batch expire credits (userUids: max 1000)
+gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" -q 'mutation { adminControllerBatchExpireCredits(batchExpireCreditsDtoInput: {userUids: ["<uid1>","<uid2>"]}) { success failed failedUids executionTimeMs } }' -l
 
 # Trigger analytics
 gq $V8_GQL -H "Authorization: Bearer $V8_TOKEN" -q 'mutation { adminControllerTriggerCalculateQualityScores { success executionTimeMs } }' -l
