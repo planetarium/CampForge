@@ -107,6 +107,8 @@ Key admin-only fields in `VerseUpdateDto`:
 - `visibility`: `public` | `unlisted` | `private`
 - `colors`: `{ primary, secondary, tertiary, quaternary }`
 
+> ⚠️ **GraphQL response is opaque.** The GraphQL counterpart `adminControllerAdminUpdateVerse` returns `null` regardless of whether the update was applied — the response shape on silent failure is byte-identical to success. Do **not** infer success from the mutation response (grep, error-envelope absence, exit code). Re-fetch the verse and compare the target fields. See `SKILL.md` → "Opaque-response mutations" and "Bulk mutations" for the required pattern.
+
 ---
 
 ## Game Payments
