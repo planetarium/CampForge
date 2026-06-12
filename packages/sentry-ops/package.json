@@ -1,0 +1,14 @@
+{
+  "name": "@campforge/sentry-ops",
+  "version": "0.1.0",
+  "description": "Sentry issue triage and root-cause analysis via sentry-cli + the Sentry MCP (stdio, token auth)",
+  "keywords": ["agent-skill", "sentry", "sentry-cli", "observability", "seer", "campforge"],
+  "license": "Apache-2.0",
+  "author": "swen",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/planetarium/CampForge",
+    "directory": "packages/sentry-ops"
+  },
+  "files": ["skills/"]
+}
