@@ -152,8 +152,15 @@ curl -s "https://sentry.io/api/0/organizations/$ORG/issues/$ISSUE_ID/autofix/" \
   -H "Authorization: Bearer $TOKEN" \
   | python3 -c "import sys,json; a=json.load(sys.stdin).get('autofix') or {}; \
 print('status:', a.get('status')); \
-[print('step:', s.get('key'), '->', s.get('status')) for s in (a.get('steps') or [])]"
+items=a.get('steps') or a.get('blocks') or []; \
+[print('-', (it.get('key') or (it.get('metadata') or {}).get('step') or it.get('type') or '?'), it.get('status') or '') for it in items]"
 ```
+
+The terminal `status` field is the load-bearing part. The per-item line
+handles both autofix response shapes: the legacy `steps[]` (with `key`) and
+the newer explorer-mode `blocks[]` (with `metadata.step`) — the live API
+currently returns `blocks[]`, so a parser hardcoded to `steps[]` prints
+nothing per item even though the run succeeded.
 
 (`results are cached` — re-polling a completed run returns instantly.)
 Alternatively, open the issue's Seer panel in the Sentry web UI.
