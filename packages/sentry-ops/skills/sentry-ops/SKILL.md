@@ -39,10 +39,11 @@ Everything here uses a **User Auth Token**, not OAuth. The token lives in
 token=sntryu_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-Verify it and inspect granted scopes:
+Verify it and inspect granted scopes (`sentry-cli info` prints the method,
+user, and scopes — never the raw token, so it is safe to run as-is):
 
 ```bash
-sentry-cli info 2>&1 | sed -E 's/(token|key)[^ ]*/\1=***/gi'
+sentry-cli info
 ```
 
 ### Required scopes
