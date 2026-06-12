@@ -95,6 +95,18 @@ Once active, the useful tools are `find_projects`, `search_issues`,
   empty query to list everything regardless of status.
 - `search_events(...)` — for counts/aggregations and individual events with
   timestamps (datasets: errors, logs, spans, metrics, profiles, replays).
+  - **Time range goes in `statsPeriod` (`30d`, `24h`), NOT in `query`.** A
+    natural-language range like `"last 30 days"` in `query` is treated as a
+    literal message-search term and **silently returns "No results found"** —
+    indistinguishable from a genuinely empty dataset. To list everything, pass
+    an **empty/whitespace query** + a `statsPeriod`.
+  - Before concluding "no data" for a project, re-run with an empty query: a
+    malformed query and an empty dataset look identical. Confirm per-project —
+    a project can receive one dataset (e.g. `spans`) but not another (`logs`).
+  - **Tags set via the SDK's `initialScope.tags` (e.g. `service:...`) do NOT
+    become queryable log attributes** — they come back `null`. Don't filter
+    logs by `service:`; separate services by **project**, or by a substring
+    match on the message (`message:"*[server]*"`).
 - `find_projects(organizationSlug)` — list projects / resolve slugs.
 
 ### Via sentry-cli (headless / scripting)
@@ -197,6 +209,13 @@ project DSN via the MCP `find_dsns` / `create_dsn` tools, or in
 - **`ZodError: autofix.status`** → the #1064 Seer bug; use the curl workaround.
 - **`Boolean statements ... not supported`** → remove `OR`/`AND` from
   `search_issues` query; split into separate calls or drop the status filter.
+- **`search_events` returns "No results found" but data should exist** → you
+  likely put a time range (`"last 30 days"`) in `query`. Move it to
+  `statsPeriod` and pass an empty query. Don't trust a single 0-result query —
+  it fails identically whether the query is malformed or the dataset is empty.
+- **Filtering logs by `service:<tag>` returns nothing** → SDK `initialScope`
+  tags don't propagate to log attributes (they're `null`). Filter by project or
+  by a message substring instead.
 - **`organizations list` JSON parse error** → CLI/server drift; use
   `projects list --org <slug>` or MCP `find_projects`.
 - **`DSN missing`** → `send-event` needs `SENTRY_DSN`, not the auth token.
