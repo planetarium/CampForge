@@ -1,0 +1,8 @@
+{
+  "name": "@campforge/oag-management",
+  "version": "0.1.0",
+  "description": "OAG (OpenAPI-to-GraphQL Gateway) runtime management — API CRUD, key management, schema reload",
+  "keywords": ["agent-skill", "oag", "gateway", "campforge"],
+  "license": "Apache-2.0",
+  "files": ["skills/"]
+}
