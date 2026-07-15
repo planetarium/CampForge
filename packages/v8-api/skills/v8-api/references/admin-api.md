@@ -46,6 +46,37 @@ Update user tier manually. (No body schema exposed)
 
 ---
 
+### POST /v1/admin/users/ban
+Batch-ban abusive users. In one transaction: creates an active `BLOCKED` restriction (already-blocked users skipped), soft-deletes the users' comments, privatizes their verses (`isPublic=false, isListed=false`), and busts the affected verse/comment caches so content disappears immediately.
+
+Targets by `userUids` and/or `emails` (at least one required). Emails resolve via `user.email` (case-sensitive); only real users are acted on — unknown ids come back in `unmatchedUserUids` / `unmatchedEmails`.
+
+```json
+{ "userUids": ["266340", "266341"], "emails": ["abuser@example.com"], "memo": "Abusive activity", "reason": null }
+```
+
+- `memo` (optional, default `"Abusive activity"`), `reason` (optional, shown to the user on login/action)
+- Response: `{ success, requestedCount, restrictionsCreated, skippedCount, skippedUserUids, commentsDeleted, versesPrivatized, unmatchedUserUids, unmatchedEmails }`
+- Enforcement is automatic: a `BLOCKED` user is blocked at login and on captcha-guarded actions.
+
+---
+
+### POST /v1/admin/users/unban
+Batch-unban. Marks the active `BLOCKED` restriction resolved. Does **not** restore soft-deleted comments or privatized verses (that stays a separate manual step).
+
+```json
+{ "userUids": ["266340"], "emails": ["abuser@example.com"] }
+```
+
+- Response: `{ success, requestedCount, restrictionsResolved, skippedCount, skippedUserUids, unmatchedUserUids, unmatchedEmails }`
+
+---
+
+### GET /v1/admin/users/{userUid}/events
+Get credit events for a specific user. Query: `page`, `limit`, `eventType` (`CreditEventType` enum).
+
+---
+
 ## Credits
 
 ### POST /v1/admin/credits/coupon
@@ -70,6 +101,17 @@ Generate redeemable coupon codes (bulk).
 - `amount`: USD per coupon
 - `count`: 1–1000
 - Response: `{ codes: [...], count }`
+
+---
+
+### POST /v1/admin/credits/expire-all
+Batch expire (zero out) credits for a list of users. **Destructive / irreversible.** Max 1000 UIDs per request, processed in concurrent batches of 20; partial success is allowed.
+
+```json
+{ "userUids": ["100001", "100002"] }
+```
+
+- Response: `{ success, failed, failedUids, executionTimeMs }` (`success`/`failed` are counts)
 
 ---
 
@@ -185,3 +227,98 @@ Recalculate tag usage counts.
 
 ### POST /v1/admin/verse/recalculate-game-sessions
 Recalculate game session counts.
+
+---
+
+## Verse Review
+
+Review-queue moderation (controller prefix `v1/admin/verse`).
+
+### GET /v1/admin/verse/review/counts
+Per-`reviewStatus` verse counts for the review-queue tab badges (non-deleted verses).
+
+### GET /v1/admin/verse/{verseId}/review-history
+Past admin review decisions for a verse (rejection / action-required reasons across versions), newest first.
+
+### POST /v1/admin/verse/{verseId}/review
+Apply an admin review decision to a verse.
+
+```json
+{ "decision": "approve", "reviewerNote": "" }
+```
+
+- `decision`: `approve` | `action-required` | `reject` | `public-review` | `private-review`
+- `reviewerNote` (optional): shown to the creator and stored on the release-note audit row
+
+### POST /v1/admin/verse/{verseId}/ai-review
+Record an AI first-pass review result onto the latest release note (admin-only display fields; does **not** change `reviewStatus` / decision / reviewerNote). Only allowed while the verse is in `PRIVATE_REVIEW` / `PUBLIC_REVIEW` (else 409).
+
+---
+
+## Selections
+
+Curated home selections (controller prefix `v1/admin/selections`; `{name}` is a `SelectionName` enum value).
+
+### GET /v1/admin/selections
+List all selections (metadata only).
+
+### GET /v1/admin/selections/{name}
+Get a selection with items (admin view; includes inactive items).
+
+### POST /v1/admin/selections/{name}/items
+Append a new item (verse or banner) to a selection.
+
+```json
+{ "type": "verse", "verseId": 123, "displayOrder": 1000, "isActive": true }
+```
+
+- `type`: `verse` | `banner`. Banner items use `title` / `description` / `imageUrl` / `squareImageUrl` / `videoUrl` / `ctaUrl` / `ctaLabel` / `startTime` / `endTime` instead of `verseId`.
+
+### PATCH /v1/admin/selections/{name}/items/{id}
+Update a selection item (banner payload / `isActive` / scheduling).
+
+### DELETE /v1/admin/selections/{name}/items/{id}
+Remove an item from a selection.
+
+### PUT /v1/admin/selections/{name}/order
+Bulk reorder. Body: `{ "itemIds": [3, 1, 2] }` in desired order (server assigns `displayOrder = (index+1)*1000`).
+
+---
+
+## System Tags
+
+Attach/detach internal system tags on a verse (controller prefix `v1/admin/verses`; `{id}` is the numeric verse id).
+
+### POST /v1/admin/verses/{id}/system-tags
+Attach a system tag (e.g. `__MSU`) to a verse. Tag must start with the system-tag prefix (`__`).
+
+```json
+{ "tag": "__MSU" }
+```
+
+### DELETE /v1/admin/verses/{id}/system-tags/{tagName}
+Detach a system tag from a verse.
+
+---
+
+## Push Notifications
+
+### GET /v1/admin/push/logs
+Get push notification campaign logs. Query: `page`, `limit`.
+
+### GET /v1/admin/push/rules
+Get all push notification rules (3 fixed types).
+
+### PUT /v1/admin/push/rules/{id}
+Update a push rule (title, body, url, params, isActive).
+
+```json
+{ "title": "...", "body": "...", "url": "/{{verseId}}", "params": {}, "isActive": true }
+```
+
+### POST /v1/admin/push/rules/{id}/send
+Manually trigger a push rule. For game-specific rules, pass `verseId` in `params`.
+
+```json
+{ "params": { "verseId": "abc123" } }
+```
